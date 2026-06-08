@@ -5,21 +5,21 @@ import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
 import { GYM_LEADERS, buildGymDeck } from '@/lib/data/gyms'
 import { PokemonCard } from '@/components/PokemonCard'
-import { getTypeColor, getTypeTextColor, getSpriteUrl } from '@/lib/typeColors'
+import { getTypeColor, getTypeTextColor, getSpriteUrl, getPixelSpriteUrl } from '@/lib/typeColors'
 import type { PokemonCard as PokemonCardType } from '@/types'
 
 const TRAINER_PORTRAIT: Record<string, string> = {
   'Brock':     'https://play.pokemonshowdown.com/sprites/trainers/brock.png',
   'Misty':     'https://play.pokemonshowdown.com/sprites/trainers/misty.png',
-  'Lt. Surge': 'https://play.pokemonshowdown.com/sprites/trainers/surge.png',
+  'Lt. Surge': 'https://play.pokemonshowdown.com/sprites/trainers/ltsurge.png',
   'Erika':     'https://play.pokemonshowdown.com/sprites/trainers/erika.png',
   'Koga':      'https://play.pokemonshowdown.com/sprites/trainers/koga.png',
   'Sabrina':   'https://play.pokemonshowdown.com/sprites/trainers/sabrina.png',
   'Blaine':    'https://play.pokemonshowdown.com/sprites/trainers/blaine.png',
   'Giovanni':  'https://play.pokemonshowdown.com/sprites/trainers/giovanni.png',
-  'Lorelei':   'https://play.pokemonshowdown.com/sprites/trainers/lorelei.png',
+  'Lorelei':   'https://play.pokemonshowdown.com/sprites/trainers/lorelei-gen1.png',
   'Bruno':     'https://play.pokemonshowdown.com/sprites/trainers/bruno.png',
-  'Agatha':    'https://play.pokemonshowdown.com/sprites/trainers/agatha.png',
+  'Agatha':    'https://play.pokemonshowdown.com/sprites/trainers/agatha-gen1.png',
   'Lance':     'https://play.pokemonshowdown.com/sprites/trainers/lance.png',
 }
 
@@ -63,7 +63,7 @@ function TrainerPortrait({ name, size = 160 }: { name: string; size?: number }) 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function TorrePage() {
   const router = useRouter()
-  const { mode, gender, playerName, playerDeck, currentFloor, badgesEarned, startBattle } = useGameStore()
+  const { mode, gender, playerName, playerDeck, currentFloor, startBattle } = useGameStore()
 
   const [showSetup, setShowSetup] = useState(false)
   const [selected, setSelected] = useState<PokemonCardType[]>([])
@@ -95,36 +95,6 @@ export default function TorrePage() {
     router.push('/batalha')
   }
 
-  // ── Completed floor mini-card ───────────────────────────────────────────────
-  function CompletedCard({ floor }: { floor: number }) {
-    const g = GYM_LEADERS[floor]
-    const tc = getTypeColor(g.specialtyType)
-    return (
-      <div
-        className="flex flex-col items-center gap-1 border-2 border-ink/20 rounded-xl p-2 bg-white/50 opacity-60"
-        style={{ minWidth: 72 }}
-      >
-        <span className="text-lg">{FLOOR_BADGE[floor]}</span>
-        <span className="font-game text-[7px] text-ink/60 text-center leading-tight">{g.name}</span>
-        <span className="font-game text-[8px]" style={{ color: '#78C850' }}>✓</span>
-      </div>
-    )
-  }
-
-  // ── Locked floor mini-card ──────────────────────────────────────────────────
-  function LockedCard({ floor }: { floor: number }) {
-    const g = GYM_LEADERS[floor]
-    return (
-      <div
-        className="flex flex-col items-center gap-1 border-2 border-dashed border-ink/15 rounded-xl p-2 opacity-30"
-        style={{ minWidth: 72 }}
-      >
-        <span className="text-lg grayscale">{FLOOR_BADGE[floor]}</span>
-        <span className="font-game text-[7px] text-ink/40 text-center leading-tight">{g.name}</span>
-        <span className="font-game text-[8px] text-ink/30">🔒</span>
-      </div>
-    )
-  }
 
   return (
     <main className="min-h-screen bg-parchment dots relative overflow-x-hidden">
@@ -148,6 +118,13 @@ export default function TorrePage() {
               </p>
             </div>
           </div>
+          <button
+            onClick={() => router.push('/pokedex')}
+            className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+          >
+            📖 Pokédex
+          </button>
+
           {/* progress */}
           <div className="flex items-center gap-1.5">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -250,7 +227,7 @@ export default function TorrePage() {
                       style={{ width: 56, height: 56 }}
                     >
                       <img
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png`}
+                        src={getPixelSpriteUrl(p.id)}
                         alt={p.name}
                         style={{ width: 48, height: 48, imageRendering: 'pixelated' }}
                       />
@@ -274,29 +251,40 @@ export default function TorrePage() {
           </div>
         </div>
 
-        {/* ── Andares anteriores ── */}
-        {currentFloor > 0 && (
-          <div>
-            <p className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest mb-3">Concluídos</p>
-            <div className="flex gap-2 flex-wrap">
-              {Array.from({ length: currentFloor }).map((_, i) => (
-                <CompletedCard key={i} floor={i} />
-              ))}
-            </div>
+        {/* ── Progresso ── */}
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-px flex-1 bg-ink opacity-10" />
+            <span className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest">
+              Progresso — {currentFloor}/12
+            </span>
+            <div className="h-px flex-1 bg-ink opacity-10" />
           </div>
-        )}
-
-        {/* ── Andares futuros ── */}
-        {currentFloor < 11 && (
-          <div>
-            <p className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest mb-3">Próximos desafios</p>
-            <div className="flex gap-2 flex-wrap">
-              {Array.from({ length: 11 - currentFloor }).map((_, i) => (
-                <LockedCard key={i} floor={currentFloor + 1 + i} />
-              ))}
-            </div>
+          <div className="grid grid-cols-6 gap-2">
+            {GYM_LEADERS.map((g, i) => {
+              const tc = getTypeColor(g.specialtyType)
+              const done   = i < currentFloor
+              const active = i === currentFloor
+              const locked = i > currentFloor
+              return (
+                <div key={i} className="flex flex-col items-center gap-1 rounded-xl border-2 py-2 px-1"
+                  style={{
+                    borderColor: active ? tc : done ? `${tc}70` : '#2C181015',
+                    backgroundColor: active ? `${tc}22` : done ? `${tc}12` : 'transparent',
+                    opacity: locked ? 0.35 : 1,
+                  }}>
+                  <span className={`text-base ${locked ? 'grayscale' : ''}`}>{FLOOR_BADGE[i]}</span>
+                  <p className="font-game text-[5px] text-ink/60 text-center leading-tight w-full truncate px-0.5">
+                    {g.name.split(' ')[0]}
+                  </p>
+                  {done   && <span className="font-game text-[7px]" style={{ color: '#78C850' }}>✓</span>}
+                  {active && <span className="font-game text-[5px] font-black uppercase" style={{ color: tc }}>NOW</span>}
+                  {locked && <span className="text-[8px] opacity-25">🔒</span>}
+                </div>
+              )
+            })}
           </div>
-        )}
+        </div>
 
       </div>
 
@@ -340,7 +328,7 @@ export default function TorrePage() {
                         {p ? (
                           <>
                             <img
-                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png`}
+                              src={getPixelSpriteUrl(p.id)}
                               alt={p.name}
                               style={{ width: 40, height: 40, imageRendering: 'pixelated' }}
                             />
@@ -429,9 +417,9 @@ export default function TorrePage() {
 
               <button
                 onClick={() => setShowSetup(false)}
-                className="text-center font-game text-[8px] text-ink-soft opacity-40 tracking-widest uppercase py-1"
+                className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/30 rounded-2xl text-ink/55 hover:text-ink/90 hover:border-ink/50 hover:bg-white transition-all cursor-pointer"
               >
-                cancelar
+                🏳️ Cancelar / Fugir
               </button>
             </div>
           </div>

@@ -22,6 +22,7 @@ interface GameStore {
   // Progressão
   currentFloor: number
   badgesEarned: number[]
+  deathCount: number
 
   // Deck
   playerDeck: PokemonCard[]
@@ -29,6 +30,9 @@ interface GameStore {
 
   // Batalha
   battle: BattleState | null
+
+  // Pokédex persistente (cross-run)
+  pokedexSeen: number[]
 
   // Actions — Setup
   setMode: (mode: GameMode) => void
@@ -45,6 +49,10 @@ interface GameStore {
   useSwitch: () => void
   endBattle: (result: 'win' | 'lose') => void
   applyPostGymSwap: (newCard: PokemonCard, discardId: number) => void
+  incrementDeathCount: () => void
+
+  // Actions — Pokédex
+  addPokedexEntry: (ids: number[]) => void
 
   // Actions — Persistência
   createRun: () => Promise<void>
@@ -62,18 +70,32 @@ export const useGameStore = create<GameStore>()(
       playerName: '',
       currentFloor: 0,
       badgesEarned: [],
+      deathCount: 0,
       playerDeck: [],
       rerollUsed: false,
       battle: null,
+      pokedexSeen: [],
 
       setMode: (mode) => set({ mode }),
       setGender: (gender) => set({ gender }),
       setPlayerName: (playerName) => set({ playerName }),
 
       addToDeck: (card) =>
-        set((s) => ({ playerDeck: [...s.playerDeck, card] })),
+        set((s) => ({
+          playerDeck: [...s.playerDeck, card],
+          pokedexSeen: s.pokedexSeen.includes(card.id)
+            ? s.pokedexSeen
+            : [...s.pokedexSeen, card.id],
+        })),
 
       useReroll: () => set({ rerollUsed: true }),
+
+      incrementDeathCount: () => set((s) => ({ deathCount: s.deathCount + 1 })),
+
+      addPokedexEntry: (ids) =>
+        set((s) => ({
+          pokedexSeen: Array.from(new Set([...s.pokedexSeen, ...ids])),
+        })),
 
       startBattle: (gymId, enemyDeck, playerSelected, playerOrder) => {
         const ordered = playerOrder.map((i) => playerSelected[i])
@@ -187,17 +209,19 @@ export const useGameStore = create<GameStore>()(
       },
 
       resetRun: () =>
-        set({
+        set((s) => ({
           runId: null,
           mode: null,
           gender: null,
           playerName: '',
           currentFloor: 0,
           badgesEarned: [],
+          deathCount: 0,
           playerDeck: [],
           rerollUsed: false,
           battle: null,
-        }),
+          pokedexSeen: s.pokedexSeen, // preserved across runs
+        })),
     }),
     {
       name: 'ptt-game-state',
@@ -208,8 +232,10 @@ export const useGameStore = create<GameStore>()(
         gender: s.gender,
         currentFloor: s.currentFloor,
         badgesEarned: s.badgesEarned,
+        deathCount: s.deathCount,
         playerDeck: s.playerDeck,
         rerollUsed: s.rerollUsed,
+        pokedexSeen: s.pokedexSeen,
       }),
     },
   ),

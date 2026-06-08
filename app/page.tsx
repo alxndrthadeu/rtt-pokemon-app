@@ -125,12 +125,20 @@ export default function HomePage() {
             Reach the Top
           </span>
         </div>
-        <button
-          onClick={() => router.push('/historico')}
-          className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-        >
-          Histórico
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.push('/pokedex')}
+            className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+          >
+            📖 Pokédex
+          </button>
+          <button
+            onClick={() => router.push('/historico')}
+            className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+          >
+            Histórico
+          </button>
+        </div>
       </header>
 
       {/* ── Body ── */}

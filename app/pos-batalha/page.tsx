@@ -96,7 +96,7 @@ type Phase = 'pick_new' | 'pick_discard'
 
 export default function PosBatalhaPage() {
   const router = useRouter()
-  const { playerDeck, currentFloor, applyPostGymSwap } = useGameStore()
+  const { playerDeck, currentFloor, applyPostGymSwap, addPokedexEntry } = useGameStore()
 
   const [pool, setPool] = useState<PokemonCardType[]>([])
   const [picked, setPicked] = useState<PokemonCardType | null>(null)
@@ -126,12 +126,13 @@ export default function PosBatalhaPage() {
 
   function handleConfirmSwap() {
     if (!picked || discardId === null) return
+    addPokedexEntry([picked.id])
     applyPostGymSwap(picked, discardId)
-    router.push('/torre')
+    router.push('/entre-andares')
   }
 
   function handleSkip() {
-    router.push('/torre')
+    router.push('/entre-andares')
   }
 
   if (pool.length === 0) {

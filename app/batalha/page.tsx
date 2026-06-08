@@ -202,10 +202,10 @@ function UniqueButton({ pokemon, used, sleeping, recharging, onClick }: {
   const tc = getTypeColor(unique.type)
   const disabled = used || sleeping || recharging
 
-  let disabledLabel = ''
-  if (used)            disabledLabel = 'Usado'
-  else if (sleeping)   disabledLabel = '😴 Dormindo'
-  else if (recharging) disabledLabel = '⏳ Recarregando'
+  let statusLabel = ''
+  if (used)            statusLabel = 'Já usado'
+  else if (sleeping)   statusLabel = '😴 Dormindo'
+  else if (recharging) statusLabel = '⏳ Recarregando'
 
   return (
     <div className="relative">
@@ -213,13 +213,12 @@ function UniqueButton({ pokemon, used, sleeping, recharging, onClick }: {
       <button
         onClick={onClick}
         disabled={disabled}
-        onMouseEnter={() => setShowDesc(true)}
+        onMouseEnter={() => !disabled && setShowDesc(true)}
         onMouseLeave={() => setShowDesc(false)}
-        className="w-full flex items-center gap-3 border-2 rounded-2xl px-4 py-3 transition-all duration-100 text-left disabled:cursor-not-allowed cursor-pointer"
-        style={
-          disabled
-            ? { borderColor: '#2C1810', backgroundColor: '#F5EDD8', opacity: 0.35, boxShadow: 'none' }
-            : { borderColor: tc, backgroundColor: `${tc}18`, boxShadow: `3px 3px 0 ${tc}` }
+        className="w-full flex items-center gap-3 border-2 rounded-2xl px-4 py-3 bg-white transition-all duration-100 text-left disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px]"
+        style={disabled
+          ? { borderColor: '#2C181030', backgroundColor: '#F5EDD8', boxShadow: 'none' }
+          : { borderColor: tc, boxShadow: `3px 3px 0 ${tc}` }
         }
       >
         <span className="text-2xl shrink-0 w-8 text-center">⚡</span>
@@ -231,8 +230,8 @@ function UniqueButton({ pokemon, used, sleeping, recharging, onClick }: {
                 ÚNICO · 1× uso
               </span>
             )}
-            {disabled && disabledLabel && (
-              <span className="font-game text-[7px] text-ink/40">{disabledLabel}</span>
+            {disabled && statusLabel && (
+              <span className="font-game text-[7px] text-ink/60">{statusLabel}</span>
             )}
           </div>
           <p className="font-game text-[7px] text-ink-soft opacity-50 uppercase tracking-wide mt-0.5">
@@ -242,7 +241,7 @@ function UniqueButton({ pokemon, used, sleeping, recharging, onClick }: {
         <span
           className="font-game text-[7px] px-3 py-1.5 rounded-full border shrink-0"
           style={disabled
-            ? { borderColor: '#2C1810', backgroundColor: '#E8E0CC', color: '#2C1810', opacity: 0.4 }
+            ? { borderColor: '#2C181030', backgroundColor: '#E8E0CC', color: '#2C181060' }
             : { borderColor: tc, backgroundColor: tc, color: getTypeTextColor(unique.type) }
           }
         >
@@ -284,7 +283,7 @@ function UniqueButton({ pokemon, used, sleeping, recharging, onClick }: {
 
 export default function BatalhaPage() {
   const router = useRouter()
-  const { battle, currentFloor, endBattle } = useGameStore()
+  const { battle, currentFloor, mode, playerDeck, endBattle, incrementDeathCount } = useGameStore()
 
   const [playerFighters, setPlayerFighters] = useState<Fighter[]>([])
   const [enemyFighters, setEnemyFighters] = useState<Fighter[]>([])
@@ -312,7 +311,7 @@ export default function BatalhaPage() {
     const { newEffects, message } = applyEntryEffects(battle.playerSelected[0], 'player', DEFAULT_EFFECTS)
     setEffects(newEffects)
     if (message) setEntryMsg(message)
-  }, [battle, router])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const gym = GYM_LEADERS[currentFloor]
   if (!battle || !gym || playerFighters.length === 0 || enemyFighters.length === 0) return null
@@ -540,7 +539,7 @@ export default function BatalhaPage() {
 
     if (currentPF.hearts <= 0) {
       const next = playerFighters.findIndex((f, i) => i > playerIdx && f.hearts > 0)
-      if (next === -1) { setPhase('defeat'); endBattle('lose'); return }
+      if (next === -1) { setPhase('defeat'); return }
       setPlayerIdx(next)
       const { newEffects, message } = applyEntryEffects(playerFighters[next].pokemon, 'player', effects)
       setEffects(newEffects)
@@ -575,13 +574,6 @@ export default function BatalhaPage() {
     player_wins: { bg: '#78C850', label: '🏆 Você venceu este turno!', text: 'white' },
     enemy_wins:  { bg: '#CC2200', label: '💥 Inimigo venceu este turno', text: 'white' },
     tie:         { bg: '#A8A878', label: '🤝 Empate — ninguém atacou', text: '#2C1810' },
-  }
-
-  function getPlayerMoveDisplay(move: PlayerMove): { icon: string; label: string } {
-    if (move === 'unique') {
-      return { icon: '⚡', label: pf.pokemon.unique?.name ?? 'Único' }
-    }
-    return { icon: RPS_ICON[move], label: move }
   }
 
   return (
@@ -692,75 +684,103 @@ export default function BatalhaPage() {
         {/* ── Resultado ── */}
         {phase === 'result' && lastResult && (() => {
           const cfg = outcomeConfig[lastResult.outcome]
-          const playerDisplay = getPlayerMoveDisplay(lastResult.playerMove)
           const wasUnique = lastResult.playerMove === 'unique'
+          const playerRpsKey = wasUnique ? null : lastResult.playerMove as RPS
+          const playerMoveName = wasUnique ? (pf.pokemon.unique?.name ?? 'Único') : pf.pokemon.moves[playerRpsKey!]?.name
+          const playerMoveType = wasUnique ? pf.pokemon.unique?.type : pf.pokemon.moves[playerRpsKey!]?.type
+          const playerIcon = wasUnique ? '⚡' : RPS_ICON[playerRpsKey!]
+          const enemyMoveName = ef.pokemon.moves[lastResult.enemyMove]?.name
+          const enemyMoveType = ef.pokemon.moves[lastResult.enemyMove]?.type
+          const eff = effectivenessLabel(lastResult.multiplier)
           return (
             <div className="flex flex-col gap-3 mt-1">
               <div className="border-2 border-ink rounded-2xl overflow-hidden shadow-neo" style={{ backgroundColor: cfg.bg }}>
-                <div className="px-4 py-4 flex flex-col gap-3">
-                  <p className="font-black text-base uppercase tracking-wide text-center" style={{ color: cfg.text }}>{cfg.label}</p>
 
-                  {/* Movimentos */}
-                  <div className="flex items-center justify-center gap-4">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-3xl">{playerDisplay.icon}</span>
-                      <span className="font-game text-[7px] text-white/70 uppercase">
-                        {wasUnique ? playerDisplay.label : 'Você'}
+                {/* Banner de resultado */}
+                <div className="px-4 pt-4 pb-3 text-center">
+                  <p className="font-black text-base uppercase tracking-wide" style={{ color: cfg.text }}>{cfg.label}</p>
+                </div>
+
+                {/* Movimentos lado a lado com nomes e tipos */}
+                <div className="px-3 pb-3 flex items-stretch gap-2">
+                  <div className="flex-1 rounded-xl flex flex-col items-center gap-1 px-2 py-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
+                    <span className="text-2xl leading-none">{playerIcon}</span>
+                    <p className="font-black text-[11px] text-white text-center leading-tight mt-0.5">{playerMoveName}</p>
+                    {playerMoveType && (
+                      <span className="font-game text-[6px] px-2 py-0.5 rounded-full mt-0.5" style={{ backgroundColor: getTypeColor(playerMoveType), color: getTypeTextColor(playerMoveType) }}>
+                        {playerMoveType}
                       </span>
-                    </div>
-                    <span className="font-black text-xl" style={{ color: cfg.text }}>vs</span>
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-3xl">{RPS_ICON[lastResult.enemyMove]}</span>
-                      <span className="font-game text-[7px] text-white/70 uppercase">{gym.name}</span>
-                    </div>
+                    )}
+                    <p className="font-game text-[5px] uppercase tracking-widest mt-1" style={{ color: `${cfg.text}80` }}>Você</p>
                   </div>
+                  <div className="flex items-center justify-center w-8 shrink-0">
+                    <span className="font-black text-lg leading-none" style={{ color: `${cfg.text}60` }}>vs</span>
+                  </div>
+                  <div className="flex-1 rounded-xl flex flex-col items-center gap-1 px-2 py-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
+                    <span className="text-2xl leading-none">{RPS_ICON[lastResult.enemyMove]}</span>
+                    <p className="font-black text-[11px] text-white text-center leading-tight mt-0.5">{enemyMoveName}</p>
+                    {enemyMoveType && (
+                      <span className="font-game text-[6px] px-2 py-0.5 rounded-full mt-0.5" style={{ backgroundColor: getTypeColor(enemyMoveType), color: getTypeTextColor(enemyMoveType) }}>
+                        {enemyMoveType}
+                      </span>
+                    )}
+                    <p className="font-game text-[5px] uppercase tracking-widest mt-1" style={{ color: `${cfg.text}80` }}>{gym.name}</p>
+                  </div>
+                </div>
 
-                  {/* Motivo da vitória */}
-                  {wasUnique && lastResult.outcome === 'player_wins' && (
-                    <p className="font-game text-[8px] text-center text-white/80">
-                      ⚡ Ataque único sempre vence o Jokenpô
-                    </p>
-                  )}
-                  {!wasUnique && lastResult.outcome !== 'tie' && (
-                    <p className="font-game text-[8px] text-center" style={{ color: cfg.text, opacity: 0.8 }}>
+                {/* Motivo da vitória / ataque único */}
+                {wasUnique && lastResult.outcome === 'player_wins' && (
+                  <div className="px-4 py-2 border-t border-white/20 text-center">
+                    <p className="font-game text-[8px]" style={{ color: `${cfg.text}cc` }}>⚡ Ataque único sempre vence o Jokenpô</p>
+                  </div>
+                )}
+                {!wasUnique && lastResult.outcome !== 'tie' && (
+                  <div className="px-4 py-2 border-t border-white/20 text-center">
+                    <p className="font-game text-[8px]" style={{ color: `${cfg.text}cc` }}>
                       {getBeatLabel(
                         lastResult.outcome === 'player_wins' ? lastResult.playerMove as RPS : lastResult.enemyMove,
                         lastResult.outcome === 'player_wins' ? lastResult.enemyMove : lastResult.playerMove as RPS,
                       )}
                     </p>
-                  )}
+                  </div>
+                )}
 
-                  {/* Efetividade */}
-                  {lastResult.outcome !== 'tie' && effectivenessLabel(lastResult.multiplier) && (
-                    <p className="font-black text-sm text-center" style={{ color: lastResult.multiplier >= 2 ? '#F8D030' : 'rgba(255,255,255,0.5)', textShadow: lastResult.multiplier >= 2 ? '0 1px 4px rgba(0,0,0,0.4)' : 'none' }}>
-                      {effectivenessLabel(lastResult.multiplier)}
-                    </p>
-                  )}
-
-                  {/* Ativações de habilidades */}
-                  {lastResult.activations.length > 0 && (
-                    <div className="flex flex-col gap-1">
-                      {lastResult.activations.map((msg, i) => (
-                        <p key={i} className="font-game text-[8px] text-center" style={{ color: cfg.text, opacity: 0.9 }}>{msg}</p>
-                      ))}
+                {/* Efetividade + Dano */}
+                {(eff || lastResult.playerDmg > 0 || lastResult.enemyDmg > 0) && (
+                  <div className="px-4 py-3 border-t border-white/20 flex flex-col gap-2">
+                    {eff && (
+                      <p className="font-black text-sm text-center" style={{
+                        color: lastResult.multiplier >= 2 ? '#F8D030' : 'rgba(255,255,255,0.75)',
+                        textShadow: lastResult.multiplier >= 2 ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+                      }}>
+                        {eff}
+                      </p>
+                    )}
+                    <div className="flex justify-center gap-6">
+                      {lastResult.enemyDmg > 0 && (
+                        <p className="font-game text-[8px] text-white">{ef.pokemon.name} −{lastResult.enemyDmg} ♥{ef.hearts <= 0 ? ' · KO!' : ''}</p>
+                      )}
+                      {lastResult.playerDmg > 0 && (
+                        <p className="font-game text-[8px] text-white">{pf.pokemon.name} −{lastResult.playerDmg} ♥{pf.hearts <= 0 ? ' · KO!' : ''}</p>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                {/* Dano */}
-                {(lastResult.playerDmg > 0 || lastResult.enemyDmg > 0) && (
-                  <div className="px-4 py-2 border-t border-white/20 flex justify-center gap-6">
-                    {lastResult.enemyDmg > 0 && (
-                      <p className="font-game text-[8px] text-white">{ef.pokemon.name} −{lastResult.enemyDmg} ♥{ef.hearts <= 0 ? ' · Nocauteado!' : ''}</p>
-                    )}
-                    {lastResult.playerDmg > 0 && (
-                      <p className="font-game text-[8px] text-white">{pf.pokemon.name} −{lastResult.playerDmg} ♥{pf.hearts <= 0 ? ' · Nocauteado!' : ''}</p>
-                    )}
+                {/* Ativações de habilidades */}
+                {lastResult.activations.length > 0 && (
+                  <div className="px-4 py-3 border-t border-white/20 flex flex-col gap-1">
+                    {lastResult.activations.map((msg, i) => (
+                      <p key={i} className="font-game text-[8px] text-center" style={{ color: `${cfg.text}e0` }}>{msg}</p>
+                    ))}
                   </div>
                 )}
               </div>
 
-              <button onClick={handleNext} className="w-full py-4 font-black text-sm tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-parchment-light text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
+              <button onClick={handleNext}
+                className="w-full py-4 font-black text-sm tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-parchment-light text-ink hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+                style={{ boxShadow: `4px 4px 0 ${cfg.bg}` }}
+              >
                 {ef.hearts <= 0 && enemyIdx + 1 < enemyFighters.length
                   ? `Próximo Pokémon de ${gym.name} →`
                   : pf.hearts <= 0 && playerIdx + 1 < playerFighters.length
@@ -777,24 +797,110 @@ export default function BatalhaPage() {
             <p className="text-6xl mb-3">🏆</p>
             <p className="font-black text-2xl text-white uppercase tracking-tight">Você venceu!</p>
             <p className="text-base text-white/80 mt-2 mb-6">{gym.badge ? `${gym.badge} conquistada!` : `${gym.name} foi derrotado!`}</p>
-            <button onClick={() => { endBattle('win'); router.push('/pos-batalha') }} className="w-full py-4 font-black text-base tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
-              Pegar novo Pokémon →
+            <button
+              onClick={() => {
+                endBattle('win')
+                router.push(currentFloor >= 11 ? '/entre-andares' : '/pos-batalha')
+              }}
+              className="w-full py-4 font-black text-base tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+            >
+              {currentFloor >= 11 ? '🏆 Ver resultado final →' : 'Pegar novo Pokémon →'}
             </button>
           </div>
         )}
 
         {/* ── Derrota ── */}
-        {phase === 'defeat' && (
-          <div className="border-2 border-ink rounded-3xl overflow-hidden shadow-neo-lg text-center p-8" style={{ backgroundColor: '#CC2200' }}>
-            <p className="text-6xl mb-3">💀</p>
-            <p className="font-black text-2xl text-white uppercase tracking-tight">Você perdeu</p>
-            <p className="text-base text-white/80 mt-2 mb-6">{gym.name} foi mais forte desta vez.</p>
-            <div className="flex flex-col gap-3">
-              <button onClick={() => router.push('/torre')} className="w-full py-4 font-black text-sm tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">Tentar Novamente</button>
-              <button onClick={() => router.push('/')} className="font-game text-[8px] text-white/60 uppercase tracking-widest py-2">Voltar ao início</button>
+        {phase === 'defeat' && (() => {
+          // Pokémon sobreviventes que NÃO foram selecionados para esta batalha (apenas hard mode)
+          const selectedIds = new Set(battle.playerSelected.map(p => p.id))
+          const hardSurvivors = playerDeck.filter(p => !selectedIds.has(p.id) && p.hearts > 0 && !p.isFainted)
+
+          function handleNormalRetry() {
+            incrementDeathCount()
+            endBattle('lose')
+            router.push('/torre')
+          }
+
+          function handleHardSecondChance() {
+            incrementDeathCount()
+            endBattle('lose')
+            router.push('/torre')
+          }
+
+          function handleGiveUp() {
+            endBattle('lose')
+            router.push('/')
+          }
+
+          if (mode === 'hard' && hardSurvivors.length > 0) {
+            return (
+              <div className="border-2 border-ink rounded-3xl overflow-hidden shadow-neo-lg" style={{ backgroundColor: '#CC2200' }}>
+                <div className="p-8 text-center border-b border-white/20">
+                  <p className="text-6xl mb-3">💀</p>
+                  <p className="font-black text-2xl text-white uppercase tracking-tight">Seus 3 caíram!</p>
+                  <p className="text-base text-white/80 mt-2">{gym.name} foi mais forte desta vez.</p>
+                </div>
+                <div className="p-5 flex flex-col gap-3" style={{ backgroundColor: '#AA1800' }}>
+                  <p className="font-game text-[8px] text-white/70 uppercase tracking-widest text-center">
+                    Segunda chance — {hardSurvivors.length} Pokémon sobreviventes
+                  </p>
+                  <div className="flex justify-center gap-3 mb-1">
+                    {hardSurvivors.map(p => (
+                      <div key={p.id} className="flex flex-col items-center gap-1">
+                        <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png`} alt={p.name} style={{ width: 56, height: 56, objectFit: 'contain' }} />
+                        <p className="font-game text-[6px] text-white/80 uppercase">{p.name}</p>
+                        <div className="flex gap-0.5">
+                          {Array.from({ length: p.hearts }).map((_, i) => (
+                            <span key={i} className="text-xs leading-none">♥</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={handleHardSecondChance}
+                    className="w-full py-4 font-black text-sm tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+                  >
+                    ⚔️ Segunda chance com sobreviventes
+                  </button>
+                  <button onClick={handleGiveUp} className="font-game text-[8px] text-white/50 uppercase tracking-widest py-2 text-center">
+                    🏳️ Desistir da run
+                  </button>
+                </div>
+              </div>
+            )
+          }
+
+          return (
+            <div className="border-2 border-ink rounded-3xl overflow-hidden shadow-neo-lg text-center p-8" style={{ backgroundColor: '#CC2200' }}>
+              <p className="text-6xl mb-3">💀</p>
+              <p className="font-black text-2xl text-white uppercase tracking-tight">Você perdeu</p>
+              <p className="text-base text-white/80 mt-2 mb-6">{gym.name} foi mais forte desta vez.</p>
+              {mode === 'normal' ? (
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleNormalRetry}
+                    className="w-full py-4 font-black text-sm tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+                  >
+                    🔄 Continuar (volta à seleção)
+                  </button>
+                  <button onClick={handleGiveUp} className="font-game text-[8px] text-white/60 uppercase tracking-widest py-2">
+                    🏳️ Desistir da run
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <p className="font-game text-[8px] text-white/60 uppercase tracking-widest mb-2">
+                    Modo difícil — sem sobreviventes
+                  </p>
+                  <button onClick={handleGiveUp} className="w-full py-4 font-black text-sm tracking-[0.15em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
+                    🏳️ Fim de jogo
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* ── Ações auxiliares ── */}
         {phase === 'selecting' && (
@@ -802,13 +908,17 @@ export default function BatalhaPage() {
             <button
               onClick={handleSwitch}
               disabled={switchUsed || playerFighters.filter(f => f.hearts > 0).length <= 1}
-              className="flex-1 py-3 font-black text-sm uppercase border-2 border-ink rounded-2xl bg-parchment-light text-ink transition-all shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex-1 py-3 font-black text-sm uppercase border-2 rounded-2xl transition-all cursor-pointer disabled:cursor-not-allowed"
+              style={switchUsed || playerFighters.filter(f => f.hearts > 0).length <= 1
+                ? { borderColor: '#2C181025', backgroundColor: '#F5EDD8', color: '#2C181045' }
+                : { borderColor: '#2C1810', backgroundColor: '#FBF5E6', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }
+              }
             >
               {switchUsed ? '🔄 Troca usada' : '🔄 Trocar Pokémon'}
             </button>
             <button
               onClick={() => { endBattle('lose'); router.push('/torre') }}
-              className="px-4 py-3 font-game text-[8px] uppercase border-2 border-ink rounded-2xl bg-parchment-light text-ink-soft opacity-50 hover:opacity-100 transition-all cursor-pointer"
+              className="px-4 py-3 font-game text-[8px] uppercase border-2 border-ink/40 rounded-2xl text-ink/60 hover:text-ink hover:border-ink/70 hover:bg-white transition-all cursor-pointer"
             >
               🏳️ Fugir
             </button>
