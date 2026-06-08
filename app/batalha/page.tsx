@@ -137,11 +137,14 @@ function PlayerCard({ fighter }: { fighter: Fighter }) {
           </div>
         </div>
 
-        {/* Habilidade — hover abre painel */}
+        {/* Habilidade — hover no desktop, tap no mobile */}
         <div
           className="flex items-center gap-1.5 bg-white/70 rounded-xl px-3 py-2 border border-ink/10 cursor-help"
           onMouseEnter={() => setShowAbility(true)}
           onMouseLeave={() => setShowAbility(false)}
+          onClick={() => {
+            if (window.matchMedia('(hover: none)').matches) setShowAbility(v => !v)
+          }}
         >
           <span className="font-game text-[6px] text-ink-soft uppercase tracking-wide opacity-50 shrink-0">Hab.</span>
           <span className="font-bold text-[10px] text-ink flex-1">{ability.name}</span>
@@ -154,6 +157,9 @@ function PlayerCard({ fighter }: { fighter: Fighter }) {
           style={{ backgroundColor: '#2C1810' }}
           onMouseEnter={() => setShowAbility(true)}
           onMouseLeave={() => setShowAbility(false)}
+          onClick={() => {
+            if (window.matchMedia('(hover: none)').matches) setShowAbility(false)
+          }}
         >
           <div className="px-3 py-2" style={{ backgroundColor: tc }}>
             <span className="font-game text-[6px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.9)' }}>
@@ -249,7 +255,17 @@ function UniqueButton({ pokemon, used, sleeping, recharging, onClick }: {
         </span>
       </button>
 
-      {/* Painel de descrição — aparece abaixo ao hover */}
+      {/* Botão "Ver efeito" — apenas mobile, só quando não desabilitado */}
+      {!disabled && (
+        <button
+          className="md:hidden w-full text-center py-1.5 font-game text-[7px] uppercase tracking-widest text-ink/40 hover:text-ink/70 transition-all"
+          onClick={(e) => { e.stopPropagation(); setShowDesc(v => !v) }}
+        >
+          {showDesc ? '▲ Ocultar efeito' : '▼ Ver efeito'}
+        </button>
+      )}
+
+      {/* Painel de descrição — hover no desktop, toggle no mobile */}
       <div
         className={`overflow-hidden transition-all duration-200 ease-out rounded-2xl border-2 mt-1 ${showDesc ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 border-transparent'}`}
         style={{ borderColor: showDesc ? tc : 'transparent', backgroundColor: '#2C1810' }}

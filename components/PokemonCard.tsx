@@ -109,11 +109,15 @@ export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonC
           {pokemon.type2 && <TypeChip type={pokemon.type2} />}
         </div>
 
-        {/* Habilidade — hover aqui abre o painel */}
+        {/* Habilidade — hover no desktop, tap no mobile */}
         <div
           className="flex items-center gap-1.5 bg-white/70 rounded-lg px-2 py-1.5 border border-ink/10 cursor-help"
           onMouseEnter={() => setShowInfo(true)}
           onMouseLeave={() => setShowInfo(false)}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (window.matchMedia('(hover: none)').matches) setShowInfo(v => !v)
+          }}
         >
           <span className="font-game text-[6px] text-ink-soft uppercase tracking-wide opacity-50 shrink-0">Hab.</span>
           <span className="font-bold text-[10px] text-ink flex-1 truncate">{pokemon.ability.name}</span>
@@ -177,13 +181,16 @@ export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonC
           )}
         </div>
 
-        {/* ── Info panel — aparece ao hover da habilidade ── */}
+        {/* ── Info panel — aparece ao hover no desktop, tap no mobile ── */}
         <div
           className={`absolute inset-x-0 bottom-0 z-30 rounded-b-2xl overflow-hidden transition-transform duration-200 ease-out ${showInfo ? 'translate-y-0' : 'translate-y-full'}`}
           style={{ backgroundColor: '#2C1810' }}
           onMouseEnter={() => setShowInfo(true)}
           onMouseLeave={() => setShowInfo(false)}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (window.matchMedia('(hover: none)').matches) setShowInfo(false)
+          }}
         >
           {/* Header colorido */}
           <div
