@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.0] - 2026-06-08
+
+### Adicionado
+
+- **Tela de derrota com retry**
+  - Modo Normal: opção de continuar (volta à seleção com os 6 Pokémon) ou desistir da run; incrementa contador de mortes a cada retry
+  - Modo Hard: segunda chance com os Pokémon sobreviventes do banco (que não foram para a batalha); se não houver sobreviventes, game over direto
+- **Tela de conclusão** (`/conclusao`) — exibida ao derrotar Lance (andar 12)
+  - Rank S–D calculado pelo número de mortes acumuladas na run (S = 0 mortes, A = 1–2, B = 3–5, C = 6–9, D = 10+)
+  - Exibe time final com HP restante de cada Pokémon
+  - Tabela de ranking com destaque no rank obtido
+  - Botão de compartilhamento: gera imagem via Canvas API e usa Web Share API (com fallback de download `.png`)
+  - Botão de nova run
+- **Pokédex persistente** (`/pokedex`)
+  - Registra todos os Pokémon já escolhidos pelo jogador, independente da run
+  - Grid com os 153 Pokémon do jogo; entradas não vistas exibem silhueta com sprite encoberto
+  - Filtros: Todos / Vistos / Ocultos
+  - Clique em um Pokémon visto abre o card completo (mesmo componente do draft)
+  - Pokédex acessível pelo header do menu inicial e da tela da Torre
+- **Contador de mortes** (`deathCount`) no estado global — persistido no localStorage, resetado a cada nova run
+- **Rastreamento de Pokémon na Pokédex** ao adicionar no deck (draft) e ao confirmar troca no pós-batalha
+
 ## [0.1.0] - 2026-06-07
 
 ### Adicionado
