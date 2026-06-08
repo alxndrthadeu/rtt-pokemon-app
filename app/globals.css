@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-press-start: 'Press Start 2P', monospace;
+}
+
+body {
+  @apply antialiased;
+  background-color: #F5EDD8;
+  color: #2C1810;
+}
+
+/* Dot pattern — textura de papel aquarela */
+.dots {
+  background-image: radial-gradient(circle, rgba(44, 24, 16, 0.08) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* Grain suave — sensação de papel */
+.paper {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* Badge de tipo Gen 1 com efeito sticker */
+.type-badge {
+  border: 2px solid #2C1810;
+  border-radius: 9999px;
+  font-family: var(--font-press-start), monospace;
+  font-size: 7px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 0 0 2px #F5EDD8, 0 0 0 4px #2C1810;
+}
