@@ -19,6 +19,7 @@ export const TYPE_COLORS: Record<PokemonType, string> = {
   Dragon:   '#7038F8',
   Steel:    '#B8B8D0',
   Fairy:    '#EE99AC',
+  Dark:     '#705848',
 }
 
 export function getTypeColor(type: PokemonType): string {
@@ -49,6 +50,12 @@ export function getSpriteUrl(id: number): string {
   if (id === 0) return '/missingno.png'
   if (id === 9025) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png`
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+}
+
+export function getPixelSpriteUrl(id: number): string {
+  if (id === 0) return '/missingno.png'
+  const realId = id === 9025 ? 25 : id
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${realId}.png`
 }
 
 export function formatPokemonNumber(id: number): string {

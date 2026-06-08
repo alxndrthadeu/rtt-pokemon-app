@@ -1,7 +1,7 @@
 export type PokemonType =
   | 'Normal' | 'Fire' | 'Water' | 'Grass' | 'Electric' | 'Ice'
   | 'Fighting' | 'Poison' | 'Ground' | 'Flying' | 'Psychic'
-  | 'Bug' | 'Rock' | 'Ghost' | 'Dragon' | 'Steel' | 'Fairy'
+  | 'Bug' | 'Rock' | 'Ghost' | 'Dragon' | 'Steel' | 'Fairy' | 'Dark'
 
 export type Rarity = 'comum' | 'rara' | 'ultra-rara' | 'lendaria' | 'epico'
 

@@ -20,8 +20,8 @@ export const typeChart: Record<PokemonType, Partial<Record<PokemonType, number>>
   Dragon:   { Dragon: 2, Steel: 0.5, Fairy: 0 },
   Steel:    { Fire: 0.5, Water: 0.5, Electric: 0.5, Ice: 2, Rock: 2, Steel: 0.5, Fairy: 2 },
   Fairy:    { Fire: 0.5, Fighting: 2, Poison: 0.5, Dragon: 2, Dark: 2, Steel: 0.5 },
-  // Dark not in PokemonType union but referenced above — Gen 1 only has up to Ghost
-} as Record<PokemonType, Partial<Record<PokemonType, number>>>
+  Dark:     { Fighting: 0.5, Psychic: 2, Ghost: 2, Dark: 0.5, Fairy: 0.5 },
+}
 
 export function getTypeMultiplier(attackType: PokemonType, defenseType: PokemonType): number {
   return typeChart[attackType]?.[defenseType] ?? 1
