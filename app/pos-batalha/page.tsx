@@ -186,7 +186,7 @@ export default function PosBatalhaPage() {
             </div>
 
             {/* Pool de 3 */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {pool.map(pokemon => (
                 <PokemonCard
                   key={pokemon.id}
@@ -264,7 +264,7 @@ export default function PosBatalhaPage() {
             </div>
 
             {/* Deck para escolher quem sai */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {playerDeck.map(p => {
                 const tc = getTypeColor(p.type1)
                 const isDiscard = discardId === p.id
