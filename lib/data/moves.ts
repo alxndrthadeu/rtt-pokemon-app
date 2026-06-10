@@ -187,6 +187,7 @@ export const MOVES: Record<string, MoveDefinition> = {
   'twineedle':       { name: 'Twineedle',         type: 'Bug',      kind: 'offensive' },
   'fury-attack':     { name: 'Fury Attack',       type: 'Normal',   kind: 'offensive' },
   'silver-wind':     { name: 'Silver Wind',       type: 'Bug',      kind: 'offensive' },
+  'megahorn':        { name: 'Megahorn',          type: 'Bug',      kind: 'offensive' },
   'string-shot':     { name: 'String Shot',       type: 'Bug',      kind: 'buff',
                        buffEffect: { stat: 'attack', delta: -1, target: 'opponent' } },
   // Dragon – offensive
