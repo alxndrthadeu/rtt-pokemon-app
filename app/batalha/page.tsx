@@ -178,10 +178,11 @@ function EffectBadges({ effects, side }: { effects: BattleEffects; side: 'player
     if (effects.playerProtectCooldown) badges.push({ label: '🛡️ CD', bg: '#8050B8', fg: 'white' })
     if (effects.uniqueCooldown)        badges.push({ label: '⚡ CD', bg: '#A8A878', fg: '#2C1810' })
   } else {
-    if (effects.enemyAttackMod < 0)  badges.push({ label: 'ATK↓', bg: '#38C838', fg: 'white' })
-    if (effects.enemyAttackMod > 0)  badges.push({ label: 'ATK↑', bg: '#CC2200', fg: 'white' })
-    if (effects.enemyDefenseMod < 0) badges.push({ label: 'DEF↓', bg: '#38C838', fg: 'white' })
-    if (effects.enemyForcedMove)     badges.push({ label: 'TRAV', bg: '#4868D0', fg: 'white' })
+    if (effects.enemyAttackMod < 0)     badges.push({ label: 'ATK↓', bg: '#38C838', fg: 'white' })
+    if (effects.enemyAttackMod > 0)     badges.push({ label: 'ATK↑', bg: '#CC2200', fg: 'white' })
+    if (effects.enemyDefenseMod < 0)    badges.push({ label: 'DEF↓', bg: '#38C838', fg: 'white' })
+    if (effects.enemyForcedMove)        badges.push({ label: 'TRAV', bg: '#4868D0', fg: 'white' })
+    if (effects.enemyProtectCooldown)   badges.push({ label: '🛡️ CD', bg: '#8050B8', fg: 'white' })
   }
   if (badges.length === 0) return null
   return (
@@ -595,6 +596,9 @@ export default function BatalhaPage() {
     eff = { ...eff, playerProtectCooldown: false }
 
     const aiMove = generateAIMove(gym.aiLevel, moveHistory, turnStart.enemyForcedRps)
+    const enemyIsProtect = ef.pokemon.moves[aiMove].special === 'protect' && !eff.enemyProtectCooldown
+    eff = { ...eff, enemyProtectCooldown: false }
+    if (enemyIsProtect) eff = { ...eff, enemyProtectCooldown: true }
 
     let outcome: 'player_wins' | 'enemy_wins' | 'tie'
     if (isUnique && !playerForcedThisTurn) {
@@ -618,9 +622,12 @@ export default function BatalhaPage() {
       eff = { ...eff, playerProtectCooldown: true }
       activations.push(`🛡️ Protect! Dano bloqueado este turno!`)
     }
+    if (enemyIsProtect) {
+      activations.push(`🛡️ ${ef.pokemon.name} usou Protect! Ataque bloqueado!`)
+    }
 
     // ── Player wins ──────────────────────────────────────────────────────────
-    if (outcome === 'player_wins') {
+    if (outcome === 'player_wins' && !enemyIsProtect) {
       if (isUnique && !playerForcedThisTurn && pf.pokemon.unique) {
         const unique = pf.pokemon.unique
         const uRes = calcUniqueResult(

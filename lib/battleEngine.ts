@@ -28,8 +28,9 @@ export interface BattleEffects {
   enemyAttackMod: number    // ±1 applied to next enemy attack
   playerDefenseMod: number  // ±1 applied when player receives next hit
   enemyDefenseMod: number   // ±1 applied when enemy receives next hit
-  // Protect: scissors slot blocks damage this turn even when losing
+  // Protect: blocks incoming damage for one turn
   playerProtectCooldown: boolean  // protect unavailable next turn
+  enemyProtectCooldown: boolean
   // Unique state
   uniqueCooldown: boolean         // unique unavailable next turn (Hydro Cannon)
 }
@@ -49,6 +50,7 @@ export const DEFAULT_EFFECTS: BattleEffects = {
   playerDefenseMod: 0,
   enemyDefenseMod: 0,
   playerProtectCooldown: false,
+  enemyProtectCooldown: false,
   uniqueCooldown: false,
 }
 
