@@ -146,7 +146,7 @@ export const useGameStore = create<GameStore>()(
             battle: null,
             playerDeck:
               s.mode === 'normal'
-                ? s.playerDeck.map((p) => ({ ...p, hearts: 3, isFainted: false }))
+                ? s.playerDeck.map((p) => ({ ...p, hearts: 5, isFainted: false }))
                 : s.playerDeck,
           }))
 

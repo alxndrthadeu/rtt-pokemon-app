@@ -391,7 +391,7 @@ export default function TorrePage() {
                       <div className="px-2 py-1.5 bg-parchment-light">
                         <p className="font-black text-[9px] text-ink uppercase truncate">{card.name}</p>
                         <div className="flex gap-0.5 mt-0.5">
-                          {Array.from({ length: 3 }).map((_, i) => (
+                          {Array.from({ length: 5 }).map((_, i) => (
                             <span key={i} className="text-[10px]" style={{ opacity: i < card.hearts ? 1 : 0.2 }}>♥</span>
                           ))}
                         </div>

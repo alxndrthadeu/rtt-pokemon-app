@@ -11,7 +11,7 @@ import {
   applySturdy, applyThaw, applyEntryEffects,
   StatusState,
 } from '@/lib/battleEngine'
-import type { PokemonCard, RPS, AILevel, StatusCondition } from '@/types'
+import type { PokemonCard, Move, RPS, AILevel, StatusCondition } from '@/types'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -304,95 +304,179 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
   )
 }
 
-// ─── Move Grid Buttons ────────────────────────────────────────────────────────
+// ─── Move description helper ──────────────────────────────────────────────────
 
-function MoveButton({
+function getMoveDescription(move: Move): string {
+  if (move.special === 'protect') return 'Bloqueia o próximo ataque inimigo por 1 turno. Entra em cooldown após o uso.'
+  if (move.kind === 'offensive' && move.drain) return `Golpe ${move.type}. Restaura metade do dano causado como ♥.`
+  if (move.kind === 'offensive') return `Golpe ${move.type}. Causa dano com base na efetividade de tipos.`
+  if (move.kind === 'status' && move.statusEffect) {
+    const label: Record<string, string> = {
+      poison: 'veneno (−0.5♥/turno)',
+      paralysis: 'paralisia (30% de perder o turno)',
+      sleep: 'sono (perde turnos até acordar)',
+      freeze: 'congelamento (perde turnos até descongelar)',
+      burn: 'queimadura (−0.5♥/turno)',
+    }
+    return `Aplica ${label[move.statusEffect] ?? move.statusEffect} no alvo.`
+  }
+  if (move.kind === 'buff' && move.buffEffect) {
+    const stat = move.buffEffect.stat === 'attack' ? 'ataque' : 'defesa'
+    const dir = move.buffEffect.delta > 0 ? 'aumenta' : 'reduz'
+    const who = move.buffEffect.target === 'self' ? 'próprio' : 'do oponente'
+    return `${dir.charAt(0).toUpperCase() + dir.slice(1)} o ${stat} ${who} no próximo turno.`
+  }
+  return `Golpe ${move.type}.`
+}
+
+// ─── Move List Buttons ────────────────────────────────────────────────────────
+
+function MoveListRow({
   rps, pokemon, disabled, protectOnCooldown, onClick,
 }: {
   rps: RPS; pokemon: PokemonCard; disabled: boolean; protectOnCooldown: boolean; onClick: () => void
 }) {
+  const [showInfo, setShowInfo] = useState(false)
   const move = pokemon.moves[rps]
   const tc = getTypeColor(move.type)
   const isProtect = move.special === 'protect'
   const onCooldown = isProtect && protectOnCooldown
+  const desc = getMoveDescription(move)
 
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="flex flex-col items-start gap-1.5 border-2 border-ink rounded-2xl px-3 py-3 bg-white text-left transition-all duration-75 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-      style={{ boxShadow: disabled ? 'none' : '3px 3px 0 #2C1810' }}
-    >
-      <div className="flex items-center gap-2 w-full min-w-0">
-        <span className="text-2xl leading-none shrink-0">{RPS_ICON[rps]}</span>
-        <p className="font-black text-[12px] text-ink truncate leading-tight flex-1 min-w-0">{move.name}</p>
-      </div>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none"
-          style={{ backgroundColor: tc, color: getTypeTextColor(move.type) }}>
-          {move.type}
-        </span>
-        {onCooldown && (
-          <span className="font-game text-[6px] px-1.5 py-[2px] rounded border border-ink/30 text-ink/50 leading-none">CD</span>
-        )}
-        {move.kind === 'buff' && !isProtect && (
-          <span className="font-game text-[6px] px-1.5 py-[2px] rounded border leading-none"
-            style={{ borderColor: tc, color: tc }}>BUFF</span>
-        )}
-        {move.kind === 'status' && (
-          <span className="font-game text-[6px] px-1.5 py-[2px] rounded border leading-none"
-            style={{ borderColor: tc, color: tc }}>STATUS</span>
-        )}
-      </div>
-    </button>
+    <div className="relative flex items-stretch gap-2">
+      {/* Info button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v) }}
+        className="w-8 shrink-0 rounded-xl border-2 border-ink/15 bg-white/80 flex items-center justify-center cursor-pointer hover:border-ink/40 transition-colors"
+      >
+        <span className="font-black text-[11px] text-ink/40">i</span>
+      </button>
+
+      {/* Attack button */}
+      <button
+        onClick={onClick}
+        disabled={disabled || onCooldown}
+        className="flex-1 flex items-center gap-2.5 border-2 border-ink rounded-xl px-3 py-2.5 bg-white text-left transition-all duration-75 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none overflow-hidden"
+        style={{
+          boxShadow: disabled || onCooldown ? 'none' : '3px 3px 0 #2C1810',
+          borderLeftColor: tc,
+          borderLeftWidth: 4,
+        }}
+      >
+        <span className="text-xl leading-none shrink-0">{RPS_ICON[rps]}</span>
+        <p className="font-black text-[11px] text-ink truncate leading-tight flex-1">{move.name}</p>
+        <div className="flex items-center gap-1 shrink-0">
+          <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
+            style={{ backgroundColor: tc, color: getTypeTextColor(move.type) }}>
+            {move.type}
+          </span>
+          {onCooldown && <span className="font-game text-[6px] px-1 py-[2px] rounded border border-ink/30 text-ink/50 leading-none">CD</span>}
+          {move.kind === 'buff' && !isProtect && <span className="font-game text-[6px] px-1 py-[2px] rounded leading-none" style={{ border: `1px solid ${tc}`, color: tc }}>BUFF</span>}
+          {move.kind === 'status' && <span className="font-game text-[6px] px-1 py-[2px] rounded leading-none" style={{ border: `1px solid ${tc}`, color: tc }}>STATUS</span>}
+        </div>
+      </button>
+
+      {/* Info tooltip */}
+      {showInfo && (
+        <div
+          className="absolute bottom-full left-0 right-0 mb-1.5 z-50 rounded-xl px-3 py-2 border-2 border-ink/10"
+          style={{ backgroundColor: '#2C1810' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="font-game text-[7px] uppercase tracking-widest mb-1" style={{ color: tc }}>{move.name}</p>
+          <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(251,245,230,0.75)' }}>{desc}</p>
+          <button className="mt-1.5 font-game text-[7px] text-white/30 cursor-pointer" onClick={() => setShowInfo(false)}>fechar ×</button>
+        </div>
+      )}
+    </div>
   )
 }
 
-function UniqueSlot({
+function UniqueListRow({
   pokemon, used, forced, cooldown, onClick,
 }: {
   pokemon: PokemonCard; used: boolean; forced: boolean; cooldown: boolean; onClick: () => void
 }) {
+  const [showInfo, setShowInfo] = useState(false)
   const unique = pokemon.unique
+
   if (!unique) {
     return (
-      <div className="flex flex-col items-center justify-center border-2 border-dashed border-ink/15 rounded-2xl px-3 py-3 opacity-25 select-none">
-        <span className="text-2xl leading-none">⚡</span>
-        <p className="font-game text-[7px] text-ink/50 mt-1 uppercase tracking-wide">Sem único</p>
+      <div className="flex items-center gap-2 border-2 border-dashed border-ink/12 rounded-xl px-3 py-2.5 opacity-25 select-none">
+        <div className="w-8 shrink-0 flex items-center justify-center">
+          <span className="font-black text-[11px] text-ink/40">i</span>
+        </div>
+        <span className="text-xl leading-none shrink-0">⚡</span>
+        <p className="font-game text-[8px] text-ink/40 uppercase tracking-wide">Sem ataque único</p>
       </div>
     )
   }
+
   const disabled = used || forced || cooldown
   const tc = getTypeColor(unique.type)
-  const statusLabel = used ? 'Usado · 1× por batalha' : forced ? 'Forçado' : cooldown ? 'Recarregando...' : null
+  const statusLabel = used ? '1× por batalha — usado' : cooldown ? 'Recarregando...' : null
 
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="flex flex-col items-start gap-1.5 rounded-2xl px-3 py-3 text-left transition-all duration-75 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-      style={disabled
-        ? { border: '2px dashed rgba(44,24,16,0.18)', backgroundColor: '#F5EDD8', boxShadow: 'none' }
-        : { border: `2px solid ${tc}`, backgroundColor: 'white', boxShadow: `3px 3px 0 ${tc}` }}>
-      <div className="flex items-center gap-2 w-full min-w-0">
-        <span className="text-2xl leading-none shrink-0">⚡</span>
-        <p className="font-black text-[12px] text-ink truncate leading-tight flex-1 min-w-0">{unique.name}</p>
-      </div>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {!disabled ? (
-          <>
-            <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none"
-              style={{ backgroundColor: tc, color: getTypeTextColor(unique.type) }}>
-              {unique.type}
-            </span>
-            <span className="font-game text-[6px] px-1.5 py-[2px] rounded border leading-none"
-              style={{ borderColor: tc, color: tc }}>ÚNICO</span>
-          </>
-        ) : statusLabel ? (
-          <span className="font-game text-[7px] text-ink/45 leading-none">{statusLabel}</span>
-        ) : null}
-      </div>
-    </button>
+    <div className="relative flex items-stretch gap-2">
+      {/* Info button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowInfo(v => !v) }}
+        className="w-8 shrink-0 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-colors"
+        style={{ borderColor: disabled ? 'rgba(44,24,16,0.15)' : tc, backgroundColor: disabled ? '#F5EDD8' : `${tc}20` }}
+      >
+        <span className="font-black text-[11px]" style={{ color: disabled ? 'rgba(44,24,16,0.3)' : tc }}>i</span>
+      </button>
+
+      {/* Z-move style button */}
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="flex-1 flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-all duration-75 disabled:cursor-not-allowed cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none overflow-hidden"
+        style={disabled
+          ? { border: '2px dashed rgba(44,24,16,0.18)', backgroundColor: '#F5EDD8', boxShadow: 'none', opacity: 0.45 }
+          : { border: `2px solid ${tc}`, backgroundColor: 'white', boxShadow: `3px 3px 0 ${tc}` }
+        }
+      >
+        {/* Z-Power badge */}
+        <div className="shrink-0 w-9 h-7 rounded-lg flex items-center justify-center"
+          style={{ background: disabled ? 'rgba(44,24,16,0.08)' : `linear-gradient(135deg, ${tc}, ${tc}99)` }}>
+          <span className="font-game text-[5px] font-black text-white/90 uppercase tracking-tight leading-none text-center">Z<br/>MOVE</span>
+        </div>
+        <p className="font-black text-[11px] text-ink truncate leading-tight flex-1">{unique.name}</p>
+        <div className="flex items-center gap-1 shrink-0">
+          {!disabled ? (
+            <>
+              <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
+                style={{ backgroundColor: tc, color: getTypeTextColor(unique.type) }}>
+                {unique.type}
+              </span>
+              <span className="font-game text-[6px] px-1 py-[2px] rounded leading-none"
+                style={{ border: `1px solid ${tc}`, color: tc }}>ÚNICO</span>
+            </>
+          ) : statusLabel ? (
+            <span className="font-game text-[7px] text-ink/40">{statusLabel}</span>
+          ) : null}
+        </div>
+      </button>
+
+      {/* Info tooltip */}
+      {showInfo && (
+        <div
+          className="absolute bottom-full left-0 right-0 mb-1.5 z-50 rounded-xl px-3 py-2 border-2 border-ink/10"
+          style={{ backgroundColor: '#2C1810' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-game text-[7px] uppercase tracking-widest" style={{ color: tc }}>{unique.name}</span>
+            <span className="font-game text-[6px] px-1.5 py-[2px] rounded-full leading-none"
+              style={{ backgroundColor: `${tc}30`, color: tc }}>ÚNICO</span>
+          </div>
+          <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(251,245,230,0.75)' }}>{unique.description}</p>
+          <button className="mt-1.5 font-game text-[7px] text-white/30 cursor-pointer" onClick={() => setShowInfo(false)}>fechar ×</button>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -480,6 +564,13 @@ export default function BatalhaPage() {
       outcome = 'player_wins'
     } else {
       outcome = resolveRPS(playerRPS, aiMove)
+    }
+
+    // Sleep/freeze/tired → player can't act → enemy wins automatically
+    if (playerForcedThisTurn) {
+      const forcedBySleepOrFreeze = eff.playerStatus?.condition === 'sleep' || eff.playerStatus?.condition === 'freeze'
+      const forcedByTired = effects.playerTiredTurns > 0
+      if (forcedBySleepOrFreeze || forcedByTired) outcome = 'enemy_wins'
     }
 
     let playerDmg = 0
@@ -663,7 +754,7 @@ export default function BatalhaPage() {
     }
 
     if (currentPF.hearts <= 0) {
-      const next = playerFighters.findIndex((f, i) => i > playerIdx && f.hearts > 0)
+      const next = playerFighters.findIndex((f, i) => i !== playerIdx && f.hearts > 0)
       if (next === -1) { setPhase('defeat'); return }
       setPlayerIdx(next)
       const { newEffects, message } = applyEntryEffects(playerFighters[next].pokemon, 'player', effects)
@@ -694,9 +785,9 @@ export default function BatalhaPage() {
   // ── Derived display values ──────────────────────────────────────────────────
 
   const forcedLabel = (() => {
-    if (ps?.condition === 'sleep')    return `😴 ${pf.pokemon.name} está dormindo — ✊ automático`
-    if (ps?.condition === 'freeze')   return `🧊 ${pf.pokemon.name} está congelado — ✊ automático`
-    if (effects.playerTiredTurns > 0) return `💤 ${pf.pokemon.name} está exausto — ✊ automático`
+    if (ps?.condition === 'sleep')    return `😴 ${pf.pokemon.name} está dormindo — turno perdido!`
+    if (ps?.condition === 'freeze')   return `🧊 ${pf.pokemon.name} está congelado — turno perdido!`
+    if (effects.playerTiredTurns > 0) return `💤 ${pf.pokemon.name} está exausto — turno perdido!`
     return null
   })()
 
@@ -895,63 +986,39 @@ export default function BatalhaPage() {
               })()}
             </div>
 
-            {/* ── SELECTING: move grid + aux ── */}
+            {/* ── SELECTING: move list + aux ── */}
             {phase === 'selecting' && (
               <div className="flex flex-col gap-2">
-                {/* Diamond layout — Paper top · Rock left · Scissors right · Unique bottom */}
-                <div className="relative w-full" style={{ height: 292 }}>
-
-                  {/* Center decoration */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                    <div className="w-11 h-11 rounded-full border-2 border-ink/10 bg-parchment-light flex items-center justify-center">
-                      <span className="font-game text-[5px] text-ink/25 uppercase tracking-widest text-center leading-snug">JKP</span>
-                    </div>
-                  </div>
-
-                  {/* Top — Paper */}
-                  <div className="absolute z-10" style={{ top: 0, left: '50%', transform: 'translateX(-50%)', width: '52%' }}>
-                    <MoveButton
-                      rps="paper"
-                      pokemon={pf.pokemon}
-                      disabled={playerIsForced}
-                      protectOnCooldown={effects.playerProtectCooldown}
-                      onClick={() => handleAttack('paper')}
-                    />
-                  </div>
-
-                  {/* Left — Rock */}
-                  <div className="absolute z-10" style={{ left: 0, top: '50%', transform: 'translateY(-50%)', width: '52%' }}>
-                    <MoveButton
-                      rps="rock"
-                      pokemon={pf.pokemon}
-                      disabled={playerIsForced}
-                      protectOnCooldown={effects.playerProtectCooldown}
-                      onClick={() => handleAttack('rock')}
-                    />
-                  </div>
-
-                  {/* Right — Scissors */}
-                  <div className="absolute z-10" style={{ right: 0, top: '50%', transform: 'translateY(-50%)', width: '52%' }}>
-                    <MoveButton
-                      rps="scissors"
-                      pokemon={pf.pokemon}
-                      disabled={playerIsForced}
-                      protectOnCooldown={effects.playerProtectCooldown}
-                      onClick={() => handleAttack('scissors')}
-                    />
-                  </div>
-
-                  {/* Bottom — Unique */}
-                  <div className="absolute z-10" style={{ bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '52%' }}>
-                    <UniqueSlot
-                      pokemon={pf.pokemon}
-                      used={uniqueUsed[playerIdx] ?? false}
-                      forced={playerIsForced}
-                      cooldown={effects.uniqueCooldown}
-                      onClick={() => handleAttack('unique')}
-                    />
-                  </div>
-
+                {/* Move list */}
+                <div className="flex flex-col gap-2">
+                  <MoveListRow
+                    rps="rock"
+                    pokemon={pf.pokemon}
+                    disabled={playerIsForced}
+                    protectOnCooldown={effects.playerProtectCooldown}
+                    onClick={() => handleAttack('rock')}
+                  />
+                  <MoveListRow
+                    rps="paper"
+                    pokemon={pf.pokemon}
+                    disabled={playerIsForced}
+                    protectOnCooldown={effects.playerProtectCooldown}
+                    onClick={() => handleAttack('paper')}
+                  />
+                  <MoveListRow
+                    rps="scissors"
+                    pokemon={pf.pokemon}
+                    disabled={playerIsForced}
+                    protectOnCooldown={effects.playerProtectCooldown}
+                    onClick={() => handleAttack('scissors')}
+                  />
+                  <UniqueListRow
+                    pokemon={pf.pokemon}
+                    used={uniqueUsed[playerIdx] ?? false}
+                    forced={playerIsForced}
+                    cooldown={effects.uniqueCooldown}
+                    onClick={() => handleAttack('unique')}
+                  />
                 </div>
 
                 <div className="flex gap-2 mt-1">

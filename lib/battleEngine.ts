@@ -113,11 +113,11 @@ export function processTurnStart(
       } else {
         eff.playerStatus = { condition, turnsLeft: turnsLeft - 1 }
         playerForcedRps = 'rock'
-        messages.push(`😴 ${pf.pokemon.name} está dormindo — ✊ automático`)
+        messages.push(`😴 ${pf.pokemon.name} está dormindo — perdeu o turno!`)
       }
     } else if (condition === 'freeze') {
       playerForcedRps = 'rock'
-      messages.push(`🧊 ${pf.pokemon.name} está congelado — ✊ automático`)
+      messages.push(`🧊 ${pf.pokemon.name} está congelado — perdeu o turno!`)
     } else if (condition === 'paralysis') {
       if (Math.random() < 0.30) {
         playerForcedRps = 'rock'
@@ -131,8 +131,8 @@ export function processTurnStart(
     eff.playerTiredTurns--
     playerForcedRps = 'rock'
     messages.push(eff.playerTiredTurns > 0
-      ? `💤 ${pf.pokemon.name} está exausto — ✊ automático (${eff.playerTiredTurns} turno${eff.playerTiredTurns !== 1 ? 's' : ''} restante${eff.playerTiredTurns !== 1 ? 's' : ''})`
-      : `💤 ${pf.pokemon.name} está exausto — ✊ automático`)
+      ? `💤 ${pf.pokemon.name} está exausto — perdeu o turno! (${eff.playerTiredTurns} turno${eff.playerTiredTurns !== 1 ? 's' : ''} restante${eff.playerTiredTurns !== 1 ? 's' : ''})`
+      : `💤 ${pf.pokemon.name} está exausto — perdeu o turno!`)
   }
 
   // ── Enemy status ───────────────────────────────────────────────────────────
