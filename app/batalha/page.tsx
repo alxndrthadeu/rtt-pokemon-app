@@ -119,13 +119,50 @@ function HPBar({ current, max }: { current: number; max: number }) {
   )
 }
 
+const STATUS_DESC: Record<StatusCondition, string> = {
+  poison:    '−0.5♥ no início de cada turno. Pokémon Venenoso/Aço são imunes.',
+  paralysis: '30% de chance de perder o turno. Pokémon Elétrico é imune.',
+  sleep:     'Perde o turno automaticamente até acordar (1–3 turnos).',
+  freeze:    'Perde o turno até descongelar. Ataques de Fogo descongelam.',
+  burn:      '−0.5♥ no início de cada turno. Pokémon Fogo é imune.',
+}
+const STATUS_NAME: Record<StatusCondition, string> = {
+  poison: 'Envenenado', paralysis: 'Paralisado', sleep: 'Dormindo', freeze: 'Congelado', burn: 'Queimado',
+}
+
 function StatusPill({ status }: { status: StatusState | null }) {
+  const [open, setOpen] = useState(false)
   if (!status) return null
+  const bg = STATUS_BG[status.condition]
+  const fg = STATUS_FG[status.condition]
   return (
-    <span className="font-game text-[8px] px-1.5 py-[2px] rounded font-bold leading-none shrink-0"
-      style={{ backgroundColor: STATUS_BG[status.condition], color: STATUS_FG[status.condition] }}>
-      {STATUS_LABEL[status.condition]}
-    </span>
+    <div className="relative shrink-0">
+      <button
+        className="font-game text-[8px] px-1.5 py-[2px] rounded font-bold leading-none cursor-pointer"
+        style={{ backgroundColor: bg, color: fg }}
+        onClick={(e) => { e.stopPropagation(); setOpen(v => !v) }}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        {STATUS_LABEL[status.condition]}
+      </button>
+      {open && (
+        <div
+          className="absolute bottom-full left-0 mb-1.5 z-50 rounded-xl px-3 py-2 border-2 border-ink/10 w-48 shadow-neo-sm"
+          style={{ backgroundColor: '#2C1810' }}
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="font-game text-[7px] uppercase tracking-widest mb-1" style={{ color: bg }}>
+            {STATUS_NAME[status.condition]}
+          </p>
+          <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(251,245,230,0.75)' }}>
+            {STATUS_DESC[status.condition]}
+          </p>
+        </div>
+      )}
+    </div>
   )
 }
 
