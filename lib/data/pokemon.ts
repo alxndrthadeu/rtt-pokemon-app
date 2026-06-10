@@ -19,7 +19,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #1 BULBASAUR ───
   { id: 1,  name: 'Bulbasaur',   type1: 'Grass',    type2: 'Poison',  rarity: 'comum',
     abilityId: 'overgrow',
-    moves: { rock: 'vine-whip',   paper: 'tackle',       scissors: 'growl' },
+    moves: { rock: 'vine-whip',   paper: 'tackle',       scissors: 'poison-powder' },
     uniqueId: null },
   // ─── #2 IVYSAUR ───
   { id: 2,  name: 'Ivysaur',     type1: 'Grass',    type2: 'Poison',  rarity: 'rara',
@@ -94,7 +94,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #16 PIDGEY ───
   { id: 16, name: 'Pidgey',      type1: 'Normal',   type2: 'Flying',  rarity: 'comum',
     abilityId: 'inner-focus',
-    moves: { rock: 'tackle',      paper: 'gust',         scissors: 'sand-attack' },
+    moves: { rock: 'tackle',      paper: 'gust',         scissors: 'feather-dance' },
     uniqueId: null },
   // ─── #17 PIDGEOTTO ───
   { id: 17, name: 'Pidgeotto',   type1: 'Normal',   type2: 'Flying',  rarity: 'rara',
@@ -104,7 +104,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #18 PIDGEOT ─── scissors = hurricane (buff: atk -1 opponent)
   { id: 18, name: 'Pidgeot',     type1: 'Normal',   type2: 'Flying',  rarity: 'ultra-rara',
     abilityId: 'intimidate',
-    moves: { rock: 'quick-attack', paper: 'air-slash',   scissors: 'hurricane' },
+    moves: { rock: 'quick-attack', paper: 'air-slash',   scissors: 'fly' },
     uniqueId: 'aerial-ace' },
   // ─── #19 RATTATA ───
   { id: 19, name: 'Rattata',     type1: 'Normal',   type2: null,      rarity: 'comum',
@@ -129,7 +129,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #23 EKANS ───
   { id: 23, name: 'Ekans',       type1: 'Poison',   type2: null,      rarity: 'comum',
     abilityId: 'intimidate',
-    moves: { rock: 'poison-sting', paper: 'wrap',        scissors: 'glare' },
+    moves: { rock: 'poison-sting', paper: 'acid',        scissors: 'poison-gas' },
     uniqueId: null },
   // ─── #24 ARBOK ───
   { id: 24, name: 'Arbok',       type1: 'Poison',   type2: null,      rarity: 'rara',
@@ -184,7 +184,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #34 NIDOKING ───
   { id: 34, name: 'Nidoking',    type1: 'Poison',   type2: 'Ground',  rarity: 'ultra-rara',
     abilityId: 'sturdy',
-    moves: { rock: 'megahorn',    paper: 'earth-power',  scissors: 'poison-jab' },
+    moves: { rock: 'gunk-shot',   paper: 'earth-power',  scissors: 'poison-jab' },
     uniqueId: 'earthquake-unique' },
   // ─── #35 CLEFAIRY ───
   { id: 35, name: 'Clefairy',    type1: 'Fairy',    type2: null,      rarity: 'rara',
@@ -269,7 +269,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #51 DUGTRIO ───
   { id: 51, name: 'Dugtrio',     type1: 'Ground',   type2: null,      rarity: 'rara',
     abilityId: 'inner-focus',
-    moves: { rock: 'slash',       paper: 'earth-power',  scissors: 'rock-slide' },
+    moves: { rock: 'slash',       paper: 'earth-power',  scissors: 'dig' },
     uniqueId: 'fissure' },
   // ─── #52 MEOWTH ───
   { id: 52, name: 'Meowth',      type1: 'Normal',   type2: null,      rarity: 'comum',
@@ -299,7 +299,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #57 PRIMEAPE ───
   { id: 57, name: 'Primeape',    type1: 'Fighting', type2: null,      rarity: 'rara',
     abilityId: 'inner-focus',
-    moves: { rock: 'mach-punch',  paper: 'thunder-punch', scissors: 'rage' },
+    moves: { rock: 'karate-chop', paper: 'thunder-punch', scissors: 'rage' },
     uniqueId: 'cross-chop-unique' },
   // ─── #58 GROWLITHE ───
   { id: 58, name: 'Growlithe',   type1: 'Fire',     type2: null,      rarity: 'rara',
@@ -324,7 +324,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #62 POLIWRATH ───
   { id: 62, name: 'Poliwrath',   type1: 'Water',    type2: 'Fighting', rarity: 'ultra-rara',
     abilityId: 'water-absorb',
-    moves: { rock: 'waterfall',   paper: 'mach-punch',   scissors: 'ice-punch' },
+    moves: { rock: 'waterfall',   paper: 'submission',   scissors: 'ice-punch' },
     uniqueId: 'dynamic-punch-unique' },
   // ─── #63 ABRA ───
   { id: 63, name: 'Abra',        type1: 'Psychic',  type2: null,      rarity: 'rara',
@@ -354,7 +354,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #68 MACHAMP ───
   { id: 68, name: 'Machamp',     type1: 'Fighting', type2: null,      rarity: 'ultra-rara',
     abilityId: 'inner-focus',
-    moves: { rock: 'dynamic-punch', paper: 'bullet-punch', scissors: 'thunder-punch' },
+    moves: { rock: 'hammer-arm',  paper: 'bullet-punch', scissors: 'thunder-punch' },
     uniqueId: 'focus-punch' },
   // ─── #69 BELLSPROUT ───
   { id: 69, name: 'Bellsprout',  type1: 'Grass',    type2: 'Poison',  rarity: 'comum',
@@ -374,12 +374,12 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #72 TENTACOOL ───
   { id: 72, name: 'Tentacool',   type1: 'Water',    type2: 'Poison',  rarity: 'comum',
     abilityId: 'inner-focus',
-    moves: { rock: 'bubble',      paper: 'acid',         scissors: 'wrap' },
+    moves: { rock: 'bubble',      paper: 'acid',         scissors: 'poison-sting' },
     uniqueId: null },
   // ─── #73 TENTACRUEL ─── scissors: acid-spray (buff: def -1)
   { id: 73, name: 'Tentacruel',  type1: 'Water',    type2: 'Poison',  rarity: 'rara',
     abilityId: 'inner-focus',
-    moves: { rock: 'hydro-pump',  paper: 'sludge-wave',  scissors: 'acid-spray' },
+    moves: { rock: 'hydro-pump',  paper: 'sludge-wave',  scissors: 'poison-gas' },
     uniqueId: 'acid-spray-unique' },
   // ─── #74 GEODUDE ───
   { id: 74, name: 'Geodude',     type1: 'Rock',     type2: 'Ground',  rarity: 'comum',
@@ -399,7 +399,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #77 PONYTA ───
   { id: 77, name: 'Ponyta',      type1: 'Fire',     type2: null,      rarity: 'rara',
     abilityId: 'flash-fire',
-    moves: { rock: 'ember',       paper: 'stomp',        scissors: 'flame-charge' },
+    moves: { rock: 'ember',       paper: 'stomp',        scissors: 'quick-attack' },
     uniqueId: null },
   // ─── #78 RAPIDASH ───
   { id: 78, name: 'Rapidash',    type1: 'Fire',     type2: null,      rarity: 'ultra-rara',
@@ -489,7 +489,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #95 ONIX ─── scissors: protect
   { id: 95, name: 'Onix',        type1: 'Rock',     type2: 'Ground',  rarity: 'rara',
     abilityId: 'sturdy',
-    moves: { rock: 'rock-throw',  paper: 'bind',         scissors: 'protect' },
+    moves: { rock: 'rock-throw',  paper: 'rock-blast',   scissors: 'protect' },
     uniqueId: null },
   // ─── #96 DROWZEE ───
   { id: 96, name: 'Drowzee',     type1: 'Psychic',  type2: null,      rarity: 'rara',
@@ -579,12 +579,12 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #113 CHANSEY ───
   { id: 113, name: 'Chansey',    type1: 'Normal',   type2: null,      rarity: 'ultra-rara',
     abilityId: 'inner-focus',
-    moves: { rock: 'double-slap', paper: 'egg-bomb',     scissors: 'disarming-voice' },
+    moves: { rock: 'double-slap', paper: 'body-slam',    scissors: 'disarming-voice' },
     uniqueId: 'soft-boiled' },
   // ─── #114 TANGELA ───
   { id: 114, name: 'Tangela',    type1: 'Grass',    type2: null,      rarity: 'rara',
     abilityId: 'overgrow',
-    moves: { rock: 'vine-whip',   paper: 'bind',         scissors: 'slam' },
+    moves: { rock: 'vine-whip',   paper: 'mega-drain',   scissors: 'slam' },
     uniqueId: 'bind-unique' },
   // ─── #115 KANGASKHAN ───
   { id: 115, name: 'Kangaskhan', type1: 'Normal',   type2: null,      rarity: 'ultra-rara',
@@ -639,7 +639,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #125 ELECTABUZZ ───
   { id: 125, name: 'Electabuzz', type1: 'Electric', type2: null,      rarity: 'ultra-rara',
     abilityId: 'volt-absorb',
-    moves: { rock: 'ice-punch',   paper: 'thunder-punch', scissors: 'swift' },
+    moves: { rock: 'ice-punch',   paper: 'thunder-punch', scissors: 'thunder-wave' },
     uniqueId: 'volt-switch-unique' },
   // ─── #126 MAGMAR ───
   { id: 126, name: 'Magmar',     type1: 'Fire',     type2: null,      rarity: 'ultra-rara',
@@ -674,7 +674,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #132 DITTO ───
   { id: 132, name: 'Ditto',      type1: 'Normal',   type2: null,      rarity: 'epico',
     abilityId: 'imposter',
-    moves: { rock: 'transform',   paper: 'transform',    scissors: 'transform' },
+    moves: { rock: 'tackle',      paper: 'tackle',       scissors: 'tackle' },
     uniqueId: 'transform' },
   // ─── #133 EEVEE ───
   { id: 133, name: 'Eevee',      type1: 'Normal',   type2: null,      rarity: 'rara',
@@ -734,7 +734,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #144 ARTICUNO ───
   { id: 144, name: 'Articuno',   type1: 'Ice',      type2: 'Flying',  rarity: 'lendaria',
     abilityId: 'inner-focus',
-    moves: { rock: 'blizzard',    paper: 'hurricane',    scissors: 'reflect' },
+    moves: { rock: 'blizzard',    paper: 'air-slash',    scissors: 'reflect' },
     uniqueId: 'articuno-sheer-cold' },
   // ─── #145 ZAPDOS ───
   { id: 145, name: 'Zapdos',     type1: 'Electric', type2: 'Flying',  rarity: 'lendaria',
@@ -749,7 +749,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #147 DRATINI ───
   { id: 147, name: 'Dratini',    type1: 'Dragon',   type2: null,      rarity: 'rara',
     abilityId: 'inner-focus',
-    moves: { rock: 'twister',     paper: 'wrap',         scissors: 'thunder-wave' },
+    moves: { rock: 'twister',     paper: 'dragon-rage',  scissors: 'thunder-wave' },
     uniqueId: null },
   // ─── #148 DRAGONAIR ───
   { id: 148, name: 'Dragonair',  type1: 'Dragon',   type2: null,      rarity: 'ultra-rara',
@@ -764,7 +764,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #150 MEWTWO ───
   { id: 150, name: 'Mewtwo',     type1: 'Psychic',  type2: null,      rarity: 'lendaria',
     abilityId: 'inner-focus',
-    moves: { rock: 'psychic',     paper: 'aura-sphere',  scissors: 'shadow-ball' },
+    moves: { rock: 'psychic',     paper: 'aura-sphere',  scissors: 'dark-pulse' },
     uniqueId: 'psystrike' },
   // ─── #151 MEW ───
   { id: 151, name: 'Mew',        type1: 'Psychic',  type2: null,      rarity: 'epico',
@@ -779,7 +779,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #0 MISSINGNO. ───
   { id: 0,   name: 'MissingNo.', type1: 'Normal',   type2: 'Flying',  rarity: 'epico',
     abilityId: 'glitch',
-    moves: { rock: 'water-gun',   paper: 'water-gun',    scissors: 'sky-attack' },
+    moves: { rock: 'water-gun',   paper: 'water-gun',    scissors: 'wing-attack' },
     uniqueId: 'glitch-beam' },
 ]
 
