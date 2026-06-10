@@ -438,10 +438,10 @@ function UniqueListRow({
           : { border: `2px solid ${tc}`, backgroundColor: 'white', boxShadow: `3px 3px 0 ${tc}` }
         }
       >
-        {/* Z-Power badge */}
+        {/* Unique badge */}
         <div className="shrink-0 w-9 h-7 rounded-lg flex items-center justify-center"
           style={{ background: disabled ? 'rgba(44,24,16,0.08)' : `linear-gradient(135deg, ${tc}, ${tc}99)` }}>
-          <span className="font-game text-[5px] font-black text-white/90 uppercase tracking-tight leading-none text-center">Z<br/>MOVE</span>
+          <span className="text-lg leading-none">⚡</span>
         </div>
         <p className="font-black text-[11px] text-ink truncate leading-tight flex-1">{unique.name}</p>
         <div className="flex items-center gap-1 shrink-0">
@@ -612,6 +612,18 @@ export default function BatalhaPage() {
           ))
           activations.push(`💥 Dano de área na reserva inimiga!`)
         }
+
+        if (enemyDmg > 0) {
+          const { damage: finalDmg, sturdyTriggered } = applySturdy(
+            enemyDmg, newEHearts, eff.enemySturdyUsed, ef.pokemon.ability.name === 'Sturdy',
+          )
+          if (sturdyTriggered) {
+            eff = { ...eff, enemySturdyUsed: true }
+            activations.push(`🛡️ Sturdy! ${ef.pokemon.name} sobreviveu com 1 ♥!`)
+          }
+          enemyDmg = finalDmg
+        }
+        newEHearts = Math.max(0, newEHearts - enemyDmg)
 
       } else if (chosenMove && !playerForcedThisTurn) {
         const attackType = chosenMove.type
@@ -989,37 +1001,56 @@ export default function BatalhaPage() {
             {/* ── SELECTING: move list + aux ── */}
             {phase === 'selecting' && (
               <div className="flex flex-col gap-2">
-                {/* Move list */}
-                <div className="flex flex-col gap-2">
-                  <MoveListRow
-                    rps="rock"
-                    pokemon={pf.pokemon}
-                    disabled={playerIsForced}
-                    protectOnCooldown={effects.playerProtectCooldown}
-                    onClick={() => handleAttack('rock')}
-                  />
-                  <MoveListRow
-                    rps="paper"
-                    pokemon={pf.pokemon}
-                    disabled={playerIsForced}
-                    protectOnCooldown={effects.playerProtectCooldown}
-                    onClick={() => handleAttack('paper')}
-                  />
-                  <MoveListRow
-                    rps="scissors"
-                    pokemon={pf.pokemon}
-                    disabled={playerIsForced}
-                    protectOnCooldown={effects.playerProtectCooldown}
-                    onClick={() => handleAttack('scissors')}
-                  />
-                  <UniqueListRow
-                    pokemon={pf.pokemon}
-                    used={uniqueUsed[playerIdx] ?? false}
-                    forced={playerIsForced}
-                    cooldown={effects.uniqueCooldown}
-                    onClick={() => handleAttack('unique')}
-                  />
-                </div>
+                {/* When forced (sleep/freeze/tired): confirm button instead of grayed list */}
+                {playerIsForced ? (
+                  <>
+                    <button
+                      onClick={() => handleAttack('rock')}
+                      className="w-full py-4 font-black text-sm uppercase border-2 border-ink rounded-2xl cursor-pointer transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                      style={{ backgroundColor: '#F5EDD8', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }}
+                    >
+                      Confirmar turno perdido ▶
+                    </button>
+                    <div className="flex flex-col gap-2 opacity-25 pointer-events-none select-none">
+                      <MoveListRow rps="rock" pokemon={pf.pokemon} disabled protectOnCooldown={false} onClick={() => {}} />
+                      <MoveListRow rps="paper" pokemon={pf.pokemon} disabled protectOnCooldown={false} onClick={() => {}} />
+                      <MoveListRow rps="scissors" pokemon={pf.pokemon} disabled protectOnCooldown={false} onClick={() => {}} />
+                      <UniqueListRow pokemon={pf.pokemon} used forced cooldown={false} onClick={() => {}} />
+                    </div>
+                  </>
+                ) : (
+                  /* Normal move list */
+                  <div className="flex flex-col gap-2">
+                    <MoveListRow
+                      rps="rock"
+                      pokemon={pf.pokemon}
+                      disabled={false}
+                      protectOnCooldown={effects.playerProtectCooldown}
+                      onClick={() => handleAttack('rock')}
+                    />
+                    <MoveListRow
+                      rps="paper"
+                      pokemon={pf.pokemon}
+                      disabled={false}
+                      protectOnCooldown={effects.playerProtectCooldown}
+                      onClick={() => handleAttack('paper')}
+                    />
+                    <MoveListRow
+                      rps="scissors"
+                      pokemon={pf.pokemon}
+                      disabled={false}
+                      protectOnCooldown={effects.playerProtectCooldown}
+                      onClick={() => handleAttack('scissors')}
+                    />
+                    <UniqueListRow
+                      pokemon={pf.pokemon}
+                      used={uniqueUsed[playerIdx] ?? false}
+                      forced={false}
+                      cooldown={effects.uniqueCooldown}
+                      onClick={() => handleAttack('unique')}
+                    />
+                  </div>
+                )}
 
                 <div className="flex gap-2 mt-1">
                   <button
