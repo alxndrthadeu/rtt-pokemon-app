@@ -18,6 +18,73 @@ export type RunStatus = 'active' | 'won' | 'lost'
 export type BattlePhase = 'select_action' | 'reveal' | 'switch_risk' | 'battle_end'
 export type AILevel = 'random' | 'weighted' | 'adaptive' | 'predictive'
 
+// ─── Move system ──────────────────────────────────────────────────────────────
+
+export type MoveKind = 'offensive' | 'status' | 'buff'
+
+export type StatusCondition = 'poison' | 'paralysis' | 'sleep' | 'freeze' | 'burn'
+
+export type UniqueCategory = 'super' | 'heal' | 'ohko' | 'aoe'
+
+export interface BuffEffect {
+  stat: 'attack' | 'defense'
+  delta: -1 | 1
+  target: 'self' | 'opponent'
+}
+
+// ─── Catalog definition interfaces (never stored in save state) ───────────────
+
+export interface MoveDefinition {
+  name: string
+  type: PokemonType
+  kind: MoveKind
+  drain?: boolean              // offensive: heals user for half damage dealt
+  statusEffect?: StatusCondition   // status: applies this condition to opponent
+  buffEffect?: BuffEffect      // buff: applies this modifier
+  special?: string             // documented exceptions (e.g. 'protect')
+}
+
+export interface AbilityDefinition {
+  id: string
+  name: AbilityName
+  description: string
+  // trigger semantics handled by engine via 'special' field or explicit flags
+  absorbType?: PokemonType     // WaterAbsorb, VoltAbsorb: immune + heal on hit
+  immuneType?: PokemonType     // FlashFire, Levitate: immune only
+  flashFireBoost?: boolean     // FlashFire: boosts own Fire when hit by Fire
+  boostType?: PokemonType      // Overgrow/Blaze/Torrent: boost when ≤2♥
+  boostBonus?: number
+  lowHpThreshold?: number      // hearts at/below which boost activates
+  special?: string             // 'intimidate' | 'sturdy' | 'no-guard' | 'synchronize' | 'imposter' | 'glitch' | 'lightning-rod'
+}
+
+export interface UniqueDefinition {
+  name: string
+  type: PokemonType
+  rpsSlot: RPS
+  description: string
+  kind: UniqueCategory
+  // heal
+  healAmount?: number          // hearts restored (up to 5)
+  selfStatus?: StatusCondition // status applied to SELF after heal (e.g. Rest → sleep)
+  // aoe
+  benchDamage?: number         // damage to each bench member (default 1)
+  // super / special overrides
+  damage?: number              // fixed damage (default 2 for super)
+  recoil?: number              // recoil damage to user
+  drain?: boolean              // heals user for half damage dealt
+  userFaints?: boolean         // user faints after use (Explosion)
+  cooldown?: boolean           // next unique unavailable next turn
+  // status applied to opponent
+  applyEnemyStatus?: StatusCondition
+  // crit chance (0–1) → if crit: 2 damage, else 1
+  critChance?: number
+  // special string for engine exceptions
+  special?: string
+}
+
+// ─── Runtime types (resolved from catalog at card-creation time) ──────────────
+
 export interface Ability {
   name: AbilityName
   description: string
@@ -26,14 +93,31 @@ export interface Ability {
 export interface Move {
   name: string
   type: PokemonType
-  category: RPS
+  category: RPS          // which slot (rock / paper / scissors)
+  kind: MoveKind
+  drain?: boolean
+  statusEffect?: StatusCondition
+  buffEffect?: BuffEffect
+  special?: string
 }
 
 export interface UniqueMove {
   name: string
   type: PokemonType
-  category: RPS
+  category: RPS          // which slot the button occupies
   description: string
+  kind: UniqueCategory
+  healAmount?: number
+  selfStatus?: StatusCondition
+  benchDamage?: number
+  damage?: number
+  recoil?: number
+  drain?: boolean
+  userFaints?: boolean
+  cooldown?: boolean
+  applyEnemyStatus?: StatusCondition
+  critChance?: number
+  special?: string
 }
 
 export interface StatusEffect {

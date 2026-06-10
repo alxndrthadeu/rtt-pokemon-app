@@ -1,5 +1,63 @@
 # Changelog
 
+## [0.3.0] - 2026-06-10
+
+### Adicionado
+
+- **Catálogo normalizado de dados** (`lib/data/moves.ts`, `abilities.ts`, `uniques.ts`)
+  - Todos os golpes, habilidades e ataques únicos agora são definidos como registros com ID string
+  - `pokemon.ts` migrado: os 153 templates usam referências por ID em vez de objetos inline
+  - Engine data-driven: comportamentos resolvidos por `kind`/`category`/`special`, sem switch por nome
+- **Sistema de HP expandido — 5 corações + meio coração**
+  - Todos os Pokémon começam com 5 ♥ (era 3)
+  - Veneno e queimadura causam 0,5 ♥ de dano por turno (float hearts)
+  - `HeartsDisplay` renderiza meio coração a 50% de opacidade
+  - Sturdy agora protege com ≥ 2 ♥ (era > 1 ♥)
+- **Tipos de golpe** (`MoveKind: 'offensive' | 'status' | 'buff'`)
+  - Golpes ofensivos causam dano; status aplicam condição; buff alteram stats/protegem
+  - Drain: golpes com `drain: true` curam o usuário por metade do dano causado
+  - Badge de tipo exibido em cada botão RPS (BUFF / STATUS / 🛡️ PROTECT / COOLDOWN)
+- **5 condições de status** (`poison | paralysis | sleep | freeze | burn`)
+  - Veneno: 0,5 ♥/turno indefinido
+  - Paralisia: 30% de chance de perder o turno (não ataca, mas não é forçado a Pedra)
+  - Sono: força ✊ Pedra enquanto dura; cura ao usar Rest
+  - Congelamento: força ✊ Pedra; descongelado automaticamente por golpes de Fogo
+  - Queimadura: 0,5 ♥/turno indefinido
+  - Imunidades por tipo: Poison→veneno, Electric→paralisia, Fire→queimadura+congela, Ice→congelamento
+- **Sistema de buff/debuff** (`attackMod` / `defenseMod`, ±1 por turno)
+  - Mods consumidos na primeira ação relevante e resetados a 0
+  - `applyEntryEffects`: Intimidate reduz `enemyAttackMod` ao entrar em campo
+- **Categorias de ataque único** (`UniqueCategory: 'super' | 'heal' | 'ohko' | 'aoe'`)
+  - `super`: causa 2 de dano (padrão); suporta casos especiais (Hyper Beam, Shell Smash, Volt Switch, etc.)
+  - `heal`: cura HP (Dream Eater, Rest, Slack Off, Soft-Boiled, etc.)
+  - `ohko`: KO instantâneo; restrições de tipo para Sheer Cold
+  - `aoe`: dano ao alvo ativo e à reserva inimiga
+- **Estado exausto** (Tired)
+  - Após Hyper Beam/Giga Impact/Rock Wrecker: força ✊ Pedra por 1 turno
+  - Após ataques OHKO genéricos: força ✊ Pedra por 2 turnos
+  - Reutiliza infraestrutura de sono; banner visual na tela de seleção
+- **Protect como golpe de buff**
+  - `special: 'protect'` — bloqueia dano mesmo perdendo o Jokenpô
+  - Cooldown no turno seguinte (não pode usar Protect consecutivo)
+  - Badge de cooldown visível no botão enquanto em recarga
+- **Feedback visual expandido** (TODO 7)
+  - Ícones de status nos cards do lutador ativo (🔥 ☠️ 😴 🧊 ⚡)
+  - Toasts de ativação no painel de resultado (imunidades, Sturdy, absorção, congelamento, etc.)
+  - Mensagens de turno: dano de status, Protect, recoil, drain, bench AoE
+  - Banner de estado forçado (sono / gelo / exaustão) na fase de seleção
+
+### Modificado
+
+- **`lib/battleEngine.ts`** — reescrito completamente
+  - `BattleEffects` expandido: `playerStatus`, `enemyStatus` (StatusState), `playerTiredTurns`, `enemyTiredTurns`, `playerAttackMod`, `enemyAttackMod`, `playerDefenseMod`, `enemyDefenseMod`, `playerProtectCooldown`
+  - Novas funções: `processTurnStart`, `applySlotMoveEffect`, `applyThaw`, `applySturdy`, `calcSlotDamage`, `calcUniqueResult`
+  - Removido: `calcUniqueDamage` (substituído por handler data-driven por `kind`)
+  - Blaze/Overgrow/Torrent ativam com ≤ 2 ♥ (era === 1 ♥)
+- **`types/index.ts`** — novos tipos: `MoveKind`, `StatusCondition`, `UniqueCategory`, `BuffEffect`, `MoveDefinition`, `AbilityDefinition`, `UniqueDefinition`; `Move` e `UniqueMove` expandidos
+- **`lib/data/catalog.ts`** — removidos helpers `mv()`, `ab()`, `uniq()` (substituídos pelos catálogos em `moves.ts`, `abilities.ts`, `uniques.ts`)
+- **`lib/data/pokemon.ts`** — `makePokemonCard` inicia com `hearts: 5`; movesets revisados conforme spec (Protect para Squirtle/Wartortle/Metapod/Kakuna/Onix, Thunder Wave para Pikachu/Raichu, etc.)
+- **`app/batalha/page.tsx`** — reescrito para usar a nova engine; `HeartsDisplay` com float; cards com badge de status; botões RPS com indicador de kind; fluxo de `handleAttack` data-driven
+
 ## [0.2.0] - 2026-06-08
 
 ### Adicionado

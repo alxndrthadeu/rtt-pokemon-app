@@ -1,4 +1,4 @@
-import type { PokemonType, AbilityName, RPS, Move, Ability, UniqueMove } from '@/types'
+import type { PokemonType, AbilityName } from '@/types'
 
 // ─── Tipos de todos os golpes ─────────────────────────────────────────────────
 // Um golpe pode aparecer em slots diferentes por Pokémon — a categoria (R/P/S)
@@ -257,30 +257,3 @@ export const ABILITY_DESCRIPTIONS: Record<AbilityName, string> = {
   'Lightning Rod': 'Ao perder no Jokenpô, tem 40% de chance de absorver o golpe e não sofrer dano.',
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Cria um Move buscando o tipo no catálogo.
- * Use typeOverride apenas para Hidden Power (tipo varia por Pokémon).
- */
-export function mv(name: string, category: RPS, typeOverride?: PokemonType): Move {
-  const type = typeOverride ?? MOVE_TYPES[name] ?? 'Normal'
-  return { name, type, category }
-}
-
-/**
- * Cria uma Ability buscando a descrição no catálogo.
- * Use descriptionOverride para casos especiais (ex: Mew com Synchronize).
- */
-export function ab(name: AbilityName, descriptionOverride?: string): Ability {
-  return { name, description: descriptionOverride ?? ABILITY_DESCRIPTIONS[name] }
-}
-
-/**
- * Cria um UniqueMove buscando o tipo no catálogo.
- * A descrição é sempre passada por parâmetro pois pode variar por Pokémon.
- */
-export function uniq(name: string, category: RPS, description: string): UniqueMove {
-  const type = MOVE_TYPES[name] ?? 'Normal'
-  return { name, type, category, description }
-}
