@@ -167,7 +167,7 @@ export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonC
         {/* Corações */}
         <div className="flex items-center justify-between pt-1 border-t border-ink/10">
           <div className="flex gap-0.5">
-            {Array.from({ length: 3 }).map((_, i) => (
+            {Array.from({ length: 5 }).map((_, i) => (
               <span key={i} className="text-base leading-none" style={{ opacity: i < pokemon.hearts ? 1 : 0.18 }}>
                 ♥
               </span>

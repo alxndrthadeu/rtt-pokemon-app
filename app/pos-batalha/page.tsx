@@ -284,8 +284,8 @@ export default function PosBatalhaPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-black text-[10px] text-ink uppercase tracking-tight truncate">{p.name}</p>
                         <div className="flex gap-0.5 mt-0.5">
-                          {Array.from({ length: p.hearts }).map((_, hi) => (
-                            <span key={hi} className="text-[10px] leading-none">♥</span>
+                          {Array.from({ length: 5 }).map((_, hi) => (
+                            <span key={hi} className="text-[10px] leading-none" style={{ opacity: hi < p.hearts ? 1 : 0.18 }}>♥</span>
                           ))}
                         </div>
                       </div>
