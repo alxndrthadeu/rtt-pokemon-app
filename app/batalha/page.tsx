@@ -559,7 +559,8 @@ export default function BatalhaPage() {
   const ef = enemyFighters[enemyIdx]
 
   const ps = effects.playerStatus
-  const playerIsForcedByStatus = ps?.condition === 'sleep' || ps?.condition === 'freeze'
+  const playerIsSleeping = ps?.condition === 'sleep'
+  const playerIsForcedByStatus = ps?.condition === 'freeze'  // sleep tem botões habilitados
   const playerIsForced = playerIsForcedByStatus || effects.playerTiredTurns > 0
 
   // ── Core battle logic ────────────────────────────────────────────────────────
@@ -841,9 +842,8 @@ export default function BatalhaPage() {
   // ── Derived display values ──────────────────────────────────────────────────
 
   const forcedLabel = (() => {
-    if (ps?.condition === 'sleep')    return `😴 ${pf.pokemon.name} está dormindo — turno perdido!`
-    if (ps?.condition === 'freeze')   return `🧊 ${pf.pokemon.name} está congelado — turno perdido!`
-    if (effects.playerTiredTurns > 0) return `💤 ${pf.pokemon.name} está exausto — turno perdido!`
+    if (ps?.condition === 'freeze')    return `🧊 ${pf.pokemon.name} está congelado — turno perdido!`
+    if (effects.playerTiredTurns > 0)  return `💤 ${pf.pokemon.name} está exausto — turno perdido!`
     return null
   })()
 
@@ -985,6 +985,15 @@ export default function BatalhaPage() {
                 <div className="flex flex-col gap-2">
                   {forcedLabel ? (
                     <p className="font-game text-[9px] text-ink-soft uppercase tracking-widest leading-relaxed">{forcedLabel}</p>
+                  ) : playerIsSleeping ? (
+                    <div>
+                      <p className="font-black text-base text-ink leading-tight">
+                        😴 <span style={{ color: STATUS_BG['sleep'] }}>{pf.pokemon.name}</span> está dormindo
+                      </p>
+                      <p className="font-game text-[8px] uppercase tracking-widest leading-none mt-1" style={{ color: STATUS_BG['sleep'] }}>
+                        35% de acordar — escolha o ataque!
+                      </p>
+                    </div>
                   ) : (
                     <p className="font-black text-base text-ink leading-tight">
                       O que <span style={{ color: typeColor }}>{pf.pokemon.name}</span> vai fazer?

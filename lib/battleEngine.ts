@@ -109,13 +109,20 @@ export function processTurnStart(
         ? `🔥 ${pf.pokemon.name} está queimado — −0.5 ♥`
         : `☠️ ${pf.pokemon.name} está envenenado — −0.5 ♥`)
     } else if (condition === 'sleep') {
-      if (turnsLeft <= 0) {
-        eff.playerStatus = null
-        messages.push(`😴 ${pf.pokemon.name} acordou!`)
-      } else {
+      if (turnsLeft > 0) {
+        // Determinístico (Rest): conta regressiva
         eff.playerStatus = { condition, turnsLeft: turnsLeft - 1 }
         playerForcedRps = 'rock'
         messages.push(`😴 ${pf.pokemon.name} está dormindo — perdeu o turno!`)
+      } else {
+        // Indefinido (sono aplicado pelo inimigo): 35% de acordar
+        if (Math.random() < 0.35) {
+          eff.playerStatus = null
+          messages.push(`😴 ${pf.pokemon.name} acordou! Pode agir!`)
+        } else {
+          playerForcedRps = 'rock'
+          messages.push(`😴 ${pf.pokemon.name} continua dormindo — perdeu o turno!`)
+        }
       }
     } else if (condition === 'freeze') {
       playerForcedRps = 'rock'
@@ -143,12 +150,16 @@ export function processTurnStart(
     if (condition === 'poison' || condition === 'burn') {
       enemyHeartsLost = 0.5
     } else if (condition === 'sleep') {
-      if (turnsLeft <= 0) {
-        eff.enemyStatus = null
-        messages.push(`😴 ${ef.pokemon.name} acordou!`)
-      } else {
+      if (turnsLeft > 0) {
         eff.enemyStatus = { condition, turnsLeft: turnsLeft - 1 }
         enemyForcedRps = 'rock'
+      } else {
+        if (Math.random() < 0.35) {
+          eff.enemyStatus = null
+          messages.push(`😴 ${ef.pokemon.name} acordou!`)
+        } else {
+          enemyForcedRps = 'rock'
+        }
       }
     } else if (condition === 'freeze') {
       enemyForcedRps = 'rock'
@@ -206,9 +217,7 @@ export function applySlotMoveEffect(
       } else if (eff.enemyStatus) {
         message = `${move.name}: inimigo já tem um status!`
       } else {
-        const turns = move.statusEffect === 'sleep'
-          ? Math.floor(Math.random() * 3) + 1
-          : -1
+        const turns = -1  // todos os status são indefinidos; sleep usa 35% por turno
         eff.enemyStatus = { condition: move.statusEffect, turnsLeft: turns }
         const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
         message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ao inimigo!`
@@ -376,7 +385,7 @@ export function calcUniqueResult(
   // Shared helper: apply status to enemy
   function tryApplyStatus(cond: StatusCondition) {
     if (isImmuneToStatus(cond, defType1, defType2) || effects.enemyStatus) return
-    const turns = cond === 'sleep' ? Math.floor(Math.random() * 3) + 1 : -1
+    const turns = -1  // sleep usa 35% de chance por turno; demais status indefinidos
     res.enemyStatus = { condition: cond, turnsLeft: turns }
   }
 
