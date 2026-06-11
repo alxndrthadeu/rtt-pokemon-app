@@ -61,7 +61,7 @@ const STEPS = [
   {
     num: '02', bg: '#6890F0', // Water
     title: 'Combate em Jokenpô',
-    body: 'Cada turno é Pedra, Papel ou Tesoura. Tipo e habilidade do Pokémon modificam o dano. Você tem um Switch por batalha.',
+    body: 'Cada turno é Pedra, Papel ou Tesoura. Tipo e habilidade do Pokémon modificam o dano. Você pode trocar de Pokémon a qualquer momento — mas o inimigo ataca de graça.',
   },
   {
     num: '03', bg: '#78C850', // Grass
@@ -137,6 +137,12 @@ export default function HomePage() {
             className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
             Histórico
+          </button>
+          <button
+            onClick={() => router.push('/patch-notes')}
+            className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+          >
+            📋 Novidades
           </button>
         </div>
       </header>
