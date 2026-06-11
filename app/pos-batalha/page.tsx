@@ -185,16 +185,18 @@ export default function PosBatalhaPage() {
               </p>
             </div>
 
-            {/* Pool de 3 */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Pool de 3 — carrossel mobile, grid desktop */}
+            <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0"
+              style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
               {pool.map(pokemon => (
-                <PokemonCard
-                  key={pokemon.id}
-                  pokemon={pokemon}
-                  selectable
-                  selected={picked?.id === pokemon.id}
-                  onClick={() => handlePickNew(pokemon)}
-                />
+                <div key={pokemon.id} className="shrink-0 w-[82vw] sm:w-auto" style={{ scrollSnapAlign: 'start' }}>
+                  <PokemonCard
+                    pokemon={pokemon}
+                    selectable
+                    selected={picked?.id === pokemon.id}
+                    onClick={() => handlePickNew(pokemon)}
+                  />
+                </div>
               ))}
             </div>
 

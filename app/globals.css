@@ -96,3 +96,43 @@ body {
 
 /* Press Start 2P: tamanho mínimo 8px em qualquer uso utilitário */
 .font-game { font-family: var(--font-press-start), monospace; }
+
+/* Flash de dano de status na barra de HP */
+@keyframes hp-status-flash {
+  0%   { opacity: 1; background-color: var(--flash-color); }
+  40%  { opacity: 0.85; background-color: var(--flash-color); }
+  100% { opacity: 1; background-color: rgba(0,0,0,0.2); }
+}
+.hp-bar-flash {
+  animation: hp-status-flash 0.65s ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hp-bar-flash { animation: none; }
+}
+
+/* Card flip 3D — células de golpe na batalha */
+.move-cell-flip {
+  perspective: 700px;
+}
+.move-cell-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.move-cell-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+.move-cell-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.move-cell-back {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .move-cell-inner { transition: none; }
+}

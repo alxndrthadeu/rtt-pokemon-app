@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
 import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
@@ -139,10 +139,18 @@ function PartyBall({ alive, active, color }: { alive: boolean; active?: boolean;
 }
 
 // ─── HP bar com label ─────────────────────────────────────────────────────────
-function HPBar({ current, max }: { current: number; max: number }) {
+function HPBar({ current, max, flashColor }: { current: number; max: number; flashColor?: string | null }) {
   const pct = Math.min(1, Math.max(0, current / max))
   const color = pct > 0.5 ? '#38C838' : pct > 0.2 ? '#F0C000' : '#E82020'
   const displayed = Math.ceil(current)
+  const [animKey, setAnimKey] = useState(0)
+  const prevFlash = useRef<string | null | undefined>(null)
+  useEffect(() => {
+    if (flashColor && flashColor !== prevFlash.current) {
+      setAnimKey(k => k + 1)
+    }
+    prevFlash.current = flashColor
+  }, [flashColor])
   return (
     <div className="flex flex-col gap-[3px]">
       <div className="flex items-center justify-between">
@@ -151,7 +159,14 @@ function HPBar({ current, max }: { current: number; max: number }) {
           {displayed}/{max}
         </span>
       </div>
-      <div className="h-[6px] rounded-full overflow-hidden border border-black/10" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+      <div
+        key={animKey}
+        className={`h-[6px] rounded-full overflow-hidden border border-black/10 ${flashColor ? 'hp-bar-flash' : ''}`}
+        style={{
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          ['--flash-color' as string]: flashColor ?? undefined,
+        }}
+      >
         <div className="h-full rounded-full transition-all duration-500 ease-out"
           style={{ width: `${pct * 100}%`, backgroundColor: color }} />
       </div>
@@ -180,25 +195,68 @@ function getMoveEffectLabel(move: Move): string {
   return '⚔️ Ataque'
 }
 
-// ─── Ability strip — sempre visível ──────────────────────────────────────────
+// ─── Ability strip — sempre visível, com flip para descrição completa ─────────
 function AbilityStrip({ pokemon, typeColor }: { pokemon: PokemonCard; typeColor: string }) {
+  const [expanded, setExpanded] = useState(false)
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-ink/10 bg-white/70 overflow-hidden">
-      <span
-        className="font-game text-[6px] px-2 py-[3px] rounded-full border leading-none shrink-0 tracking-widest"
-        style={{ borderColor: typeColor, color: typeColor, backgroundColor: `${typeColor}18` }}
-      >
-        HAB.
-      </span>
-      <span className="font-bold text-[11px] text-ink shrink-0 leading-none">{pokemon.ability.name}</span>
-      <span className="text-[10px] text-ink-soft opacity-55 leading-tight truncate min-w-0 flex-1">
-        — {pokemon.ability.description}
-      </span>
+    <div
+      className="relative rounded-xl border border-ink/10 bg-white/70 overflow-hidden cursor-pointer transition-all duration-200"
+      onClick={() => setExpanded(v => !v)}
+    >
+      {/* Linha principal */}
+      <div className="flex items-center gap-2 px-3 py-2">
+        <span
+          className="font-game text-[6px] px-2 py-[3px] rounded-full border leading-none shrink-0 tracking-widest"
+          style={{ borderColor: typeColor, color: typeColor, backgroundColor: `${typeColor}18` }}
+        >HAB.</span>
+        <span className="font-bold text-[11px] text-ink shrink-0 leading-none">{pokemon.ability.name}</span>
+        <span className="text-[10px] text-ink-soft opacity-55 leading-tight truncate min-w-0 flex-1">
+          — {pokemon.ability.description}
+        </span>
+        <span className="font-game text-[8px] text-ink/30 shrink-0 ml-1">{expanded ? '▲' : '▼'}</span>
+      </div>
+      {/* Descrição expandida */}
+      {expanded && (
+        <div className="px-3 pb-3 border-t border-ink/10 pt-2">
+          <p className="text-[11px] leading-relaxed text-ink/70">{pokemon.ability.description}</p>
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── Move grid 2×2 ───────────────────────────────────────────────────────────
+// ─── Move description helper (usada no verso do card flip) ───────────────────
+function getMoveDescription(move: Move): string {
+  if (move.special === 'protect') return 'Bloqueia o próximo ataque inimigo por 1 turno. Entra em cooldown após o uso.'
+  if (move.kind === 'offensive' && move.drain) return `Golpe ${move.type}. Causa dano e restaura metade como HP.`
+  if (move.kind === 'offensive') return `Golpe ${move.type}. Causa dano com base na efetividade de tipos.`
+  if (move.kind === 'status' && move.statusEffect) {
+    const label: Record<string, string> = {
+      poison: 'veneno (−0.5 HP/turno)', paralysis: 'paralisia (30% de perder o turno)',
+      sleep: 'sono (perde turnos até acordar)', freeze: 'congelamento (perde turnos até descongelar)',
+      burn: 'queimadura (−0.5 HP/turno)',
+    }
+    return `Aplica ${label[move.statusEffect] ?? move.statusEffect} no alvo.`
+  }
+  if (move.kind === 'buff' && move.buffEffect) {
+    const stat = move.buffEffect.stat === 'attack' ? 'ataque' : 'defesa'
+    const dir  = move.buffEffect.delta > 0 ? 'Aumenta' : 'Reduz'
+    const who  = move.buffEffect.target === 'self' ? 'próprio' : 'do oponente'
+    return `${dir} o ${stat} ${who} no próximo turno.`
+  }
+  return `Golpe ${move.type}.`
+}
+
+function getCategoryLabel(move: Move): string {
+  if (move.special === 'protect') return '🛡️ Proteção'
+  if (move.kind === 'offensive' && move.drain) return '🍃 Ofensivo · Absorção'
+  if (move.kind === 'offensive') return '⚔️ Ofensivo'
+  if (move.kind === 'status') return '☠️ Status'
+  if (move.kind === 'buff') return move.buffEffect?.delta && move.buffEffect.delta > 0 ? '⬆️ Buff' : '⬇️ Debuff'
+  return '⚔️ Ofensivo'
+}
+
+// ─── Move grid 2×2 com flip 3D ───────────────────────────────────────────────
 function MoveGrid({
   pokemon, effects, uniqueUsed, playerIsForced,
   onAttack,
@@ -209,7 +267,15 @@ function MoveGrid({
   playerIsForced: boolean
   onAttack: (move: PlayerMove) => void
 }) {
+  const [flipped, setFlipped] = useState<RPS | 'unique' | null>(null)
   const rpsKeys: RPS[] = ['rock', 'paper', 'scissors']
+
+  const borders = [
+    'border-b-2 border-r-2 border-ink/15',
+    'border-b-2 border-ink/15',
+    'border-r-2 border-ink/15',
+    'border-l-2 border-ink/15',
+  ]
 
   const gridContent = (
     <div
@@ -217,96 +283,157 @@ function MoveGrid({
       style={{ boxShadow: playerIsForced ? 'none' : '4px 4px 0 #2C1810' }}
     >
       {rpsKeys.map((rps, idx) => {
-        const move    = pokemon.moves[rps]
-        const tc      = getTypeColor(move.type)
+        const move        = pokemon.moves[rps]
+        const tc          = getTypeColor(move.type)
         const isProtect   = move.special === 'protect'
         const onCooldown  = isProtect && effects.playerProtectCooldown
-        const effect  = getMoveEffectLabel(move)
-        const borders = [
-          'border-b-2 border-r-2 border-ink/15',
-          'border-b-2 border-ink/15',
-          'border-r-2 border-ink/15',
-          '',
-        ][idx]
+        const effect      = getMoveEffectLabel(move)
+        const isFlipped   = flipped === rps
 
         return (
-          <button
-            key={rps}
-            onClick={() => onAttack(rps)}
-            disabled={onCooldown}
-            className={`relative flex flex-col gap-1 p-3 text-left transition-all duration-75 ${borders} ${
-              onCooldown
-                ? 'opacity-30 cursor-not-allowed'
-                : 'cursor-pointer hover:bg-parchment active:bg-parchment active:translate-x-[1px] active:translate-y-[1px]'
-            }`}
-            style={{ backgroundColor: '#FBF5E6', minHeight: 82 }}
-          >
-            {/* borda colorida lateral */}
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-none" style={{ backgroundColor: tc }} />
-            <div className="pl-2.5 flex flex-col gap-1">
-              <span className="text-[24px] leading-none">{RPS_ICON[rps]}</span>
-              <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate">{move.name}</p>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
-                  style={{ backgroundColor: tc, color: getTypeTextColor(move.type) }}>
-                  {move.type}
-                </span>
-                <span className="font-game text-[6px] text-ink/45 leading-none">{effect}</span>
-                {onCooldown && (
-                  <span className="font-game text-[6px] px-1 py-[2px] rounded border border-ink/25 text-ink/35 leading-none ml-auto">CD</span>
-                )}
+          <div key={rps} className={`move-cell-flip ${borders[idx]}`} style={{ minHeight: 90 }}>
+            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 90 }}>
+
+              {/* ── FRENTE ── */}
+              <div
+                className="move-cell-face flex flex-col"
+                style={{ backgroundColor: '#FBF5E6' }}
+              >
+                <button
+                  onClick={() => !onCooldown && onAttack(rps)}
+                  disabled={onCooldown}
+                  className={`flex-1 relative flex flex-col gap-1 p-3 text-left w-full ${
+                    onCooldown ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer active:brightness-95'
+                  }`}
+                >
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: tc }} />
+                  <div className="pl-2.5 flex flex-col gap-1">
+                    <span className="text-[24px] leading-none">{RPS_ICON[rps]}</span>
+                    <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate">{move.name}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
+                        style={{ backgroundColor: tc, color: getTypeTextColor(move.type) }}>{move.type}</span>
+                      <span className="font-game text-[6px] text-ink/45 leading-none">{effect}</span>
+                      {onCooldown && <span className="font-game text-[6px] px-1 py-[2px] rounded border border-ink/25 text-ink/35 leading-none ml-auto">CD</span>}
+                    </div>
+                  </div>
+                </button>
+                {/* Botão info — não dispara ataque */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setFlipped(rps) }}
+                  className="absolute top-1.5 right-1.5 w-[18px] h-[18px] rounded-full border border-ink/20 bg-white/80 flex items-center justify-center cursor-pointer hover:border-ink/50 z-10"
+                  style={{ fontSize: 9, color: 'rgba(44,24,16,0.4)', fontWeight: 900, lineHeight: 1 }}
+                >?</button>
               </div>
+
+              {/* ── VERSO ── */}
+              <div
+                className="move-cell-back move-cell-face flex flex-col gap-1.5 p-3"
+                style={{ backgroundColor: '#2C1810' }}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="font-game text-[6px] px-1.5 py-[2px] rounded-full leading-none"
+                    style={{ backgroundColor: `${tc}30`, color: tc }}>{move.type}</span>
+                  <span className="font-game text-[6px] text-white/45 leading-none">{getCategoryLabel(move)}</span>
+                </div>
+                <p className="font-black text-[10px] leading-tight" style={{ color: '#FBF5E6' }}>{move.name}</p>
+                <p className="text-[9px] leading-relaxed flex-1" style={{ color: 'rgba(251,245,230,0.6)' }}>
+                  {getMoveDescription(move)}
+                </p>
+                <button
+                  onClick={() => setFlipped(null)}
+                  className="font-game text-[7px] text-white/30 cursor-pointer text-right hover:text-white/60 transition-colors"
+                >↩ voltar</button>
+              </div>
+
             </div>
-          </button>
+          </div>
         )
       })}
 
       {/* Slot único */}
       {(() => {
-        const unique = pokemon.unique
+        const unique  = pokemon.unique
         const disabled = uniqueUsed || effects.uniqueCooldown
+        const isFlipped = flipped === 'unique'
+
         if (!unique) {
           return (
-            <div className="relative flex flex-col gap-1 p-3 opacity-20 select-none border-l-2 border-ink/15"
-              style={{ backgroundColor: '#F5EDD8', minHeight: 82 }}>
-              <div className="pl-2.5 flex flex-col gap-1">
-                <span className="text-[24px] leading-none">⚡</span>
-                <p className="font-game text-[7px] text-ink/50 uppercase">Sem único</p>
+            <div className={`move-cell-flip ${borders[3]}`} style={{ minHeight: 90 }}>
+              <div className="flex flex-col gap-1 p-3 opacity-20 select-none h-full" style={{ backgroundColor: '#F5EDD8' }}>
+                <div className="pl-2.5 flex flex-col gap-1">
+                  <span className="text-[24px] leading-none">⚡</span>
+                  <p className="font-game text-[7px] text-ink/50 uppercase">Sem único</p>
+                </div>
               </div>
             </div>
           )
         }
+
         const tc = getTypeColor(unique.type)
         return (
-          <button
-            onClick={() => !disabled && onAttack('unique')}
-            disabled={disabled}
-            className={`relative flex flex-col gap-1 p-3 text-left transition-all duration-75 border-l-2 border-ink/15 ${
-              disabled
-                ? 'opacity-35 cursor-not-allowed'
-                : 'cursor-pointer hover:brightness-95 active:translate-x-[1px] active:translate-y-[1px]'
-            }`}
-            style={{ backgroundColor: disabled ? '#F5EDD8' : `${tc}0C`, minHeight: 82 }}
-          >
-            {/* borda dourada→tipo */}
-            <div className="absolute left-0 top-0 bottom-0 w-[3px]"
-              style={{ background: disabled ? 'transparent' : `linear-gradient(180deg, #F8D030 0%, ${tc} 100%)` }} />
-            <div className="pl-2.5 flex flex-col gap-1">
-              <span className="text-[24px] leading-none">⚡</span>
-              <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate">{unique.name}</p>
-              <div className="flex items-center gap-1.5 flex-wrap">
+          <div className={`move-cell-flip ${borders[3]}`} style={{ minHeight: 90 }}>
+            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 90 }}>
+
+              {/* ── FRENTE único ── */}
+              <div
+                className="move-cell-face flex flex-col"
+                style={{ backgroundColor: disabled ? '#F5EDD8' : `${tc}0C` }}
+              >
+                <button
+                  onClick={() => !disabled && onAttack('unique')}
+                  disabled={disabled}
+                  className={`flex-1 relative flex flex-col gap-1 p-3 text-left w-full ${
+                    disabled ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer active:brightness-95'
+                  }`}
+                >
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px]"
+                    style={{ background: disabled ? 'transparent' : `linear-gradient(180deg, #F8D030 0%, ${tc} 100%)` }} />
+                  <div className="pl-2.5 flex flex-col gap-1">
+                    <span className="text-[24px] leading-none">⚡</span>
+                    <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate">{unique.name}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {!disabled && (
+                        <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
+                          style={{ backgroundColor: tc, color: getTypeTextColor(unique.type) }}>{unique.type}</span>
+                      )}
+                      <span className="font-game text-[6px] text-ink/45 leading-none">
+                        {uniqueUsed ? '✓ Usado' : effects.uniqueCooldown ? '⟳ Recarg.' : '⚡ 1× bat.'}
+                      </span>
+                    </div>
+                  </div>
+                </button>
                 {!disabled && (
-                  <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
-                    style={{ backgroundColor: tc, color: getTypeTextColor(unique.type) }}>
-                    {unique.type}
-                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setFlipped('unique') }}
+                    className="absolute top-1.5 right-1.5 w-[18px] h-[18px] rounded-full border flex items-center justify-center cursor-pointer hover:border-opacity-70 z-10"
+                    style={{ borderColor: tc, backgroundColor: `${tc}18`, fontSize: 9, color: tc, fontWeight: 900, lineHeight: 1 }}
+                  >?</button>
                 )}
-                <span className="font-game text-[6px] text-ink/45 leading-none">
-                  {uniqueUsed ? '✓ Usado' : effects.uniqueCooldown ? '⟳ Recarg.' : '⚡ 1× bat.'}
-                </span>
               </div>
+
+              {/* ── VERSO único ── */}
+              <div
+                className="move-cell-back move-cell-face flex flex-col gap-1.5 p-3"
+                style={{ backgroundColor: '#2C1810' }}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="font-game text-[6px] px-1.5 py-[2px] rounded-full leading-none"
+                    style={{ backgroundColor: `${tc}30`, color: tc }}>{unique.type}</span>
+                  <span className="font-game text-[6px] text-white/45 leading-none">⚡ 1× por batalha</span>
+                </div>
+                <p className="font-black text-[10px] leading-tight" style={{ color: '#FBF5E6' }}>{unique.name}</p>
+                <p className="text-[9px] leading-relaxed flex-1" style={{ color: 'rgba(251,245,230,0.6)' }}>
+                  {unique.description}
+                </p>
+                <button
+                  onClick={() => setFlipped(null)}
+                  className="font-game text-[7px] text-white/30 cursor-pointer text-right hover:text-white/60 transition-colors"
+                >↩ voltar</button>
+              </div>
+
             </div>
-          </button>
+          </div>
         )
       })()}
     </div>
@@ -424,6 +551,24 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
   const pKO = pf.hearts <= 0
   const eKO = ef.hearts <= 0
 
+  // Flash de status: detecta queda de HP causada por veneno/queimadura
+  const [playerFlash, setPlayerFlash] = useState<string | null>(null)
+  const [enemyFlash, setEnemyFlash]   = useState<string | null>(null)
+  const prevPH = useRef(pf.hearts)
+  const prevEH = useRef(ef.hearts)
+  useEffect(() => {
+    if (pf.hearts < prevPH.current && effects.playerStatus) {
+      setPlayerFlash(STATUS_BG[effects.playerStatus.condition])
+    }
+    prevPH.current = pf.hearts
+  }, [pf.hearts]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (ef.hearts < prevEH.current && effects.enemyStatus) {
+      setEnemyFlash(STATUS_BG[effects.enemyStatus.condition])
+    }
+    prevEH.current = ef.hearts
+  }, [ef.hearts]) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="relative overflow-hidden rounded-3xl border-2 border-ink select-none"
       style={{
@@ -461,7 +606,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
               <StatusPill status={effects.enemyStatus} />
             </div>
             <div style={{ width: 124 }}>
-              <HPBar current={ef.hearts} max={ef.pokemon.hearts} />
+              <HPBar current={ef.hearts} max={ef.pokemon.hearts} flashColor={enemyFlash} />
             </div>
             <EffectBadges effects={effects} side="enemy" />
           </div>
@@ -535,7 +680,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
               <StatusPill status={effects.playerStatus} />
             </div>
             <div style={{ width: 124 }}>
-              <HPBar current={pf.hearts} max={pf.pokemon.hearts} />
+              <HPBar current={pf.hearts} max={pf.pokemon.hearts} flashColor={playerFlash} />
             </div>
             <EffectBadges effects={effects} side="player" />
           </div>
