@@ -88,6 +88,7 @@ interface TurnResult {
   enemyDmg: number
   multiplier: number
   activations: string[]
+  lostTurn: boolean  // true quando dormindo/congelado/exausto e não atuou
 }
 
 // ─── Atoms ────────────────────────────────────────────────────────────────────
@@ -789,11 +790,17 @@ export default function BatalhaPage() {
       }
     }
 
+    const lostTurn = playerForcedThisTurn && outcome === 'enemy_wins' && (
+      eff.playerStatus?.condition === 'sleep' ||
+      eff.playerStatus?.condition === 'freeze' ||
+      effects.playerTiredTurns > 0
+    )
+
     setPlayerFighters(prev => prev.map((f, i) => i === playerIdx ? { ...f, hearts: newPHearts } : f))
     setEnemyFighters(prev => prev.map((f, i) => i === enemyIdx ? { ...f, hearts: newEHearts } : f))
     setEffects(eff)
-    setMoveHistory(h => [...h, playerRPS])
-    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations })
+    if (!lostTurn) setMoveHistory(h => [...h, playerRPS])
+    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations, lostTurn })
     setPhase('result')
   }
 
@@ -1025,7 +1032,7 @@ export default function BatalhaPage() {
               {phase === 'result' && lastResult && (() => {
                 const cfg = {
                   player_wins: { color: '#2AAA2A', label: '🏆 Você venceu este turno!' },
-                  enemy_wins:  { color: '#CC2200', label: '💥 Inimigo venceu este turno' },
+                  enemy_wins:  { color: '#CC2200', label: lastResult.lostTurn ? '😴 Turno perdido' : '💥 Inimigo venceu este turno' },
                   tie:         { color: '#888870', label: '🤝 Empate — ninguém atacou' },
                 }[lastResult.outcome]
                 const wasUnique = lastResult.playerMove === 'unique'
@@ -1033,7 +1040,7 @@ export default function BatalhaPage() {
                 return (
                   <div className="flex flex-col gap-1">
                     <p className="font-black text-base text-ink leading-tight">{cfg.label}</p>
-                    {!wasUnique && lastResult.outcome !== 'tie' && (
+                    {!wasUnique && !lastResult.lostTurn && lastResult.outcome !== 'tie' && (
                       <p className="font-game text-[9px] leading-none" style={{ color: cfg.color }}>
                         {getBeatLabel(
                           lastResult.outcome === 'player_wins' ? playerRpsKey! : lastResult.enemyMove,
