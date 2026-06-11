@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
+import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
 import { GYM_LEADERS, buildGymDeck } from '@/lib/data/gyms'
 import { PokemonCard } from '@/components/PokemonCard'
 import { getTypeColor, getTypeTextColor, getSpriteUrl, getPixelSpriteUrl } from '@/lib/typeColors'
@@ -63,14 +64,26 @@ function TrainerPortrait({ name, size = 160 }: { name: string; size?: number }) 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function TorrePage() {
   const router = useRouter()
-  const { mode, gender, playerName, playerDeck, currentFloor, startBattle } = useGameStore()
+  const { mode, gender, playerName, playerDeck, currentFloor, badgesEarned, startBattle } = useGameStore()
 
   const [showSetup, setShowSetup] = useState(false)
   const [selected, setSelected] = useState<PokemonCardType[]>([])
+  const [showAbandon, setShowAbandon] = useState(false)
 
   useEffect(() => {
     if (!mode || !gender) router.replace('/')
   }, [mode, gender, router])
+
+  // Intercepta botão voltar do browser durante a run
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href)
+    const onPop = () => {
+      window.history.pushState(null, '', window.location.href)
+      setShowAbandon(true)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const gym = GYM_LEADERS[currentFloor]
   if (!gym) return null
@@ -104,7 +117,7 @@ export default function TorrePage() {
         <div className="max-w-[640px] mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.push('/draft')}
+              onClick={() => setShowAbandon(true)}
               className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
             >
               ←
@@ -416,14 +429,25 @@ export default function TorrePage() {
               </button>
 
               <button
-                onClick={() => setShowSetup(false)}
+                onClick={() => { setShowSetup(false); setShowAbandon(true) }}
                 className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/30 rounded-2xl text-ink/55 hover:text-ink/90 hover:border-ink/50 hover:bg-white transition-all cursor-pointer"
               >
-                🏳️ Cancelar / Fugir
+                🏳️ Abandonar run
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── ABANDON CONFIRM ── */}
+      {showAbandon && (
+        <AbandonConfirmModal
+          currentFloor={currentFloor}
+          badgesEarned={badgesEarned}
+          playerDeck={playerDeck}
+          onConfirm={() => router.push('/game-over')}
+          onCancel={() => setShowAbandon(false)}
+        />
       )}
 
     </main>

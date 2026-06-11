@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
 import { GYM_LEADERS } from '@/lib/data/gyms'
+import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
 import { getTypeColor, getTypeTextColor, getSpriteUrl, getPixelSpriteUrl } from '@/lib/typeColors'
 
 const FLOOR_BADGE: Record<number, string> = {
@@ -49,7 +50,7 @@ function TrainerMini({ name, size = 80 }: { name: string; size?: number }) {
 
 export default function EntreAndaresPage() {
   const router = useRouter()
-  const { currentFloor, playerDeck, badgesEarned, resetRun } = useGameStore()
+  const { currentFloor, playerDeck, badgesEarned } = useGameStore()
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
 
   const prevFloor = currentFloor - 1
@@ -65,6 +66,17 @@ export default function EntreAndaresPage() {
   const prevGymColor = prevGym ? getTypeColor(prevGym.specialtyType) : '#78C850'
   const nextGymColor = nextGym ? getTypeColor(nextGym.specialtyType) : '#78C850'
 
+  // Intercepta botão voltar do browser
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href)
+    const onPop = () => {
+      window.history.pushState(null, '', window.location.href)
+      setShowQuitConfirm(true)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleContinue() {
     if (isGameComplete) {
       router.push('/conclusao')
@@ -74,8 +86,7 @@ export default function EntreAndaresPage() {
   }
 
   function handleQuit() {
-    resetRun()
-    router.push('/')
+    router.push('/game-over')
   }
 
   return (
@@ -252,32 +263,13 @@ export default function EntreAndaresPage() {
 
       {/* ── Confirmação de abandono ── */}
       {showQuitConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-5"
-          style={{ backgroundColor: 'rgba(44,24,16,0.85)', backdropFilter: 'blur(4px)' }}>
-          <div className="w-full max-w-[400px] border-4 border-ink rounded-3xl p-6 text-center"
-            style={{ backgroundColor: '#FBF5E6', boxShadow: '6px 6px 0 #2C1810' }}>
-            <p className="text-4xl mb-3">🏳️</p>
-            <p className="font-black text-lg text-ink uppercase tracking-tight mb-1">Abandonar a run?</p>
-            <p className="text-sm text-ink-soft opacity-60 mb-6 leading-relaxed">
-              Todo o progresso desta run será perdido. Você voltará ao início e poderá começar uma nova.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handleQuit}
-                className="w-full py-3 font-black text-sm uppercase tracking-widest border-2 border-ink rounded-2xl text-parchment-light transition-all cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] shadow-neo hover:shadow-none"
-                style={{ backgroundColor: '#CC2200' }}
-              >
-                Confirmar abandono
-              </button>
-              <button
-                onClick={() => setShowQuitConfirm(false)}
-                className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/20 rounded-2xl text-ink/50 hover:text-ink/80 transition-all cursor-pointer"
-              >
-                Cancelar — continuar jogando
-              </button>
-            </div>
-          </div>
-        </div>
+        <AbandonConfirmModal
+          currentFloor={currentFloor}
+          badgesEarned={badgesEarned}
+          playerDeck={playerDeck}
+          onConfirm={handleQuit}
+          onCancel={() => setShowQuitConfirm(false)}
+        />
       )}
     </main>
   )

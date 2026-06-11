@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
+import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { getTypeColor, getTypeTextColor, getPixelSpriteUrl, getSpriteUrl, RPS_ICON } from '@/lib/typeColors'
 import {
@@ -547,7 +548,8 @@ function UniqueListRow({
 
 export default function BatalhaPage() {
   const router = useRouter()
-  const { battle, currentFloor, mode, playerDeck, endBattle, incrementDeathCount } = useGameStore()
+  const { battle, currentFloor, mode, playerDeck, badgesEarned, endBattle, incrementDeathCount } = useGameStore()
+  const [showAbandon, setShowAbandon] = useState(false)
 
   const [playerFighters, setPlayerFighters] = useState<Fighter[]>([])
   const [enemyFighters, setEnemyFighters] = useState<Fighter[]>([])
@@ -578,6 +580,17 @@ export default function BatalhaPage() {
     if (message) setEntryMsg(message)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Intercepta botão voltar do browser durante a batalha
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href)
+    const onPop = () => {
+      window.history.pushState(null, '', window.location.href)
+      setShowAbandon(true)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Pré-computa o RPS do inimigo ao entrar em fase de seleção (visual tell)
   useEffect(() => {
     if (phase !== 'selecting' || !battle) return
@@ -599,6 +612,11 @@ export default function BatalhaPage() {
   // const enemyTellColor = (phase === 'selecting' && precomputedEnemyRPS && ef)
   //   ? getTypeColor(ef.pokemon.moves[precomputedEnemyRPS].type) : null
   const enemyTellColor = null
+
+  function handleAbandon() {
+    endBattle('lose')
+    router.push('/game-over')
+  }
 
   const ps = effects.playerStatus
   const playerIsSleeping = ps?.condition === 'sleep'
@@ -1013,7 +1031,7 @@ export default function BatalhaPage() {
       <header className="sticky top-0 z-20 border-b-4 border-ink px-4 py-3"
         style={{ backgroundColor: typeColor }}>
         <div className="max-w-[640px] mx-auto flex items-center justify-between gap-3">
-          <button onClick={() => router.push('/torre')}
+          <button onClick={() => setShowAbandon(true)}
             className="border-2 border-white/30 rounded-full px-3 py-1.5 font-game text-[7px] text-white bg-white/15 hover:bg-white/25 transition-all shrink-0 cursor-pointer">
             ← Fugir
           </button>
@@ -1275,7 +1293,7 @@ export default function BatalhaPage() {
                     🔄 Trocar Pokémon
                   </button>
                   <button
-                    onClick={() => { endBattle('lose'); router.push('/torre') }}
+                    onClick={() => setShowAbandon(true)}
                     className="px-5 py-3 font-game text-[8px] uppercase border-2 border-ink/25 rounded-2xl text-ink/45 hover:text-ink/70 hover:border-ink/50 hover:bg-white/60 transition-all cursor-pointer">
                     🏳️ Fugir
                   </button>
@@ -1451,6 +1469,17 @@ export default function BatalhaPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── ABANDON CONFIRM ── */}
+      {showAbandon && (
+        <AbandonConfirmModal
+          currentFloor={currentFloor}
+          badgesEarned={badgesEarned}
+          playerDeck={playerDeck}
+          onConfirm={handleAbandon}
+          onCancel={() => setShowAbandon(false)}
+        />
       )}
 
     </main>
