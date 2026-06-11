@@ -33,6 +33,13 @@ export interface BattleEffects {
   enemyProtectCooldown: boolean
   // Unique state
   uniqueCooldown: boolean         // unique unavailable next turn (Hydro Cannon)
+  // Shell Smash: +1 atk / -1 def por N turnos
+  playerShellSmashTurns: number
+  // Aqua Ring: cura passiva +1♥ a cada 2 turnos
+  playerAquaRingActive: boolean
+  playerAquaRingHealIn: number    // countdown: quando chega a 0 cura e reseta para 2
+  // Destiny Bond: se player for KO no próximo turno, inimigo também cai
+  playerDestinyBond: boolean
 }
 
 export const DEFAULT_EFFECTS: BattleEffects = {
@@ -52,6 +59,10 @@ export const DEFAULT_EFFECTS: BattleEffects = {
   playerProtectCooldown: false,
   enemyProtectCooldown: false,
   uniqueCooldown: false,
+  playerShellSmashTurns: 0,
+  playerAquaRingActive: false,
+  playerAquaRingHealIn: 2,
+  playerDestinyBond: false,
 }
 
 export interface Fighter {
@@ -85,6 +96,7 @@ export interface TurnStartResult {
   enemyForcedRps: RPS | null    // non-null → enemy must use this RPS
   playerHeartsLost: number      // poison/burn damage (always ≥ 0)
   enemyHeartsLost: number
+  playerHeartsGained: number    // Aqua Ring passive heal
   messages: string[]
   enemyAutoLose: boolean        // enemy sleeping/frozen, player wins automatically
 }
@@ -101,6 +113,29 @@ export function processTurnStart(
   let enemyAutoLose = false
   let playerHeartsLost = 0
   let enemyHeartsLost = 0
+  let playerHeartsGained = 0
+
+  // ── Shell Smash: reaplica buff/debuff a cada turno ativo ───────────────────
+  if (eff.playerShellSmashTurns > 0) {
+    eff.playerShellSmashTurns--
+    eff.playerAttackMod = clampMod(eff.playerAttackMod + 1)
+    eff.playerDefenseMod = clampMod(eff.playerDefenseMod - 1)
+    if (eff.playerShellSmashTurns > 0) {
+      messages.push(`🔱 Shell Smash! +1 ATK / −1 DEF (${eff.playerShellSmashTurns} turno${eff.playerShellSmashTurns !== 1 ? 's' : ''} restante${eff.playerShellSmashTurns !== 1 ? 's' : ''})`)
+    } else {
+      messages.push(`🔱 Shell Smash expirou.`)
+    }
+  }
+
+  // ── Aqua Ring: cura passiva a cada 2 turnos ────────────────────────────────
+  if (eff.playerAquaRingActive) {
+    eff.playerAquaRingHealIn--
+    if (eff.playerAquaRingHealIn <= 0) {
+      playerHeartsGained = 1
+      eff.playerAquaRingHealIn = 2
+      messages.push(`💧 Aqua Ring! +1 ♥`)
+    }
+  }
 
   // ── Player status ──────────────────────────────────────────────────────────
   if (eff.playerStatus) {
@@ -112,19 +147,21 @@ export function processTurnStart(
         : `☠️ ${pf.pokemon.name} está envenenado — −0.5 ♥`)
     } else if (condition === 'sleep') {
       if (turnsLeft > 0) {
-        // Determinístico (Rest): conta regressiva
-        eff.playerStatus = { condition, turnsLeft: turnsLeft - 1 }
-        playerForcedRps = 'rock'
-        messages.push(`😴 ${pf.pokemon.name} está dormindo — perdeu o turno!`)
-      } else {
-        // Indefinido (sono aplicado pelo inimigo): 35% de acordar
-        if (Math.random() < 0.35) {
+        // 45% de acordar cedo (só verificado quando há mais de 1 turno restante)
+        if (turnsLeft > 1 && Math.random() < 0.45) {
           eff.playerStatus = null
-          messages.push(`😴 ${pf.pokemon.name} acordou! Pode agir!`)
-        } else {
           playerForcedRps = 'rock'
-          messages.push(`😴 ${pf.pokemon.name} continua dormindo — perdeu o turno!`)
+          messages.push(`😴 ${pf.pokemon.name} acordou! (último turno dormindo)`)
+        } else {
+          const newTurns = turnsLeft - 1
+          eff.playerStatus = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
+          playerForcedRps = 'rock'
+          messages.push(`😴 ${pf.pokemon.name} está dormindo — perdeu o turno!`)
         }
+      } else {
+        // turnsLeft === 0 (legado -1 ou expirado): acorda
+        eff.playerStatus = null
+        messages.push(`😴 ${pf.pokemon.name} acordou!`)
       }
     } else if (condition === 'freeze') {
       playerForcedRps = 'rock'
@@ -153,15 +190,18 @@ export function processTurnStart(
       enemyHeartsLost = 0.5
     } else if (condition === 'sleep') {
       if (turnsLeft > 0) {
-        eff.enemyStatus = { condition, turnsLeft: turnsLeft - 1 }
-        enemyAutoLose = true
-      } else {
-        if (Math.random() < 0.35) {
+        if (turnsLeft > 1 && Math.random() < 0.45) {
           eff.enemyStatus = null
-          messages.push(`😴 ${ef.pokemon.name} acordou!`)
+          enemyAutoLose = true  // ainda perde este turno mas acorda
+          messages.push(`😴 ${ef.pokemon.name} acordou cedo!`)
         } else {
+          const newTurns = turnsLeft - 1
+          eff.enemyStatus = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
           enemyAutoLose = true
         }
+      } else {
+        eff.enemyStatus = null
+        messages.push(`😴 ${ef.pokemon.name} acordou!`)
       }
     } else if (condition === 'freeze') {
       enemyAutoLose = true
@@ -183,7 +223,7 @@ export function processTurnStart(
     if (eff.enemyForcedTurnsLeft === 0) eff.enemyForcedMove = null
   }
 
-  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, enemyHeartsLost, messages, enemyAutoLose }
+  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, playerHeartsGained, enemyHeartsLost, messages, enemyAutoLose }
 }
 
 // ─── Slot move side-effects (buff / status) ───────────────────────────────────
@@ -324,6 +364,12 @@ export function calcSlotDamage(
   let mult = getCombinedMultiplier(attackType, defenderPokemon.type1, defenderPokemon.type2)
   let dmg = damageFromMultiplier(1, mult)
 
+  // InnerFocus / NoGuard: imunidade de tipo não zera o dano (mínimo 1)
+  if (dmg === 0 && (abilityName === 'InnerFocus' || abilityName === 'NoGuard')) {
+    dmg = 1
+    messages.push(`🎯 ${abilityName}! Ignora imunidade de tipo — 1 dano!`)
+  }
+
   // Low-HP ability boost (≤2♥)
   if (attackerHearts <= 2) {
     if (abilityName === 'Overgrow' && attackType === 'Grass') { dmg++; messages.push(`🌿 Overgrow! +1 dano de Grama!`) }
@@ -362,6 +408,9 @@ export interface UniqueResult {
   userFaints: boolean
   cooldown: boolean
   drainHearts: number         // heal from drain (⌊damage/2⌋)
+  activateShellSmash: boolean // ativa Shell Smash 3-turn buff/debuff
+  activateAquaRing: boolean   // ativa Aqua Ring regen passiva
+  activateDestinyBond: boolean // ativa Destiny Bond
   messages: string[]
 }
 
@@ -370,7 +419,9 @@ const EMPTY_UNIQUE_RESULT: UniqueResult = {
   enemyStatus: null, playerStatus: null,
   enemyForcedMove: null, forceTurns: 0,
   playerTiredTurns: 0, userFaints: false, cooldown: false,
-  drainHearts: 0, messages: [],
+  drainHearts: 0,
+  activateShellSmash: false, activateAquaRing: false, activateDestinyBond: false,
+  messages: [],
 }
 
 export function calcUniqueResult(
@@ -384,10 +435,9 @@ export function calcUniqueResult(
   const defType2 = defender.pokemon.type2
   const name = unique.name
 
-  // Shared helper: apply status to enemy
-  function tryApplyStatus(cond: StatusCondition) {
+  // Shared helper: apply status to enemy (turns: 2 = padrão probabilístico; 1 = 1 turno garantido)
+  function tryApplyStatus(cond: StatusCondition, turns = 2) {
     if (isImmuneToStatus(cond, defType1, defType2) || effects.enemyStatus) return
-    const turns = -1  // sleep usa 35% de chance por turno; demais status indefinidos
     res.enemyStatus = { condition: cond, turnsLeft: turns }
   }
 
@@ -401,11 +451,14 @@ export function calcUniqueResult(
         } else {
           res.messages.push(`💤 ${name}: falhou — inimigo não está dormindo.`)
         }
+      } else if (unique.special === 'aqua-ring') {
+        res.activateAquaRing = true
+        res.messages.push(`💧 ${name}: anel de água ativado! +1 ♥ a cada 2 turnos.`)
       } else {
         const amount = unique.healAmount ?? 3
         res.healPlayer = amount
         if (unique.selfStatus) {
-          const turns = unique.selfStatus === 'sleep' ? 1 : -1
+          const turns = 1  // Rest / moves com selfStatus: exatamente 1 turno garantido
           res.playerStatus = { condition: unique.selfStatus, turnsLeft: turns }
           res.messages.push(`😴 ${name}: recupera ${amount} ♥ e dorme por 1 turno.`)
         } else {
@@ -429,6 +482,15 @@ export function calcUniqueResult(
         } else {
           res.damage = 1; res.playerTiredTurns = 2
           res.messages.push(`❄️ ${name}: sem efeito total — 1 dano. (${attacker.pokemon.name} fica exausto)`)
+        }
+      } else if (unique.special === 'fissure') {
+        const vulnerable = ['Ground', 'Rock', 'Steel'].some(t => t === defType1 || t === defType2)
+        if (vulnerable) {
+          res.damage = defender.hearts; res.playerTiredTurns = 2
+          res.messages.push(`🌍 ${name}: KO instantâneo! ${defender.pokemon.name} é de tipo fraco! (${attacker.pokemon.name} fica exausto)`)
+        } else {
+          res.damage = 1; res.playerTiredTurns = 2
+          res.messages.push(`🌍 ${name}: sem efeito total — 1 dano. (${attacker.pokemon.name} fica exausto)`)
         }
       } else {
         res.damage = defender.hearts; res.playerTiredTurns = 2
@@ -454,8 +516,11 @@ export function calcUniqueResult(
     default: {
       const baseDmg = unique.damage ?? 2
 
-      // Status on hit
-      if (unique.applyEnemyStatus && !effects.enemyStatus) tryApplyStatus(unique.applyEnemyStatus)
+      // Status on hit (Spore: 1 turno garantido; demais: 2 turnos probabilísticos)
+      if (unique.applyEnemyStatus && !effects.enemyStatus) {
+        const sleepTurns = name === 'Spore' ? 1 : 2
+        tryApplyStatus(unique.applyEnemyStatus, unique.applyEnemyStatus === 'sleep' ? sleepTurns : 2)
+      }
 
       switch (unique.special) {
         case 'ignore-immunity':
@@ -516,7 +581,13 @@ export function calcUniqueResult(
           break
         }
 
-        case 'shell-smash':
+        case 'shell-smash': {
+          res.damage = baseDmg
+          res.activateShellSmash = true
+          res.messages.push(`🔱 Shell Smash! ${baseDmg} dano + +1 ATK / −1 DEF por 3 turnos!`)
+          break
+        }
+
         case 'acid-armor':
         case 'barrier':
         case 'quiver-dance':
@@ -539,8 +610,13 @@ export function calcUniqueResult(
           res.messages.push(`💻 ${name}: tipo alterado — 1 dano.`)
           break
 
-        case 'perish-song':
         case 'destiny-bond':
+          res.damage = 0
+          res.activateDestinyBond = true
+          res.messages.push(`💀 ${name}: laço ativado! Se ${attacker.pokemon.name} cair, o inimigo também cai!`)
+          break
+
+        case 'perish-song':
         case 'imposter':
           res.damage = 0
           res.messages.push(`✨ ${name} ativado!`)

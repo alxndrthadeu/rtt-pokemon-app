@@ -305,8 +305,9 @@ export const UNIQUES: Record<string, UniqueDefinition> = {
     description: 'Recupera 3 ♥ e dorme por 1 turno.',
   },
   'aqua-ring-unique': {
-    name: 'Aqua Ring', type: 'Water', rpsSlot: 'paper', kind: 'heal', healAmount: 3,
-    description: 'Envolve-se em água curativa. Recupera 3 ♥.',
+    name: 'Aqua Ring', type: 'Water', rpsSlot: 'paper', kind: 'heal', healAmount: 0,
+    special: 'aqua-ring',
+    description: 'Anel de água curativa. Ativa regen passiva: +1 ♥ a cada 2 turnos pelo resto da batalha.',
   },
   'leech-life-unique': {
     name: 'Leech Life', type: 'Bug', rpsSlot: 'rock', kind: 'super', damage: 2,
@@ -316,7 +317,8 @@ export const UNIQUES: Record<string, UniqueDefinition> = {
   // ── OHKO ─────────────────────────────────────────────────────────────────────
   'fissure': {
     name: 'Fissure', type: 'Ground', rpsSlot: 'scissors', kind: 'ohko',
-    description: 'Abre uma fenda. KO instantâneo — mas fica cansado por 2 turnos.',
+    special: 'fissure',
+    description: 'Abre uma fenda. KO instantâneo vs Terra/Pedra/Aço; 1 dano para outros. Fica exausto por 2 turnos.',
   },
   'guillotine': {
     name: 'Guillotine', type: 'Normal', rpsSlot: 'rock', kind: 'ohko',

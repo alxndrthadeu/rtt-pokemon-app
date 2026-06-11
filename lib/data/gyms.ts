@@ -119,7 +119,7 @@ export const GYM_LEADERS: GymLeader[] = [
     badge: '',
     specialtyType: 'Ice',
     aiLevel: 'predictive',
-    teamIds: [107, 106, 62, 68, 115, 57],
+    teamIds: [86, 87, 91, 124, 131, 80],  // Seel, Dewgong, Cloyster, Jynx, Lapras, Slowbro
     postGymDraftPool: [],
     description: 'Primeira do Elite 4. Seu gelo implacável congela qualquer estratégia descuidada.',
   },
@@ -131,9 +131,9 @@ export const GYM_LEADERS: GymLeader[] = [
     badge: '',
     specialtyType: 'Fighting',
     aiLevel: 'predictive',
-    teamIds: [76, 95, 139, 141, 142, 112],
+    teamIds: [106, 107, 68, 62, 141, 142],  // Hitmonlee, Hitmonchan, Machamp, Poliwrath, Kabutops, Aerodactyl
     postGymDraftPool: [],
-    description: 'Segundo do Elite 4. Corpo forjado em batalha. Cada soco tem intenção e peso.',
+    description: 'Segundo do Elite 4. Corpo forjado em batalha — punhos de aço e fósseis implacáveis.',
   },
   // ─── ANDAR 10 — AGATHA (Elite 4) ───
   {

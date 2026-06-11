@@ -42,6 +42,6 @@ export function getCombinedMultiplier(
 export function damageFromMultiplier(base: number, multiplier: number): number {
   if (multiplier === 0) return 0
   if (multiplier >= 2) return base + 1
-  if (multiplier <= 0.5) return Math.max(1, base - 1)
+  if (multiplier <= 0.5) return base * 0.5  // half damage — resistência tem custo real
   return base
 }

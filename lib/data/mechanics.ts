@@ -1112,30 +1112,6 @@ export const UNIQUE_MOVE_CATALOG: UniqueMoveDef[] = [
     status: 'partial',
     pokemonOwners: ['Victreebel'],
   },
-  {
-    name: 'Stick',
-    type: 'Normal',
-    category: 'rock',
-    formula: 'crit_chance',
-    damage: '1 ou 2 (33% crit)',
-    sideEffects: [],
-    description: 'Golpe com o galho sagrado. Tem 33% de chance de crítico a cada turno — se crítico, causa 2 de dano.',
-    mechanic: 'Math.random() < 0.33 → damage: 2 / damage: 1. Adicionar case no switch.',
-    status: 'pending',
-    pokemonOwners: ["Farfetch'd"],
-  },
-  {
-    name: 'Perish Song',
-    type: 'Normal',
-    category: 'scissors',
-    formula: 'zero_status',
-    damage: 0,
-    sideEffects: ['Em 3 turnos: ambos hearts = 0'],
-    description: 'Melodia amaldiçoada. Após 3 turnos do uso, tanto Lapras quanto o inimigo ativo são derrotados simultaneamente.',
-    mechanic: 'eff.perishSongTurns = 3. Em cada turno: decrement. Se chegar a 0: playerFighters[playerIdx].hearts = 0 e ef.hearts = 0.',
-    status: 'pending',
-    pokemonOwners: ['Lapras'],
-  },
 ]
 
 // ─── Helpers de lookup ────────────────────────────────────────────────────────
