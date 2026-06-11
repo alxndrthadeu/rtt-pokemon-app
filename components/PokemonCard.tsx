@@ -22,17 +22,13 @@ function TypeChip({ type }: { type: string }) {
   )
 }
 
-// ─── Rarity dots ───────────────────────────────────────────────────────────────
-function RarityDots({ rarity }: { rarity: PokemonCardType['rarity'] }) {
+// ─── Rarity stars ──────────────────────────────────────────────────────────────
+function RarityStars({ rarity }: { rarity: PokemonCardType['rarity'] }) {
   const cfg = RARITY_CONFIG[rarity]
   return (
-    <div className="flex items-center gap-1">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <span
-          key={i}
-          className="w-1.5 h-1.5 rounded-full border border-ink/20"
-          style={{ backgroundColor: i < cfg.dots ? cfg.color : 'transparent' }}
-        />
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: cfg.dots }).map((_, i) => (
+        <span key={i} className="text-[9px] leading-none" style={{ color: cfg.color }}>★</span>
       ))}
     </div>
   )
@@ -70,6 +66,11 @@ export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonC
 
       {/* ── Sprite ── */}
       <div className="relative bg-white flex items-center justify-center shrink-0" style={{ height: 148 }}>
+        {/* Gradiente sutil de tipo — remove o "branco genérico" */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at center 80%, ${type1Color}20 0%, transparent 68%)` }}
+        />
         <span className="absolute top-2 left-2 font-game text-[7px] text-ink/25 z-10">
           {formatPokemonNumber(pokemon.id)}
         </span>
@@ -100,7 +101,7 @@ export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonC
         {/* Nome + raridade */}
         <div className="flex items-start justify-between gap-1">
           <p className="font-black text-sm text-ink uppercase tracking-wide leading-tight">{pokemon.name}</p>
-          <RarityDots rarity={pokemon.rarity} />
+          <RarityStars rarity={pokemon.rarity} />
         </div>
 
         {/* Tipos */}
@@ -164,14 +165,13 @@ export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonC
           </div>
         )}
 
-        {/* Corações */}
+        {/* HP X/X */}
         <div className="flex items-center justify-between pt-1 border-t border-ink/10">
-          <div className="flex gap-0.5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i} className="text-base leading-none" style={{ opacity: i < pokemon.hearts ? 1 : 0.18 }}>
-                ♥
-              </span>
-            ))}
+          <div className="flex items-center gap-1.5">
+            <span className="font-game text-[7px] text-ink tracking-widest">HP</span>
+            <span className="font-game text-[8px] font-black" style={{ color: pokemon.hearts <= 1 ? '#E82020' : pokemon.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
+              {pokemon.hearts}/{pokemon.hearts}
+            </span>
           </div>
           {selectable && !selected && (
             <span className="font-game text-[7px] text-ink/30 uppercase tracking-wide">Clique</span>

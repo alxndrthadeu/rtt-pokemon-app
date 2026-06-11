@@ -148,10 +148,12 @@ export default function ConclusaoPage() {
                     >
                       {p.type1}
                     </span>
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: 3 }).map((_, i) => (
-                        <span key={i} className="text-sm leading-none" style={{ opacity: i < p.hearts ? 1 : 0.15 }}>♥</span>
-                      ))}
+                    <div className="flex items-center gap-1">
+                      <span className="font-game text-[6px] text-ink/50 tracking-widest">HP</span>
+                      <span className="font-game text-[7px] font-black"
+                        style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
+                        {p.hearts}/{p.hearts}
+                      </span>
                     </div>
                   </div>
                 </div>

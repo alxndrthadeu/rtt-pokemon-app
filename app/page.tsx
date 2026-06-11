@@ -162,7 +162,7 @@ export default function HomePage() {
               {/* Detalhe de canto estilo hardware anos 90 */}
               <span className="absolute top-2 left-2 w-2 h-2 rounded-full bg-ink opacity-20" />
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-ink opacity-20" />
-              <Pokeball size={118} />
+              <Pokeball size={118} className="pokeball-float" />
             </div>
             {/* Badge #000 estilo Pokédex */}
             <span className="absolute -top-3 -right-4 bg-ink text-parchment font-game text-[8px] px-3 py-1 rounded-full border-2 border-ink shadow-neo-sm">

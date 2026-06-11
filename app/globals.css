@@ -37,3 +37,62 @@ body {
   text-transform: uppercase;
   box-shadow: 0 0 0 2px #F5EDD8, 0 0 0 4px #2C1810;
 }
+
+/* Cursor piscante estilo JRPG Gen 1 */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.blink-cursor {
+  display: inline-block;
+  animation: cursor-blink 0.9s step-end infinite;
+  font-family: var(--font-press-start), monospace;
+  font-size: 10px;
+  line-height: 1.2;
+  margin-right: 5px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Pokéball idle float — Home hero */
+@keyframes pokeball-float {
+  0%, 100% { transform: translateY(0)   rotate(0deg); }
+  30%       { transform: translateY(-5px) rotate(4deg); }
+  70%       { transform: translateY(-3px) rotate(-3deg); }
+}
+.pokeball-float {
+  animation: pokeball-float 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pokeball-float  { animation: none; }
+  .blink-cursor    { animation: none; }
+}
+
+/* Scanlines na arena de batalha */
+.arena-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.045) 3px,
+    rgba(0, 0, 0, 0.045) 4px
+  );
+  pointer-events: none;
+}
+
+/* Pixel corners — cantos decorativos estilo hardware */
+.pixel-corner::before,
+.pixel-corner::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2C1810;
+  opacity: 0.14;
+}
+.pixel-corner::before { top: 8px;  left: 8px; }
+.pixel-corner::after  { top: 8px;  right: 8px; }
+
+/* Press Start 2P: tamanho mínimo 8px em qualquer uso utilitário */
+.font-game { font-family: var(--font-press-start), monospace; }

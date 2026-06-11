@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.4.0] - 2026-06-11
+
+### Adicionado
+
+- **Grade de ataques 2×2** (`MoveGrid`) na batalha substitui a lista linear de 4 botões
+  - Cada célula exibe ícone RPP, nome do golpe, tipo e efeito inline via `getMoveEffectLabel`
+  - Ícones de mão (✊✋✌️) mantidos — referência direta ao RPP
+  - Slot de ataque único integrado na 4ª célula com borda dourada gradiente
+- **Faixa de habilidade permanente** (`AbilityStrip`) acima da grade de ataques
+  - Habilidade sempre visível durante a batalha — sem toggle/expandir
+  - Remove o estado `showAbilityInfo` e o botão de expandir
+- **Pokébolas pixel art no banco** (`PartyBall` SVG 13×13px, `imageRendering: pixelated`)
+  - Pokémon vivo = Pokébola colorida; Pokémon ativo = destaque com cor do tipo
+  - Pokémon derrotado = Pokébola cinza/desbotada
+  - Substitui os pontinhos coloridos (`<span>` com `borderRadius`) em `BattleArena`
+- **Cursor piscante JRPG** (`.blink-cursor` `▶`) na caixa de diálogo da batalha
+  - Animação `step-end` 0.9s — fiel ao pixel art do Game Boy
+  - Desabilitado com `prefers-reduced-motion`
+- **Raridade em estrelas** (`RarityStars`) nos cards do draft
+  - `★` coloridas na cor de cada tier substituem as bolinhas
+- **Draft mobile com scroll horizontal snap**
+  - Carrossel com `scrollSnapType: x mandatory` em mobile (cards com 82vw)
+  - Desktop mantém grid 3 colunas
+- **Animação de flutuação na Pokébola** da Home (`.pokeball-float`)
+  - 3.2s ease-in-out com rotação leve; desabilitada com `prefers-reduced-motion`
+- **Gradiente de tipo no sprite do card** — radial sutil na cor do tipo principal
+  - Remove o "branco genérico" sem alterar a leitura do sprite
+
+### Modificado
+
+- **HP X/X** substitui ♥ em todos os contextos:
+  - Cards do draft (`PokemonCard.tsx`)
+  - Arena de batalha (`HPBar` agora inclui label "HP" + valor numérico com 6px de altura)
+  - Tela de troca de Pokémon (`batalha/page.tsx` switch picker)
+  - Tela de derrota no modo difícil
+  - Pós-batalha (`pos-batalha/page.tsx`)
+  - Tela de conclusão (`conclusao/page.tsx`)
+- **`HPBar`** atualizado: altura 6px (era 5px), label "HP" à esquerda, valor "X/X" à direita
+- **Botão da batalha** removidos `MoveListRow`, `UniqueListRow` e `getMoveDescription` (dead code)
+
+### Removido
+
+- Componente `HeartsDisplay` — todas as referências substituídas por HP X/X
+- Estado `showAbilityInfo` e botão de toggle de habilidade na batalha
+- `MoveListRow` e `UniqueListRow` (substituídos por `MoveGrid`)
+- `getMoveDescription` helper (substituído por `getMoveEffectLabel` inline)
+
+---
+
 ## [0.3.0] - 2026-06-10
 
 ### Adicionado

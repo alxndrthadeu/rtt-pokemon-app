@@ -283,10 +283,12 @@ export default function PosBatalhaPage() {
                       <img src={getSpriteUrl(p.id)} alt={p.name} style={{ width: 48, height: 48, objectFit: 'contain' }} />
                       <div className="flex-1 min-w-0">
                         <p className="font-black text-[10px] text-ink uppercase tracking-tight truncate">{p.name}</p>
-                        <div className="flex gap-0.5 mt-0.5">
-                          {Array.from({ length: 5 }).map((_, hi) => (
-                            <span key={hi} className="text-[10px] leading-none" style={{ opacity: hi < p.hearts ? 1 : 0.18 }}>♥</span>
-                          ))}
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="font-game text-[6px] text-ink/50 tracking-widest">HP</span>
+                          <span className="font-game text-[7px] font-black"
+                            style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
+                            {p.hearts}/{p.hearts}
+                          </span>
                         </div>
                       </div>
                     </div>

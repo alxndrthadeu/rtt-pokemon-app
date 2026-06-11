@@ -205,16 +205,18 @@ export default function DraftPage() {
               )}
             </div>
 
-            {/* Grid de cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Cards — horizontal scroll snap no mobile, grid 3 colunas no desktop */}
+            <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0"
+              style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
               {pool.map((pokemon) => (
-                <PokemonCard
-                  key={pokemon.id}
-                  pokemon={pokemon}
-                  selectable
-                  selected={selectedId === pokemon.id}
-                  onClick={() => handleSelect(pokemon)}
-                />
+                <div key={pokemon.id} className="shrink-0 w-[82vw] sm:w-auto" style={{ scrollSnapAlign: 'start' }}>
+                  <PokemonCard
+                    pokemon={pokemon}
+                    selectable
+                    selected={selectedId === pokemon.id}
+                    onClick={() => handleSelect(pokemon)}
+                  />
+                </div>
               ))}
             </div>
 
