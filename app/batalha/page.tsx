@@ -36,6 +36,21 @@ function generateAIMove(level: AILevel, history: RPS[], forcedMove: RPS | null):
   const mostUsed = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] as RPS
   const thresholds: Record<AILevel, number> = { random: 0, weighted: 0.55, adaptive: 0.75, predictive: 0.85 }
   const t = thresholds[level]
+  if (level === 'predictive' && history.length >= 2) {
+    const last = history[history.length - 1]
+    // Analisa o que o jogador tende a jogar DEPOIS de [last]
+    const followCounts: Record<RPS, number> = { rock: 0, paper: 0, scissors: 0 }
+    let followTotal = 0
+    for (let i = 0; i < history.length - 1; i++) {
+      if (history[i] === last) { followCounts[history[i + 1]]++; followTotal++ }
+    }
+    if (followTotal >= 2 && Math.random() < t) {
+      const predicted = Object.entries(followCounts).sort((a, b) => b[1] - a[1])[0][0] as RPS
+      return BEATS[predicted]
+    }
+    // Fallback: bate o move mais frequente geral
+    return Math.random() < t ? BEATS[mostUsed] : ALL_RPS[Math.floor(Math.random() * 3)]
+  }
   if (level === 'predictive' && history.length > 0) {
     const last = history[history.length - 1]
     return Math.random() < t ? BEATS[last] : ALL_RPS[Math.floor(Math.random() * 3)]
@@ -90,6 +105,7 @@ interface TurnResult {
   activations: string[]
   lostTurn: boolean       // player dormiu/congelou/exausto — não atuou
   enemyLostTurn: boolean  // inimigo dormiu/congelou — player vence automaticamente
+  switchedIn?: string     // nome do pokemon que entrou via troca voluntária (inimigo ataca de graça)
 }
 
 // ─── Atoms ────────────────────────────────────────────────────────────────────
@@ -124,7 +140,7 @@ function HPBar({ current, max }: { current: number; max: number }) {
 const STATUS_DESC: Record<StatusCondition, string> = {
   poison:    '−0.5♥ no início de cada turno. Pokémon Venenoso/Aço são imunes.',
   paralysis: '30% de chance de perder o turno. Pokémon Elétrico é imune.',
-  sleep:     'Perde o turno automaticamente até acordar (1–3 turnos).',
+  sleep:     'Perde o turno por até 2 turnos. 45% de chance de acordar cedo no 2º turno.',
   freeze:    'Perde o turno até descongelar. Ataques de Fogo descongelam.',
   burn:      '−0.5♥ no início de cada turno. Pokémon Fogo é imune.',
 }
@@ -207,9 +223,11 @@ interface ArenaProps {
   typeColor: string
   playerFighters: Fighter[]; enemyFighters: Fighter[]
   playerIdx: number; enemyIdx: number
+  phase: LocalPhase
+  enemyTellType?: string | null   // cor do tipo do próximo move do inimigo (visual tell)
 }
 
-function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters, playerIdx, enemyIdx }: ArenaProps) {
+function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters, playerIdx, enemyIdx, phase, enemyTellType }: ArenaProps) {
   const pKO = pf.hearts <= 0
   const eKO = ef.hearts <= 0
 
@@ -272,6 +290,11 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
       {/* ── Enemy sprite — top-right ── */}
       <div className="absolute z-[5] transition-opacity duration-300"
         style={{ right: 18, top: 22, opacity: eKO ? 0.22 : 1 }}>
+        {/* Visual tell: aura do tipo do próximo move do inimigo durante seleção */}
+        {phase === 'selecting' && !eKO && enemyTellType && (
+          <div className="absolute inset-0 pointer-events-none rounded-xl z-10 transition-all duration-500"
+            style={{ boxShadow: `0 0 18px 6px ${enemyTellType}99`, borderRadius: 8 }} />
+        )}
         <img
           src={getPixelSpriteUrl(ef.pokemon.id)}
           alt={ef.pokemon.name}
@@ -530,8 +553,8 @@ export default function BatalhaPage() {
   const [enemyFighters, setEnemyFighters] = useState<Fighter[]>([])
   const [playerIdx, setPlayerIdx] = useState(0)
   const [enemyIdx, setEnemyIdx] = useState(0)
-  const [switchUsed, setSwitchUsed] = useState(false)
   const [showSwitchPicker, setShowSwitchPicker] = useState(false)
+  const [switchRequired, setSwitchRequired] = useState(false) // true após faint — picker não pode ser dispensado
   const [uniqueUsed, setUniqueUsed] = useState<boolean[]>([])
   const [phase, setPhase] = useState<LocalPhase>('selecting')
   const [turn, setTurn] = useState(1)
@@ -540,6 +563,8 @@ export default function BatalhaPage() {
   const [lastResult, setLastResult] = useState<TurnResult | null>(null)
   const [entryMsg, setEntryMsg] = useState<string | null>(null)
   const [showAbilityInfo, setShowAbilityInfo] = useState(false)
+  // Visual tell: move do inimigo pré-computado (tipo exibido como "aura" durante seleção)
+  const [precomputedEnemyRPS, setPrecomputedEnemyRPS] = useState<RPS | null>(null)
 
   useEffect(() => {
     if (!battle) { router.replace('/torre'); return }
@@ -553,12 +578,27 @@ export default function BatalhaPage() {
     if (message) setEntryMsg(message)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Pré-computa o RPS do inimigo ao entrar em fase de seleção (visual tell)
+  useEffect(() => {
+    if (phase !== 'selecting' || !battle) return
+    const gym = GYM_LEADERS[currentFloor]
+    if (!gym) return
+    const forced = effects.enemyTiredTurns > 0 ? 'rock' as RPS
+      : (effects.enemyForcedMove && effects.enemyForcedTurnsLeft > 0 ? effects.enemyForcedMove : null)
+    const rps = forced ?? generateAIMove(gym.aiLevel, moveHistory, null)
+    setPrecomputedEnemyRPS(rps)
+  }, [phase, enemyIdx]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const gym = GYM_LEADERS[currentFloor]
   if (!battle || !gym || playerFighters.length === 0 || enemyFighters.length === 0) return null
 
   const typeColor = getTypeColor(gym.specialtyType)
   const pf = playerFighters[playerIdx]
   const ef = enemyFighters[enemyIdx]
+  // Visual tell desabilitado por ora — código mantido para reativar quando necessário
+  // const enemyTellColor = (phase === 'selecting' && precomputedEnemyRPS && ef)
+  //   ? getTypeColor(ef.pokemon.moves[precomputedEnemyRPS].type) : null
+  const enemyTellColor = null
 
   const ps = effects.playerStatus
   const playerIsSleeping = ps?.condition === 'sleep'
@@ -578,6 +618,10 @@ export default function BatalhaPage() {
     activations.push(...turnStart.messages)
 
     let newPHearts = Math.max(0, pf.hearts - turnStart.playerHeartsLost)
+    // Aqua Ring / cura passiva do processTurnStart
+    if (turnStart.playerHeartsGained > 0) {
+      newPHearts = Math.min(pf.pokemon.hearts, newPHearts + turnStart.playerHeartsGained)
+    }
     let newEHearts = Math.max(0, ef.hearts - turnStart.enemyHeartsLost)
 
     const isUnique = move === 'unique'
@@ -598,7 +642,7 @@ export default function BatalhaPage() {
     const isProtect = chosenMove?.special === 'protect' && !eff.playerProtectCooldown
     eff = { ...eff, playerProtectCooldown: false }
 
-    const aiMove = generateAIMove(gym.aiLevel, moveHistory, turnStart.enemyForcedRps)
+    const aiMove = turnStart.enemyForcedRps ?? precomputedEnemyRPS ?? generateAIMove(gym.aiLevel, moveHistory, null)
     const enemyIsProtect = ef.pokemon.moves[aiMove].special === 'protect' && !eff.enemyProtectCooldown
     eff = { ...eff, enemyProtectCooldown: false }
     if (enemyIsProtect) eff = { ...eff, enemyProtectCooldown: true }
@@ -655,6 +699,10 @@ export default function BatalhaPage() {
         if (uRes.healPlayer > 0) { newPHearts = Math.min(pf.pokemon.hearts, newPHearts + uRes.healPlayer); activations.push(`💚 Curou ${uRes.healPlayer} ♥!`) }
         if (uRes.drainHearts > 0) { newPHearts = Math.min(pf.pokemon.hearts, newPHearts + uRes.drainHearts); activations.push(`🍃 Absorção +${uRes.drainHearts} ♥!`) }
         if (uRes.userFaints) newPHearts = 0
+        // Novos flags
+        if (uRes.activateShellSmash) eff = { ...eff, playerShellSmashTurns: 3 }
+        if (uRes.activateAquaRing) eff = { ...eff, playerAquaRingActive: true, playerAquaRingHealIn: 2 }
+        if (uRes.activateDestinyBond) eff = { ...eff, playerDestinyBond: true }
 
         if (uRes.benchDamage > 0) {
           setEnemyFighters(prev => prev.map((f, i) =>
@@ -794,6 +842,13 @@ export default function BatalhaPage() {
       }
     }
 
+    // Destiny Bond: se o jogador cair, o inimigo também cai
+    if (newPHearts <= 0 && eff.playerDestinyBond) {
+      newEHearts = 0
+      eff = { ...eff, playerDestinyBond: false }
+      activations.push(`💀 Destiny Bond! ${ef.pokemon.name} também é derrotado!`)
+    }
+
     const lostTurn = playerForcedThisTurn && outcome === 'enemy_wins' && (
       eff.playerStatus?.condition === 'sleep' ||
       eff.playerStatus?.condition === 'freeze' ||
@@ -823,12 +878,12 @@ export default function BatalhaPage() {
     }
 
     if (currentPF.hearts <= 0) {
-      const next = playerFighters.findIndex((f, i) => i !== playerIdx && f.hearts > 0)
-      if (next === -1) { setPhase('defeat'); return }
-      setPlayerIdx(next)
-      const { newEffects, message } = applyEntryEffects(playerFighters[next].pokemon, 'player', effects)
-      setEffects({ ...newEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false })
-      if (message) setEntryMsg(message)
+      const hasAlive = playerFighters.some((f, i) => i !== playerIdx && f.hearts > 0)
+      if (!hasAlive) { setPhase('defeat'); return }
+      // Jogador escolhe qual pokemon envia — picker obrigatório, não pode ser dispensado
+      setSwitchRequired(true)
+      setShowSwitchPicker(true)
+      return
     }
 
     setLastResult(null)
@@ -837,18 +892,108 @@ export default function BatalhaPage() {
   }
 
   function handleSwitch() {
-    if (switchUsed) return
     if (playerFighters.filter(f => f.hearts > 0).length <= 1) return
+    setSwitchRequired(false)
     setShowSwitchPicker(true)
   }
 
+  // Troca voluntária: inimigo ataca o pokemon que entrou (turno gasto)
+  function handleSwitchTurn(targetIdx: number) {
+    setShowSwitchPicker(false)
+    setSwitchRequired(false)
+
+    const incoming = playerFighters[targetIdx]
+    const activations: string[] = [`🔄 ${incoming.pokemon.name} entrou em campo!`]
+
+    const { newEffects: entryEffects, message: entryMessage } = applyEntryEffects(incoming.pokemon, 'player', effects)
+    let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false }
+    if (entryMessage) activations.push(entryMessage)
+
+    // Inimigo ataca de graça com o move pré-computado
+    const aiMove = precomputedEnemyRPS ?? generateAIMove(gym.aiLevel, moveHistory, null)
+    const attackType = ef.pokemon.moves[aiMove].type
+    const pAbility = incoming.pokemon.ability.name
+
+    let newPHearts = incoming.hearts
+    let playerDmg = 0
+    let multiplier = 1
+    let immune = false
+
+    if (pAbility === 'VoltAbsorb' && attackType === 'Electric') {
+      immune = true; multiplier = 0
+      newPHearts = Math.min(incoming.pokemon.hearts, newPHearts + 1)
+      activations.push(`🔋 VoltAbsorb! ${incoming.pokemon.name} absorveu e recuperou 1 ♥!`)
+    } else if (pAbility === 'WaterAbsorb' && attackType === 'Water') {
+      immune = true; multiplier = 0
+      newPHearts = Math.min(incoming.pokemon.hearts, newPHearts + 1)
+      activations.push(`💧 WaterAbsorb! ${incoming.pokemon.name} absorveu e recuperou 1 ♥!`)
+    } else if (pAbility === 'FlashFire' && attackType === 'Fire') {
+      immune = true; multiplier = 0; eff = { ...eff, flashFireActive: true }
+      activations.push(`🔥 FlashFire! ${incoming.pokemon.name} é imune! Fogo potencializado!`)
+    } else if (pAbility === 'Levitate' && attackType === 'Ground') {
+      immune = true; multiplier = 0
+      activations.push(`🌬️ Levitate! ${incoming.pokemon.name} flutua sobre o ataque!`)
+    } else if (pAbility === 'Lightning Rod' && Math.random() < 0.40) {
+      immune = true; multiplier = 0
+      activations.push(`⚡ Lightning Rod! ${incoming.pokemon.name} absorveu o golpe!`)
+    }
+
+    if (!immune) {
+      const slotRes = calcSlotDamage(
+        attackType, ef.pokemon, ef.hearts, incoming.pokemon, false,
+        eff.enemyAttackMod, eff.playerDefenseMod,
+      )
+      playerDmg = slotRes.damage
+      multiplier = slotRes.multiplier
+      activations.push(...slotRes.messages)
+      eff = { ...eff, enemyAttackMod: 0, playerDefenseMod: 0 }
+
+      if (attackType === 'Fire') {
+        const { effects: newEff, thawed } = applyThaw(eff, 'player', attackType)
+        eff = newEff
+        if (thawed) activations.push(`🔥 ${incoming.pokemon.name} descongelou!`)
+      }
+
+      const { damage: finalDmg, sturdyTriggered } = applySturdy(
+        playerDmg, newPHearts, eff.playerSturdyUsed, pAbility === 'Sturdy',
+      )
+      if (sturdyTriggered) {
+        eff = { ...eff, playerSturdyUsed: true }
+        activations.push(`🛡️ Sturdy! ${incoming.pokemon.name} sobreviveu com 1 ♥!`)
+      }
+      playerDmg = finalDmg
+      newPHearts = Math.max(0, newPHearts - playerDmg)
+    }
+
+    setPlayerIdx(targetIdx)
+    setPlayerFighters(prev => prev.map((f, i) => i === targetIdx ? { ...f, hearts: newPHearts } : f))
+    setEffects(eff)
+    setLastResult({
+      playerMove: 'rock',
+      enemyMove: aiMove,
+      outcome: 'enemy_wins',
+      playerDmg,
+      enemyDmg: 0,
+      multiplier,
+      activations,
+      lostTurn: false,
+      enemyLostTurn: false,
+      switchedIn: incoming.pokemon.name,
+    })
+    setPhase('result')
+  }
+
+  // Troca após faint: grátis, sem golpe do inimigo
   function confirmSwitch(targetIdx: number) {
     setShowSwitchPicker(false)
-    setSwitchUsed(true)
+    setSwitchRequired(false)
     setPlayerIdx(targetIdx)
     const { newEffects, message } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
     setEffects({ ...newEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false })
     if (message) setEntryMsg(message)
+    setLastResult(null)
+    setTurn(t => t + 1)
+    setPhase('selecting')
   }
 
   // ── Derived display values ──────────────────────────────────────────────────
@@ -898,6 +1043,8 @@ export default function BatalhaPage() {
           enemyFighters={enemyFighters}
           playerIdx={playerIdx}
           enemyIdx={enemyIdx}
+          phase={phase}
+          enemyTellType={enemyTellColor}
         />
 
         {/* ── VICTORY ── */}
@@ -1037,7 +1184,7 @@ export default function BatalhaPage() {
               {phase === 'result' && lastResult && (() => {
                 const cfg = {
                   player_wins: { color: '#2AAA2A', label: lastResult.enemyLostTurn ? '😴 Inimigo perdeu o turno!' : '🏆 Você venceu este turno!' },
-                  enemy_wins:  { color: '#CC2200', label: lastResult.lostTurn ? '😴 Turno perdido' : '💥 Inimigo venceu este turno' },
+                  enemy_wins:  { color: '#CC2200', label: lastResult.switchedIn ? `🔄 Troca! ${ef.pokemon.name} atacou!` : lastResult.lostTurn ? '😴 Turno perdido' : '💥 Inimigo venceu este turno' },
                   tie:         { color: '#888870', label: '🤝 Empate — ninguém atacou' },
                 }[lastResult.outcome]
                 const wasUnique = lastResult.playerMove === 'unique'
@@ -1045,7 +1192,7 @@ export default function BatalhaPage() {
                 return (
                   <div className="flex flex-col gap-1">
                     <p className="font-black text-base text-ink leading-tight">{cfg.label}</p>
-                    {!wasUnique && !lastResult.lostTurn && !lastResult.enemyLostTurn && lastResult.outcome !== 'tie' && (
+                    {!wasUnique && !lastResult.lostTurn && !lastResult.enemyLostTurn && !lastResult.switchedIn && lastResult.outcome !== 'tie' && (
                       <p className="font-game text-[9px] leading-none" style={{ color: cfg.color }}>
                         {getBeatLabel(
                           lastResult.outcome === 'player_wins' ? playerRpsKey! : lastResult.enemyMove,
@@ -1120,12 +1267,12 @@ export default function BatalhaPage() {
                 <div className="flex gap-2 mt-1">
                   <button
                     onClick={handleSwitch}
-                    disabled={switchUsed || playerFighters.filter(f => f.hearts > 0).length <= 1}
+                    disabled={playerFighters.filter(f => f.hearts > 0).length <= 1}
                     className="flex-1 py-3 font-black text-sm uppercase border-2 rounded-2xl transition-all duration-75 cursor-pointer disabled:cursor-not-allowed"
-                    style={switchUsed || playerFighters.filter(f => f.hearts > 0).length <= 1
+                    style={playerFighters.filter(f => f.hearts > 0).length <= 1
                       ? { borderColor: 'rgba(44,24,16,0.15)', backgroundColor: '#F5EDD8', color: 'rgba(44,24,16,0.3)' }
                       : { borderColor: '#2C1810', backgroundColor: '#FBF5E6', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }}>
-                    {switchUsed ? '🔄 Troca usada' : '🔄 Trocar Pokémon'}
+                    🔄 Trocar Pokémon
                   </button>
                   <button
                     onClick={() => { endBattle('lose'); router.push('/torre') }}
@@ -1160,7 +1307,16 @@ export default function BatalhaPage() {
                 <div className="flex flex-col gap-2">
                   {/* Clash cards */}
                   <div className="grid grid-cols-2 gap-2">
-                    {/* Player move */}
+                    {/* Player move — ou card de troca */}
+                    {lastResult.switchedIn ? (
+                      <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
+                        style={{ boxShadow: '3px 3px 0 rgba(44,24,16,0.12)' }}>
+                        <span className="text-3xl leading-none">🔄</span>
+                        <p className="font-black text-[11px] text-ink text-center leading-tight">{lastResult.switchedIn}</p>
+                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none bg-ink/10 text-ink/50">TROCA</span>
+                        <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                      </div>
+                    ) : (
                     <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
                       style={{ boxShadow: lastResult.outcome === 'player_wins' ? '3px 3px 0 #38C838' : '3px 3px 0 rgba(44,24,16,0.12)' }}>
                       <span className="text-3xl leading-none">{playerIcon}</span>
@@ -1178,6 +1334,7 @@ export default function BatalhaPage() {
                         </p>
                       )}
                     </div>
+                    )}
 
                     {/* Enemy move */}
                     <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
@@ -1221,8 +1378,8 @@ export default function BatalhaPage() {
                     style={{ boxShadow: `4px 4px 0 ${cfg.shadowColor}` }}>
                     {ef.hearts <= 0 && enemyIdx + 1 < enemyFighters.length
                       ? `${gym.name} envia próximo Pokémon →`
-                      : pf.hearts <= 0 && playerIdx + 1 < playerFighters.length
-                      ? 'Próximo Pokémon seu →'
+                      : pf.hearts <= 0 && playerFighters.some((f, i) => i !== playerIdx && f.hearts > 0)
+                      ? 'Escolher próximo Pokémon →'
                       : 'Próximo Turno →'}
                   </button>
                 </div>
@@ -1237,14 +1394,18 @@ export default function BatalhaPage() {
       {showSwitchPicker && (
         <div className="fixed inset-0 z-50 flex items-end justify-center"
           style={{ backgroundColor: 'rgba(44,24,16,0.75)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setShowSwitchPicker(false)}>
+          onClick={() => { if (!switchRequired) setShowSwitchPicker(false) }}>
           <div className="w-full max-w-[640px] rounded-t-3xl border-t-4 border-x-4 border-ink p-5 pb-10"
             style={{ backgroundColor: '#FBF5E6' }}
             onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full bg-ink/20 mx-auto mb-5" />
-            <p className="font-black text-lg text-ink uppercase tracking-tight text-center mb-1">Trocar Pokémon</p>
+            <p className="font-black text-lg text-ink uppercase tracking-tight text-center mb-1">
+              {switchRequired ? 'Próximo Pokémon!' : 'Trocar Pokémon'}
+            </p>
             <p className="font-game text-[7px] text-ink-soft opacity-50 uppercase tracking-widest text-center mb-5">
-              Escolha quem entra em campo · Uso único por batalha
+              {switchRequired
+                ? 'Seu Pokémon caiu — escolha o próximo'
+                : 'Escolha quem entra · Inimigo atacará de graça'}
             </p>
             <div className="grid grid-cols-3 gap-3">
               {playerFighters.map((fighter, idx) => {
@@ -1254,7 +1415,7 @@ export default function BatalhaPage() {
                 const selectable = !isCurrent && !isKO
                 return (
                   <button key={idx}
-                    onClick={() => selectable && confirmSwitch(idx)}
+                    onClick={() => selectable && (switchRequired ? confirmSwitch(idx) : handleSwitchTurn(idx))}
                     disabled={!selectable}
                     className="flex flex-col items-center gap-2 border-2 rounded-2xl p-3 transition-all duration-75"
                     style={{
