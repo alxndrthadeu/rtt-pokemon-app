@@ -88,7 +88,8 @@ interface TurnResult {
   enemyDmg: number
   multiplier: number
   activations: string[]
-  lostTurn: boolean  // true quando dormindo/congelado/exausto e não atuou
+  lostTurn: boolean       // player dormiu/congelou/exausto — não atuou
+  enemyLostTurn: boolean  // inimigo dormiu/congelou — player vence automaticamente
 }
 
 // ─── Atoms ────────────────────────────────────────────────────────────────────
@@ -609,7 +610,10 @@ export default function BatalhaPage() {
       outcome = resolveRPS(playerRPS, aiMove)
     }
 
-    // Sleep/freeze/tired → player can't act → enemy wins automatically
+    // Enemy sleep/freeze → player wins automatically (null turn, symmetric to player sleep)
+    if (turnStart.enemyAutoLose) outcome = 'player_wins'
+
+    // Player sleep/freeze/tired → enemy wins automatically
     if (playerForcedThisTurn) {
       const forcedBySleepOrFreeze = eff.playerStatus?.condition === 'sleep' || eff.playerStatus?.condition === 'freeze'
       const forcedByTired = effects.playerTiredTurns > 0
@@ -795,12 +799,13 @@ export default function BatalhaPage() {
       eff.playerStatus?.condition === 'freeze' ||
       effects.playerTiredTurns > 0
     )
+    const enemyLostTurn = turnStart.enemyAutoLose && outcome === 'player_wins'
 
     setPlayerFighters(prev => prev.map((f, i) => i === playerIdx ? { ...f, hearts: newPHearts } : f))
     setEnemyFighters(prev => prev.map((f, i) => i === enemyIdx ? { ...f, hearts: newEHearts } : f))
     setEffects(eff)
     if (!lostTurn) setMoveHistory(h => [...h, playerRPS])
-    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations, lostTurn })
+    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations, lostTurn, enemyLostTurn })
     setPhase('result')
   }
 
@@ -1031,7 +1036,7 @@ export default function BatalhaPage() {
 
               {phase === 'result' && lastResult && (() => {
                 const cfg = {
-                  player_wins: { color: '#2AAA2A', label: '🏆 Você venceu este turno!' },
+                  player_wins: { color: '#2AAA2A', label: lastResult.enemyLostTurn ? '😴 Inimigo perdeu o turno!' : '🏆 Você venceu este turno!' },
                   enemy_wins:  { color: '#CC2200', label: lastResult.lostTurn ? '😴 Turno perdido' : '💥 Inimigo venceu este turno' },
                   tie:         { color: '#888870', label: '🤝 Empate — ninguém atacou' },
                 }[lastResult.outcome]
@@ -1040,7 +1045,7 @@ export default function BatalhaPage() {
                 return (
                   <div className="flex flex-col gap-1">
                     <p className="font-black text-base text-ink leading-tight">{cfg.label}</p>
-                    {!wasUnique && !lastResult.lostTurn && lastResult.outcome !== 'tie' && (
+                    {!wasUnique && !lastResult.lostTurn && !lastResult.enemyLostTurn && lastResult.outcome !== 'tie' && (
                       <p className="font-game text-[9px] leading-none" style={{ color: cfg.color }}>
                         {getBeatLabel(
                           lastResult.outcome === 'player_wins' ? playerRpsKey! : lastResult.enemyMove,

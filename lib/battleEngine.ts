@@ -86,6 +86,7 @@ export interface TurnStartResult {
   playerHeartsLost: number      // poison/burn damage (always ≥ 0)
   enemyHeartsLost: number
   messages: string[]
+  enemyAutoLose: boolean        // enemy sleeping/frozen, player wins automatically
 }
 
 export function processTurnStart(
@@ -97,6 +98,7 @@ export function processTurnStart(
   const messages: string[] = []
   let playerForcedRps: RPS | null = null
   let enemyForcedRps: RPS | null = null
+  let enemyAutoLose = false
   let playerHeartsLost = 0
   let enemyHeartsLost = 0
 
@@ -152,17 +154,17 @@ export function processTurnStart(
     } else if (condition === 'sleep') {
       if (turnsLeft > 0) {
         eff.enemyStatus = { condition, turnsLeft: turnsLeft - 1 }
-        enemyForcedRps = 'rock'
+        enemyAutoLose = true
       } else {
         if (Math.random() < 0.35) {
           eff.enemyStatus = null
           messages.push(`😴 ${ef.pokemon.name} acordou!`)
         } else {
-          enemyForcedRps = 'rock'
+          enemyAutoLose = true
         }
       }
     } else if (condition === 'freeze') {
-      enemyForcedRps = 'rock'
+      enemyAutoLose = true
     } else if (condition === 'paralysis') {
       if (Math.random() < 0.30) enemyForcedRps = 'rock'
     }
@@ -181,7 +183,7 @@ export function processTurnStart(
     if (eff.enemyForcedTurnsLeft === 0) eff.enemyForcedMove = null
   }
 
-  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, enemyHeartsLost, messages }
+  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, enemyHeartsLost, messages, enemyAutoLose }
 }
 
 // ─── Slot move side-effects (buff / status) ───────────────────────────────────
