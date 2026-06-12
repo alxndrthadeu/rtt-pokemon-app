@@ -14,7 +14,7 @@ function generateSessionId(): string {
 
 // Floors where shop is available (currentFloor value after winning that gym)
 export const SHOP_FLOORS = [3, 6, 9] as const
-export const HEAL_COST = 10
+export const HEAL_COST = 7
 
 interface GameStore {
   // Sessão anônima (UUID persistido no localStorage)
@@ -540,6 +540,7 @@ export const useGameStore = create<GameStore>()(
         shopVisitedFloors: s.shopVisitedFloors,
         starterId: s.starterId,
         runHistory: s.runHistory,
+        runSaved: s.runSaved,
       }),
     },
   ),

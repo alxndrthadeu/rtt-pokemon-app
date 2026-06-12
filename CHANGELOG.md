@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.9.2] - 2026-06-12
+
+### Corrigido
+
+- **Life Orb recoil nunca aplicado** (`app/batalha/page.tsx`) — `getLifeOrbRecoil()` existia no engine mas nunca era chamada; agora descontada após ataques vitoriosos
+- **Shell Bell heal nunca aplicado** (`app/batalha/page.tsx`) — `getShellBellHeal()` existia no engine mas nunca era chamada; agora aplicada após causar dano
+- **King's Rock flinch nunca aplicado** (`app/batalha/page.tsx`) — `checkKingsRock()` existia no engine mas nunca era chamada; 30% de forçar ✊ no próximo turno inimigo
+- **Sticky Web `forcedFirstMove` descartado** (`app/batalha/page.tsx`) — `applyEntryEffects()` retornava `forcedFirstMove` mas todos os 4 call sites descartavam o valor; adicionado estado `stickyWebForcedMove` e lógica em `handleAttack`, `handleSwitchTurn` e `confirmSwitch`
+- **`handleGiveUp` ia para `/` sem razão** (`app/batalha/page.tsx`) — agora chama `setRunEndReason('lost')` e redireciona para `/game-over`
+- **Hard Mode HP display** (`app/batalha/page.tsx`) — `p.hearts/p.hearts` corrigido para `Math.ceil(p.hearts)/5` na tela de segunda chance
+- **`runSaved` não persistido** (`store/gameStore.ts`) — adicionado ao `partialize`; previne saves duplicados após reload
+
+### Adicionado
+
+- **Chip damage em empates consecutivos** (`app/batalha/page.tsx`) — a partir do 2º empate seguido, ambos tomam 0.5♥; estado `consecutiveTies` resetado em turnos não-tie
+- **Visual tell do inimigo reativado** (`app/batalha/page.tsx`) — `enemyTellColor = null` substituído por cálculo real via `precomputedEnemyRPS`
+
+### Modificado
+
+- **`HEAL_COST`: 10 → 7** (`store/gameStore.ts`) — cura total acessível após 3ª vitória (economicamente viável)
+
+---
+
 ## [0.9.1] - 2026-06-12
 
 ### Corrigido

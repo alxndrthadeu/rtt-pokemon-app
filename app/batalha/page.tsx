@@ -10,6 +10,7 @@ import {
   BattleEffects, DEFAULT_EFFECTS, Fighter,
   processTurnStart, calcUniqueResult, calcSlotDamage, applySlotMoveEffect,
   applySturdy, applyThaw, applyEntryEffects,
+  getLifeOrbRecoil, getShellBellHeal, checkKingsRock,
   StatusState,
 } from '@/lib/battleEngine'
 import type { PokemonCard, Move, RPS, AILevel, StatusCondition } from '@/types'
@@ -771,6 +772,10 @@ export default function BatalhaPage() {
   const [effects, setEffects] = useState<BattleEffects>(DEFAULT_EFFECTS)
   const [lastResult, setLastResult] = useState<TurnResult | null>(null)
   const [entryMsg, setEntryMsg] = useState<string | null>(null)
+  // Sticky Web: forces Rock on the pokemon's first turn after switching in
+  const [stickyWebForcedMove, setStickyWebForcedMove] = useState<RPS | null>(null)
+  // Consecutive ties: track for chip damage from 2nd tie onward
+  const [consecutiveTies, setConsecutiveTies] = useState(0)
   // Visual tell: move do inimigo pré-computado (tipo exibido como "aura" durante seleção)
   const [precomputedEnemyRPS, setPrecomputedEnemyRPS] = useState<RPS | null>(null)
 
@@ -778,13 +783,14 @@ export default function BatalhaPage() {
     if (!battle) { router.replace('/torre'); return }
     const pf = battle.playerSelected.map(p => ({ pokemon: p, hearts: p.hearts }))
     const ef = battle.enemyDeck.map(p => ({ pokemon: p, hearts: p.hearts }))
-    const { newEffects, message, hazardDamage } = applyEntryEffects(battle.playerSelected[0], 'player', DEFAULT_EFFECTS)
+    const { newEffects, message, hazardDamage, forcedFirstMove } = applyEntryEffects(battle.playerSelected[0], 'player', DEFAULT_EFFECTS)
     if (hazardDamage > 0) pf[0] = { ...pf[0], hearts: Math.max(0, pf[0].hearts - hazardDamage) }
     setPlayerFighters(pf)
     setEnemyFighters(ef)
     setUniqueUsed(battle.playerSelected.map(() => false))
     setEffects(newEffects)
     if (message) setEntryMsg(message)
+    if (forcedFirstMove) setStickyWebForcedMove(forcedFirstMove)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Intercepta botão voltar do browser durante a batalha
@@ -815,10 +821,8 @@ export default function BatalhaPage() {
   const typeColor = getTypeColor(gym.specialtyType)
   const pf = playerFighters[playerIdx]
   const ef = enemyFighters[enemyIdx]
-  // Visual tell desabilitado por ora — código mantido para reativar quando necessário
-  // const enemyTellColor = (phase === 'selecting' && precomputedEnemyRPS && ef)
-  //   ? getTypeColor(ef.pokemon.moves[precomputedEnemyRPS].type) : null
-  const enemyTellColor = null
+  const enemyTellColor = (phase === 'selecting' && precomputedEnemyRPS && ef)
+    ? getTypeColor(ef.pokemon.moves[precomputedEnemyRPS].type) : null
 
   function handleAbandon() {
     setRunEndReason('lost')
@@ -829,7 +833,7 @@ export default function BatalhaPage() {
   const ps = effects.playerStatus
   const playerIsSleeping = ps?.condition === 'sleep'
   const playerIsForcedByStatus = ps?.condition === 'freeze'
-  const playerIsForced = playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerIsSleeping
+  const playerIsForced = playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerIsSleeping || !!stickyWebForcedMove
 
   // ── Core battle logic ────────────────────────────────────────────────────────
 
@@ -854,7 +858,14 @@ export default function BatalhaPage() {
     let playerRPS: RPS
     let playerForcedThisTurn = false
 
-    if (turnStart.playerForcedRps) {
+    // Sticky Web: forces Rock on first turn, but doesn't auto-lose (normal RPS)
+    const stickyActive = !!stickyWebForcedMove
+    if (stickyActive) setStickyWebForcedMove(null)
+
+    if (stickyActive) {
+      playerRPS = 'rock'
+      activations.push(`🕸️ Sticky Web! ${pf.pokemon.name} forçado a usar ✊!`)
+    } else if (turnStart.playerForcedRps) {
       playerRPS = turnStart.playerForcedRps
       playerForcedThisTurn = true
     } else if (isUnique) {
@@ -1080,6 +1091,37 @@ export default function BatalhaPage() {
       }
     }
 
+    // ── Hold item effects triggered when player deals damage ─────────────────
+    if (outcome === 'player_wins' && !enemyIsProtect && enemyDmg > 0) {
+      const lifeOrbRecoil = getLifeOrbRecoil(pf.pokemon, enemyDmg)
+      if (lifeOrbRecoil > 0) {
+        newPHearts = Math.max(0, newPHearts - lifeOrbRecoil)
+        activations.push(`🔮 Life Orb! Recuo −${lifeOrbRecoil} ♥`)
+      }
+      const shellBellHeal = getShellBellHeal(pf.pokemon, enemyDmg)
+      if (shellBellHeal > 0) {
+        newPHearts = Math.min(pf.pokemon.hearts, newPHearts + shellBellHeal)
+        activations.push(`🔔 Shell Bell! +${shellBellHeal} ♥`)
+      }
+      if (checkKingsRock(pf.pokemon)) {
+        eff = { ...eff, enemyForcedMove: 'rock', enemyForcedTurnsLeft: 1 }
+        activations.push(`🪨 King's Rock! Inimigo atordoado — forçado ✊ no próximo turno!`)
+      }
+    }
+
+    // ── Consecutive tie chip damage (0.5♥ from 2nd tie onward) ───────────────
+    if (outcome === 'tie') {
+      const newTies = consecutiveTies + 1
+      setConsecutiveTies(newTies)
+      if (newTies >= 2) {
+        newPHearts = Math.max(0, newPHearts - 0.5)
+        newEHearts = Math.max(0, newEHearts - 0.5)
+        activations.push(`💫 Impasse prolongado! Ambos sofrem 0.5 ♥!`)
+      }
+    } else {
+      setConsecutiveTies(0)
+    }
+
     // Destiny Bond: se o jogador cair, o inimigo também cai
     if (newPHearts <= 0 && eff.playerDestinyBond) {
       newEHearts = 0
@@ -1144,9 +1186,10 @@ export default function BatalhaPage() {
     const incoming = playerFighters[targetIdx]
     const activations: string[] = [`🔄 ${incoming.pokemon.name} entrou em campo!`]
 
-    const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg } = applyEntryEffects(incoming.pokemon, 'player', effects)
+    const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg, forcedFirstMove: switchStickyForced } = applyEntryEffects(incoming.pokemon, 'player', effects)
     let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false }
     if (entryMessage) activations.push(entryMessage)
+    if (switchStickyForced) setStickyWebForcedMove(switchStickyForced)
 
     // Inimigo ataca de graça com o move pré-computado
     const aiMove = precomputedEnemyRPS ?? generateAIMove(gym.aiLevel, moveHistory, null)
@@ -1230,10 +1273,11 @@ export default function BatalhaPage() {
     setShowSwitchPicker(false)
     setSwitchRequired(false)
     setPlayerIdx(targetIdx)
-    const { newEffects, message, hazardDamage } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
+    const { newEffects, message, hazardDamage, forcedFirstMove: faintStickyForced } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
     setEffects({ ...newEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false })
     if (message) setEntryMsg(message)
     if (hazardDamage > 0) setPlayerFighters(fs => fs.map((f, i) => i === targetIdx ? { ...f, hearts: Math.max(0, f.hearts - hazardDamage) } : f))
+    if (faintStickyForced) setStickyWebForcedMove(faintStickyForced)
     setLastResult(null)
     setTurn(t => t + 1)
     setPhase('selecting')
@@ -1242,6 +1286,7 @@ export default function BatalhaPage() {
   // ── Derived display values ──────────────────────────────────────────────────
 
   const forcedLabel = (() => {
+    if (stickyWebForcedMove)           return `🕸️ ${pf.pokemon.name} está preso na Sticky Web — ✊ forçado!`
     if (ps?.condition === 'sleep')     return `😴 ${pf.pokemon.name} está dormindo — turno nulo`
     if (ps?.condition === 'freeze')    return `🧊 ${pf.pokemon.name} está congelado — turno perdido!`
     if (effects.playerTiredTurns > 0)  return `💤 ${pf.pokemon.name} está exausto — turno perdido!`
@@ -1319,7 +1364,7 @@ export default function BatalhaPage() {
           const hardSurvivors = playerDeck.filter(p => !selectedIds.has(p.id) && p.hearts > 0 && !p.isFainted)
           function handleNormalRetry()      { incrementDeathCount(); endBattle('lose'); router.push('/torre') }
           function handleHardSecondChance() { incrementDeathCount(); endBattle('lose'); router.push('/torre') }
-          function handleGiveUp()           { endBattle('lose'); router.push('/') }
+          function handleGiveUp()           { setRunEndReason('lost'); endBattle('lose'); router.push('/game-over') }
 
           if (mode === 'hard' && hardSurvivors.length > 0) {
             return (
@@ -1341,7 +1386,7 @@ export default function BatalhaPage() {
                         <p className="font-game text-[6px] text-white/80 uppercase">{p.name}</p>
                         <div className="flex items-center gap-1">
                           <span className="font-game text-[6px] text-white/50 tracking-widest">HP</span>
-                          <span className="font-game text-[7px] font-black text-white/90">{p.hearts}/{p.hearts}</span>
+                          <span className="font-game text-[7px] font-black text-white/90">{Math.ceil(p.hearts)}/5</span>
                         </div>
                       </div>
                     ))}
@@ -1459,7 +1504,11 @@ export default function BatalhaPage() {
                   effects={effects}
                   uniqueUsed={uniqueUsed[playerIdx] ?? false}
                   playerIsForced={playerIsForced}
-                  forcedButtonLabel={playerIsSleeping ? '😴 Confirmar turno nulo' : undefined}
+                  forcedButtonLabel={
+                    playerIsSleeping ? '😴 Confirmar turno nulo' :
+                    !!stickyWebForcedMove ? '🕸️ Confirmar ✊ (Sticky Web)' :
+                    undefined
+                  }
                   onAttack={handleAttack}
                 />
 
