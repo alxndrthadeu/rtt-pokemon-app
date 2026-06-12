@@ -11,6 +11,7 @@ import {
   processTurnStart, calcUniqueResult, calcSlotDamage, applySlotMoveEffect,
   applySturdy, applyThaw, applyEntryEffects,
   getLifeOrbRecoil, getShellBellHeal, checkKingsRock,
+  applyFocusSash, getRockyHelmetRecoil, checkQuickClaw,
   StatusState,
 } from '@/lib/battleEngine'
 import type { PokemonCard, Move, RPS, AILevel, StatusCondition } from '@/types'
@@ -776,6 +777,8 @@ export default function BatalhaPage() {
   const [stickyWebForcedMove, setStickyWebForcedMove] = useState<RPS | null>(null)
   // Consecutive ties: track for chip damage from 2nd tie onward
   const [consecutiveTies, setConsecutiveTies] = useState(0)
+  // Quick Claw: reveals enemy move name when triggered (25% per turn)
+  const [quickClawRevealed, setQuickClawRevealed] = useState(false)
   // Visual tell: move do inimigo pré-computado (tipo exibido como "aura" durante seleção)
   const [precomputedEnemyRPS, setPrecomputedEnemyRPS] = useState<RPS | null>(null)
 
@@ -804,7 +807,7 @@ export default function BatalhaPage() {
     return () => window.removeEventListener('popstate', onPop)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pré-computa o RPS do inimigo ao entrar em fase de seleção (visual tell)
+  // Pré-computa o RPS do inimigo ao entrar em fase de seleção (visual tell + Quick Claw)
   useEffect(() => {
     if (phase !== 'selecting' || !battle) return
     const gym = GYM_LEADERS[currentFloor]
@@ -813,7 +816,11 @@ export default function BatalhaPage() {
       : (effects.enemyForcedMove && effects.enemyForcedTurnsLeft > 0 ? effects.enemyForcedMove : null)
     const rps = forced ?? generateAIMove(gym.aiLevel, moveHistory, null)
     setPrecomputedEnemyRPS(rps)
-  }, [phase, enemyIdx]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Quick Claw: 25% chance per turn to explicitly reveal enemy move name
+    const currentPf = playerFighters[playerIdx]
+    if (currentPf) setQuickClawRevealed(checkQuickClaw(currentPf.pokemon))
+    else setQuickClawRevealed(false)
+  }, [phase, enemyIdx, playerIdx]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const gym = GYM_LEADERS[currentFloor]
   if (!battle || !gym || playerFighters.length === 0 || enemyFighters.length === 0) return null
@@ -1084,7 +1091,20 @@ export default function BatalhaPage() {
             activations.push(`🛡️ Sturdy! ${pf.pokemon.name} sobreviveu com 1 ♥!`)
           }
           playerDmg = finalDmg
+          // Focus Sash: survive a KO hit at full HP (once per battle)
+          const { damage: sashFinalDmg, sashTriggered } = applyFocusSash(playerDmg, newPHearts, pf.pokemon, eff.playerSashUsed)
+          if (sashTriggered) {
+            eff = { ...eff, playerSashUsed: true }
+            activations.push(`🎽 Faixa Foco! ${pf.pokemon.name} sobreviveu com 0.5 ♥!`)
+          }
+          playerDmg = sashFinalDmg
           newPHearts = Math.max(0, newPHearts - playerDmg)
+          // Rocky Helmet: attacker takes 0.5♥ recoil when dealing contact damage
+          const rockyHelmetRecoil = getRockyHelmetRecoil(pf.pokemon)
+          if (rockyHelmetRecoil > 0 && playerDmg > 0) {
+            newEHearts = Math.max(0, newEHearts - rockyHelmetRecoil)
+            activations.push(`⛑️ Capacete Rochoso! ${ef.pokemon.name} tomou ${rockyHelmetRecoil} ♥ de ricochete!`)
+          }
         } else if (!immune && isProtect) {
           activations.push(`🛡️ Protect absorveu o ataque!`)
         }
@@ -1276,8 +1296,19 @@ export default function BatalhaPage() {
     const { newEffects, message, hazardDamage, forcedFirstMove: faintStickyForced } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
     setEffects({ ...newEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false })
     if (message) setEntryMsg(message)
-    if (hazardDamage > 0) setPlayerFighters(fs => fs.map((f, i) => i === targetIdx ? { ...f, hearts: Math.max(0, f.hearts - hazardDamage) } : f))
+    const newHearts = hazardDamage > 0 ? Math.max(0, playerFighters[targetIdx].hearts - hazardDamage) : playerFighters[targetIdx].hearts
+    if (hazardDamage > 0) setPlayerFighters(fs => fs.map((f, i) => i === targetIdx ? { ...f, hearts: newHearts } : f))
     if (faintStickyForced) setStickyWebForcedMove(faintStickyForced)
+
+    // Pokemon fainted immediately from entry hazard — re-evaluate fight
+    if (newHearts <= 0) {
+      const remainingAlive = playerFighters.filter((f, i) => i !== playerIdx && i !== targetIdx && f.hearts > 0).length
+      if (remainingAlive === 0) { setPhase('defeat'); return }
+      setSwitchRequired(true)
+      setShowSwitchPicker(true)
+      return
+    }
+
     setLastResult(null)
     setTurn(t => t + 1)
     setPhase('selecting')
@@ -1451,6 +1482,12 @@ export default function BatalhaPage() {
                     <p className="font-game text-[8px] uppercase tracking-widest leading-none"
                       style={{ color: STATUS_BG['paralysis'] }}>
                       ⚡ {pf.pokemon.name} está paralisado — 30% de travar
+                    </p>
+                  )}
+                  {quickClawRevealed && precomputedEnemyRPS && (
+                    <p className="font-game text-[8px] uppercase tracking-widest leading-none"
+                      style={{ color: '#D4A000' }}>
+                      🐾 Garra Rápida! {ef.pokemon.name} vai usar {RPS_ICON[precomputedEnemyRPS]} {ef.pokemon.moves[precomputedEnemyRPS].name}
                     </p>
                   )}
                 </div>

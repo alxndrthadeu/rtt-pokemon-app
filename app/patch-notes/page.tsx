@@ -26,6 +26,43 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.9.3',
+    date: 'Jun 2026',
+    label: 'Hold Items II + QA Regressão',
+    labelColor: '#5050C8',
+    description: 'Faixa Foco, Capacete Rochoso e Garra Rápida agora funcionam de verdade. Pokémon que desmaia ao entrar por Stealth Rock é tratado imediatamente. Todas as funções da engine de batalha estão conectadas ao jogo.',
+    entries: [
+      {
+        icon: '🎽',
+        title: 'Faixa Foco — sobrevive KO com 5♥ cheios',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'applyFocusSash() existia na engine mas nunca era chamada em batalha. Agora quando o Pokémon está com 5♥ e tomaria um KO, a Faixa Foco reduz o dano para sobreviver com 0.5♥. Uso único por batalha.',
+      },
+      {
+        icon: '⛑️',
+        title: 'Capacete Rochoso — ricochete ao atacante',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'getRockyHelmetRecoil() existia na engine mas nunca era chamada. Agora ao receber dano ofensivo, o atacante inimigo toma 0.5♥ de ricochete se o Pokémon em campo carregar o Capacete Rochoso.',
+      },
+      {
+        icon: '🐾',
+        title: 'Garra Rápida — revela o move do inimigo',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'checkQuickClaw() existia na engine mas nunca era chamada. Agora a cada turno há 25% de chance de a Garra Rápida ativar e revelar explicitamente qual movimento o inimigo vai usar naquele turno — nome e ícone exibidos no dialog de seleção.',
+      },
+      {
+        icon: '💀',
+        title: 'Pokémon desmaia ao entrar em Stealth Rock',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'Se um Pokémon enviado após faint tomasse dano suficiente de Stealth Rock para chegar a 0♥, o jogo continuava com ele em campo (bug). Agora confirmSwitch detecta o faint imediato: se houver mais Pokémon, mostra o picker de troca novamente; se não houver, exibe a tela de derrota.',
+      },
+    ],
+  },
+  {
     version: '0.9.2',
     date: 'Jun 2026',
     label: 'Hold Items + Batalha',

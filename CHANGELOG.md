@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.3] - 2026-06-12
+
+### Corrigido
+
+- **Focus Sash nunca aplicada** (`app/batalha/page.tsx`) — `applyFocusSash()` existia na engine mas nunca era chamada; adicionada no bloco `enemy_wins` após o check de Sturdy; cria flag `playerSashUsed` via `BattleEffects`
+- **Rocky Helmet nunca aplicado** (`app/batalha/page.tsx`) — `getRockyHelmetRecoil()` existia na engine mas nunca era chamada; recoil de 0.5♥ ao inimigo quando player tem o item e recebe dano ofensivo
+- **Quick Claw nunca chamada** (`app/batalha/page.tsx`) — `checkQuickClaw()` existia na engine mas nunca era chamada; adicionada no `useEffect` de pré-cômputo do RPS inimigo; 25% de chance de revelar o nome do move inimigo no dialog de seleção
+- **0♥ após hazard em `confirmSwitch`** (`app/batalha/page.tsx`) — quando o Pokémon enviado após faint chegava a 0♥ por Stealth Rock, o jogo continuava com ele em campo; agora detecta o faint, verifica se há Pokémon restantes e redireciona para picker de troca ou tela de derrota
+
+---
+
 ## [0.9.2] - 2026-06-12
 
 ### Corrigido
