@@ -128,11 +128,11 @@ export default function PosBatalhaPage() {
     if (!picked || discardId === null) return
     addPokedexEntry([picked.id])
     applyPostGymSwap(picked, discardId)
-    router.push('/entre-andares')
+    router.push('/recompensa')
   }
 
   function handleSkip() {
-    router.push('/entre-andares')
+    router.push('/recompensa')
   }
 
   if (pool.length === 0) {
@@ -159,7 +159,7 @@ export default function PosBatalhaPage() {
           </div>
           <div className="flex items-center gap-2">
             {/* Step indicator */}
-            {(['pick_new', 'pick_discard'] as Phase[]).map((p, i) => (
+            {(['pick_new', 'pick_discard'] as Phase[]).map((p) => (
               <div key={p} className="w-2 h-2 rounded-full border border-white/40" style={{ backgroundColor: phase === p ? 'white' : 'rgba(255,255,255,0.25)' }} />
             ))}
           </div>

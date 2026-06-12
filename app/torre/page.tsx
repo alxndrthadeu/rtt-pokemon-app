@@ -131,12 +131,20 @@ export default function TorrePage() {
               </p>
             </div>
           </div>
-          <button
-            onClick={() => router.push('/pokedex')}
-            className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
-          >
-            📖 Pokédex
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/mochila')}
+              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+            >
+              🎒 Mochila
+            </button>
+            <button
+              onClick={() => router.push('/pokedex')}
+              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+            >
+              📖 Pokédex
+            </button>
+          </div>
 
           {/* progress */}
           <div className="flex items-center gap-1.5">

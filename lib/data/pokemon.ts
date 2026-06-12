@@ -54,7 +54,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #8 WARTORTLE ───
   { id: 8,  name: 'Wartortle',   type1: 'Water',    type2: null,      rarity: 'rara',
     abilityId: 'torrent',
-    moves: { rock: 'bubble-beam', paper: 'rapid-spin',   scissors: 'protect' },
+    moves: { rock: 'bubble-beam', paper: 'rapid-spin-clear', scissors: 'protect' },
     uniqueId: null },
   // ─── #9 BLASTOISE ───
   { id: 9,  name: 'Blastoise',   type1: 'Water',    type2: null,      rarity: 'ultra-rara',
@@ -74,7 +74,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #12 BUTTERFREE ───
   { id: 12, name: 'Butterfree',  type1: 'Bug',      type2: 'Flying',  rarity: 'rara',
     abilityId: 'inner-focus',
-    moves: { rock: 'air-slash',   paper: 'silver-wind',  scissors: 'sleep-powder' },
+    moves: { rock: 'air-slash',   paper: 'sticky-web',   scissors: 'sleep-powder' },
     uniqueId: 'quiver-dance-unique' },
   // ─── #13 WEEDLE ───
   { id: 13, name: 'Weedle',      type1: 'Bug',      type2: 'Poison',  rarity: 'comum',
@@ -89,7 +89,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #15 BEEDRILL ───
   { id: 15, name: 'Beedrill',    type1: 'Bug',      type2: 'Poison',  rarity: 'rara',
     abilityId: 'intimidate',
-    moves: { rock: 'twineedle',   paper: 'fury-attack',  scissors: 'poison-jab' },
+    moves: { rock: 'twineedle',   paper: 'fury-attack',  scissors: 'toxic-spikes' },
     uniqueId: 'pin-missile' },
   // ─── #16 PIDGEY ───
   { id: 16, name: 'Pidgey',      type1: 'Normal',   type2: 'Flying',  rarity: 'comum',
@@ -374,7 +374,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #72 TENTACOOL ───
   { id: 72, name: 'Tentacool',   type1: 'Water',    type2: 'Poison',  rarity: 'comum',
     abilityId: 'inner-focus',
-    moves: { rock: 'bubble',      paper: 'acid',         scissors: 'poison-sting' },
+    moves: { rock: 'bubble',      paper: 'acid',         scissors: 'toxic-spikes' },
     uniqueId: null },
   // ─── #73 TENTACRUEL ─── scissors: acid-spray (buff: def -1)
   { id: 73, name: 'Tentacruel',  type1: 'Water',    type2: 'Poison',  rarity: 'rara',
@@ -384,7 +384,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #74 GEODUDE ───
   { id: 74, name: 'Geodude',     type1: 'Rock',     type2: 'Ground',  rarity: 'comum',
     abilityId: 'sturdy',
-    moves: { rock: 'rock-throw',  paper: 'tackle',       scissors: 'magnitude' },
+    moves: { rock: 'rock-throw',  paper: 'tackle',       scissors: 'stealth-rock' },
     uniqueId: null },
   // ─── #75 GRAVELER ───
   { id: 75, name: 'Graveler',    type1: 'Rock',     type2: 'Ground',  rarity: 'rara',
@@ -489,7 +489,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #95 ONIX ─── scissors: protect
   { id: 95, name: 'Onix',        type1: 'Rock',     type2: 'Ground',  rarity: 'rara',
     abilityId: 'sturdy',
-    moves: { rock: 'rock-throw',  paper: 'rock-blast',   scissors: 'protect' },
+    moves: { rock: 'rock-throw',  paper: 'rock-blast',   scissors: 'stealth-rock' },
     uniqueId: null },
   // ─── #96 DROWZEE ───
   { id: 96, name: 'Drowzee',     type1: 'Psychic',  type2: null,      rarity: 'rara',
@@ -828,7 +828,7 @@ export const ASH_PIKACHU_ID = 9025
 export const MISSINGNO_ID = 0
 export const STARTER_IDS = [1, 4, 7] as const
 
-type PokemonTemplate = Omit<PokemonCard, 'hearts' | 'isFainted' | 'statusEffects' | 'isShiny'>
+type PokemonTemplate = Omit<PokemonCard, 'hearts' | 'isFainted' | 'statusEffects' | 'isShiny' | 'heldItem'>
 
 export const POKEMON_TEMPLATES: PokemonTemplate[] = TEMPLATES.map((t) => ({
   id:       t.id,
@@ -858,6 +858,7 @@ export function makePokemonCard(id: number, isShiny = false): PokemonCard | unde
     hearts: 5,
     isFainted: false,
     statusEffects: [],
+    heldItem: null,
   }
 }
 

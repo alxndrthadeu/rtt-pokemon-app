@@ -1,5 +1,6 @@
 import type { PokemonCard, PokemonType, RPS, StatusCondition, UniqueMove, Move } from '@/types'
 import { getCombinedMultiplier, damageFromMultiplier } from '@/lib/data/typeChart'
+import { HELD_ITEMS } from '@/lib/data/items'
 
 // ─── Status state ─────────────────────────────────────────────────────────────
 
@@ -40,6 +41,18 @@ export interface BattleEffects {
   playerAquaRingHealIn: number    // countdown: quando chega a 0 cura e reseta para 2
   // Destiny Bond: se player for KO no próximo turno, inimigo também cai
   playerDestinyBond: boolean
+
+  // ── Hazards de campo ─────────────────────────────────────────────────────────
+  playerHazards: { stealthRock: boolean; toxicSpikes: boolean; stickyWeb: boolean }
+  enemyHazards:  { stealthRock: boolean; toxicSpikes: boolean; stickyWeb: boolean }
+
+  // ── Hold item tracking (one-use items per battle) ────────────────────────────
+  playerSitrusUsed: boolean    // Sitrus Berry
+  playerOranUsed: boolean      // Oran Berry
+  playerLumUsed: boolean       // Lum Berry
+  playerSashUsed: boolean      // Focus Sash
+  playerWhiteHerbUsed: boolean // White Herb
+  playerLeftoversTick: number  // counts up to 3; resets and heals
 }
 
 export const DEFAULT_EFFECTS: BattleEffects = {
@@ -63,6 +76,14 @@ export const DEFAULT_EFFECTS: BattleEffects = {
   playerAquaRingActive: false,
   playerAquaRingHealIn: 2,
   playerDestinyBond: false,
+  playerHazards: { stealthRock: false, toxicSpikes: false, stickyWeb: false },
+  enemyHazards:  { stealthRock: false, toxicSpikes: false, stickyWeb: false },
+  playerSitrusUsed: false,
+  playerOranUsed: false,
+  playerLumUsed: false,
+  playerSashUsed: false,
+  playerWhiteHerbUsed: false,
+  playerLeftoversTick: 0,
 }
 
 export interface Fighter {
@@ -223,6 +244,46 @@ export function processTurnStart(
     if (eff.enemyForcedTurnsLeft === 0) eff.enemyForcedMove = null
   }
 
+  // ── Hold item passives ───────────────────────────────────────────────────────
+  const item = pf.pokemon.heldItem
+  if (item) {
+    const def = HELD_ITEMS[item.id]
+
+    // Leftovers: +0.5♥ every 3 turns
+    if (item.id === 'leftovers') {
+      eff.playerLeftoversTick++
+      if (eff.playerLeftoversTick >= 3) {
+        eff.playerLeftoversTick = 0
+        playerHeartsGained = Math.max(playerHeartsGained, 0.5)
+        messages.push(`🍃 ${item.name}! +0.5 ♥`)
+      }
+    }
+
+    // Sitrus Berry: ≤2♥ → +1♥ (once)
+    if (item.id === 'sitrus-berry' && !eff.playerSitrusUsed && pf.hearts <= 2) {
+      eff.playerSitrusUsed = true
+      playerHeartsGained = Math.max(playerHeartsGained, 1)
+      messages.push(`🍓 ${item.name}! +1 ♥`)
+    }
+
+    // Oran Berry: ≤1♥ → +0.5♥ (once)
+    if (item.id === 'oran-berry' && !eff.playerOranUsed && pf.hearts <= 1) {
+      eff.playerOranUsed = true
+      playerHeartsGained = Math.max(playerHeartsGained, 0.5)
+      messages.push(`🫐 ${item.name}! +0.5 ♥`)
+    }
+
+    // Lum Berry: auto-cure first status (once) — checked here if already afflicted at turn start
+    if (item.id === 'lum-berry' && !eff.playerLumUsed && eff.playerStatus) {
+      eff.playerLumUsed = true
+      eff.playerStatus = null
+      playerForcedRps = null  // remove any forced move from status
+      messages.push(`🍋 ${item.name}! Status curado!`)
+    }
+
+    void def  // suppress unused warning — def used implicitly via item.id checks
+  }
+
   return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, playerHeartsGained, enemyHeartsLost, messages, enemyAutoLose }
 }
 
@@ -239,10 +300,57 @@ export function applySlotMoveEffect(
   side: 'player' | 'enemy',
   effects: BattleEffects,
   opponentPokemon: PokemonCard,
+  selfPokemon?: PokemonCard,
 ): SlotSideEffect {
   const eff = { ...effects }
   let message: string | null = null
   let isProtect = false
+
+  // ── Hazard-setting moves ─────────────────────────────────────────────────────
+  if (move.special === 'stealth-rock' || move.special === 'toxic-spikes' || move.special === 'sticky-web') {
+    if (side === 'player') {
+      // Player sets hazard on enemy side
+      eff.enemyHazards = {
+        ...eff.enemyHazards,
+        stealthRock: move.special === 'stealth-rock' ? true : eff.enemyHazards.stealthRock,
+        toxicSpikes: move.special === 'toxic-spikes' ? true : eff.enemyHazards.toxicSpikes,
+        stickyWeb:   move.special === 'sticky-web'   ? true : eff.enemyHazards.stickyWeb,
+      }
+      const labels: Record<string, string> = {
+        'stealth-rock': '🪨 Stealth Rock no campo inimigo!',
+        'toxic-spikes': '☠️ Toxic Spikes no campo inimigo!',
+        'sticky-web':   '🕸️ Sticky Web no campo inimigo!',
+      }
+      message = labels[move.special]
+    } else {
+      // Enemy sets hazard on player side
+      eff.playerHazards = {
+        ...eff.playerHazards,
+        stealthRock: move.special === 'stealth-rock' ? true : eff.playerHazards.stealthRock,
+        toxicSpikes: move.special === 'toxic-spikes' ? true : eff.playerHazards.toxicSpikes,
+        stickyWeb:   move.special === 'sticky-web'   ? true : eff.playerHazards.stickyWeb,
+      }
+    }
+    return { effects: eff, message, isProtect }
+  }
+
+  // ── White Herb: cancel first defense debuff ──────────────────────────────────
+  if (
+    move.kind === 'buff' && move.buffEffect &&
+    move.buffEffect.stat === 'defense' && move.buffEffect.delta < 0
+  ) {
+    const affectedPokemon = move.buffEffect.target === 'opponent' ? (side === 'player' ? undefined : selfPokemon) : undefined
+    // If player's pokemon has White Herb and hasn't used it, cancel the debuff
+    if (
+      side === 'enemy' && move.buffEffect.target === 'opponent' &&
+      selfPokemon?.heldItem?.id === 'white-herb' && !eff.playerWhiteHerbUsed
+    ) {
+      eff.playerWhiteHerbUsed = true
+      message = `🌿 Erva Branca! Debuff de defesa cancelado!`
+      return { effects: eff, message, isProtect }
+    }
+    void affectedPokemon
+  }
 
   if (move.special === 'protect') {
     isProtect = true
@@ -390,6 +498,30 @@ export function calcSlotDamage(
 
   // Attack/defense mods (one-shot)
   dmg = Math.max(0, dmg + attackMod - defenseMod)
+
+  // ── Hold item boosts (attacker) ──────────────────────────────────────────────
+  if (dmg > 0 && attackerPokemon.heldItem) {
+    const hid = attackerPokemon.heldItem.id
+    const itemDef = HELD_ITEMS[hid]
+
+    // Type boost items: +0.5♥ when move type matches
+    if (itemDef?.onHit === 'type-boost' && itemDef.typeBoost === attackType) {
+      dmg += 0.5
+      messages.push(`✨ ${attackerPokemon.heldItem.name}! +0.5 dano (${attackType})`)
+    }
+
+    // Expert Belt: +0.5♥ on super effective
+    if (hid === 'expert-belt' && mult >= 2) {
+      dmg += 0.5
+      messages.push(`🥊 ${attackerPokemon.heldItem.name}! +0.5 dano super efetivo!`)
+    }
+
+    // Life Orb: +1 damage (recoil handled in batalha/page.tsx via lifeOrbRecoil flag)
+    if (hid === 'life-orb') {
+      dmg += 1
+      messages.push(`🔮 ${attackerPokemon.heldItem.name}! +1 dano`)
+    }
+  }
 
   return { damage: dmg, multiplier: mult, messages }
 }
@@ -626,7 +758,9 @@ export function calcUniqueResult(
         default: {
           // Generic super: baseDmg with optional crit, drain, recoil
           let dmg = baseDmg
-          if (unique.critChance && Math.random() < unique.critChance) {
+          const scopeBoost = attacker.pokemon.heldItem?.id === 'scope-lens' ? 0.25 : 0
+          const effectiveCrit = (unique.critChance ?? 0) + scopeBoost
+          if (effectiveCrit && Math.random() < effectiveCrit) {
             dmg = 2
             res.messages.push(`⚔️ ${name}: crítico! 2 dano!`)
           } else {
@@ -667,22 +801,146 @@ export function applyEntryEffects(
   pokemon: PokemonCard,
   side: 'player' | 'enemy',
   effects: BattleEffects,
-): { newEffects: BattleEffects; message: string | null } {
+): { newEffects: BattleEffects; message: string | null; hazardDamage: number; forcedFirstMove: RPS | null } {
   const eff = { ...effects }
-  let message: string | null = null
+  const messages: string[] = []
+  let hazardDamage = 0
+  let forcedFirstMove: RPS | null = null
 
   if (pokemon.ability.name === 'Intimidate') {
     if (side === 'player') {
       eff.enemyAttackMod = clampMod(eff.enemyAttackMod - 1)
-      message = `😤 Intimidate! ${pokemon.name} entrou e reduziu o próximo ataque inimigo!`
+      messages.push(`😤 Intimidate! ${pokemon.name} entrou e reduziu o próximo ataque inimigo!`)
     } else {
       eff.playerAttackMod = clampMod(eff.playerAttackMod - 1)
-      message = `😤 Intimidate! ${pokemon.name} entrou e reduziu seu próximo ataque!`
+      messages.push(`😤 Intimidate! ${pokemon.name} entrou e reduziu seu próximo ataque!`)
     }
   }
 
   // Clear tired/protect cooldown on switch
   if (side === 'player') eff.playerProtectCooldown = false
 
-  return { newEffects: eff, message }
+  // ── Hold item orbs (apply status on entry) ───────────────────────────────────
+  if (side === 'player' && pokemon.heldItem) {
+    if (pokemon.heldItem.id === 'toxic-orb' && !eff.playerStatus &&
+        !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
+      eff.playerStatus = { condition: 'poison', turnsLeft: -1 }
+      messages.push(`☠️ ${pokemon.heldItem.name}! ${pokemon.name} foi envenenado!`)
+    }
+    if (pokemon.heldItem.id === 'flame-orb' && !eff.playerStatus &&
+        !isImmuneToStatus('burn', pokemon.type1, pokemon.type2)) {
+      eff.playerStatus = { condition: 'burn', turnsLeft: -1 }
+      messages.push(`🔥 ${pokemon.heldItem.name}! ${pokemon.name} foi queimado!`)
+    }
+  }
+
+  // ── Hazards trigger on entry ─────────────────────────────────────────────────
+  const hazards = side === 'player' ? eff.playerHazards : eff.enemyHazards
+
+  // Sticky Web: forces Rock on first turn
+  if (hazards.stickyWeb) {
+    forcedFirstMove = 'rock'
+    messages.push(`🕸️ Sticky Web! ${pokemon.name} está preso — ✊ forçado no 1º turno!`)
+  }
+
+  // Stealth Rock: damage on entry (type multiplier based on Rock effectiveness)
+  if (hazards.stealthRock) {
+    const mult = getCombinedMultiplier('Rock', pokemon.type1, pokemon.type2)
+    if (mult === 0) {
+      // immune to Rock — no damage
+    } else {
+      const srDmg = mult >= 2 ? 1 : mult <= 0.5 ? 0.25 : 0.5
+      hazardDamage += srDmg
+      messages.push(`🪨 Stealth Rock! ${pokemon.name} sofreu ${srDmg} dano ao entrar!`)
+    }
+  }
+
+  // Toxic Spikes: apply poison on entry (Poison types absorb and remove)
+  if (hazards.toxicSpikes) {
+    if (pokemon.type1 === 'Poison' || pokemon.type2 === 'Poison') {
+      // Poison type absorbs — remove the hazard
+      if (side === 'player') {
+        eff.playerHazards = { ...eff.playerHazards, toxicSpikes: false }
+      } else {
+        eff.enemyHazards = { ...eff.enemyHazards, toxicSpikes: false }
+      }
+      messages.push(`☠️ ${pokemon.name} (Venenoso) absorveu as Toxic Spikes!`)
+    } else if (side === 'player' && !eff.playerStatus &&
+               !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
+      eff.playerStatus = { condition: 'poison', turnsLeft: -1 }
+      messages.push(`☠️ Toxic Spikes! ${pokemon.name} foi envenenado ao entrar!`)
+    }
+  }
+
+  // Reset item ticks when new pokemon enters
+  if (side === 'player') {
+    eff.playerLeftoversTick = 0
+    eff.playerSitrusUsed = false
+    eff.playerOranUsed = false
+    eff.playerLumUsed = false
+    eff.playerSashUsed = false
+    eff.playerWhiteHerbUsed = false
+  }
+
+  return {
+    newEffects: eff,
+    message: messages.join(' | ') || null,
+    hazardDamage,
+    forcedFirstMove,
+  }
+}
+
+// ─── Focus Sash check ─────────────────────────────────────────────────────────
+// Call after calculating final damage to player. Returns adjusted damage.
+export function applyFocusSash(
+  damage: number,
+  currentHearts: number,
+  pokemon: PokemonCard,
+  sashUsed: boolean,
+): { damage: number; sashTriggered: boolean } {
+  if (
+    pokemon.heldItem?.id !== 'focus-sash' ||
+    sashUsed ||
+    currentHearts < 5 ||           // must be at full HP
+    currentHearts - damage > 0     // not a KO
+  ) {
+    return { damage, sashTriggered: false }
+  }
+  return { damage: currentHearts - 0.5, sashTriggered: true }
+}
+
+// ─── Rocky Helmet recoil ──────────────────────────────────────────────────────
+// Returns recoil damage to the attacker (0 if defender has no Rocky Helmet).
+export function getRockyHelmetRecoil(defenderPokemon: PokemonCard): number {
+  return defenderPokemon.heldItem?.id === 'rocky-helmet' ? 0.5 : 0
+}
+
+// ─── Life Orb recoil ─────────────────────────────────────────────────────────
+// Returns self-recoil for the attacker if they have Life Orb and dealt damage.
+export function getLifeOrbRecoil(attackerPokemon: PokemonCard, damageDealt: number): number {
+  return attackerPokemon.heldItem?.id === 'life-orb' && damageDealt > 0 ? 0.5 : 0
+}
+
+// ─── King's Rock flinch ───────────────────────────────────────────────────────
+// Returns true if the attacker's King's Rock triggers a flinch (30%).
+export function checkKingsRock(attackerPokemon: PokemonCard): boolean {
+  return attackerPokemon.heldItem?.id === 'kings-rock' && Math.random() < 0.30
+}
+
+// ─── Quick Claw reveal ────────────────────────────────────────────────────────
+// Returns true if the pokemon's Quick Claw triggers this turn (25%).
+export function checkQuickClaw(pokemon: PokemonCard): boolean {
+  return pokemon.heldItem?.id === 'quick-claw' && Math.random() < 0.25
+}
+
+// ─── Shell Bell heal ─────────────────────────────────────────────────────────
+// Returns heal amount (0.5♥) if attacker has Shell Bell and dealt damage.
+export function getShellBellHeal(attackerPokemon: PokemonCard, damageDealt: number): number {
+  return attackerPokemon.heldItem?.id === 'shell-bell' && damageDealt > 0 ? 0.5 : 0
+}
+
+// ─── Rapid Spin hazard clear ─────────────────────────────────────────────────
+// Call when player uses Rapid Spin. Clears player-side hazards.
+export function applyRapidSpin(effects: BattleEffects): BattleEffects {
+  return { ...effects, playerHazards: { stealthRock: false, toxicSpikes: false, stickyWeb: false } }
 }
