@@ -165,12 +165,18 @@ export function getGymByFloor(floor: number): GymLeader | undefined {
   return GYM_LEADERS.find((g) => g.floor === floor)
 }
 
+const _gymDeckCache = new Map<number, PokemonCard[]>()
+
 export function buildGymDeck(floor: number): PokemonCard[] {
+  const cached = _gymDeckCache.get(floor)
+  if (cached) return cached
   const gym = getGymByFloor(floor)
   if (!gym) return []
-  return gym.teamIds
+  const deck = gym.teamIds
     .map((id) => makePokemonCard(id))
     .filter((p): p is PokemonCard => p !== undefined)
+  _gymDeckCache.set(floor, deck)
+  return deck
 }
 
 // Retorna 3 opções de swap pós-ginásio

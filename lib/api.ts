@@ -5,7 +5,20 @@ function getToken() {
   return localStorage.getItem('ptt_token')
 }
 
+function assertConfigured() {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    API_URL === 'http://localhost:3001'
+  ) {
+    throw new Error(
+      'NEXT_PUBLIC_API_URL não está configurada. Defina esta variável de ambiente antes do deploy.',
+    )
+  }
+}
+
 export async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
+  assertConfigured()
   const token = getToken()
 
   const res = await fetch(`${API_URL}${path}`, {

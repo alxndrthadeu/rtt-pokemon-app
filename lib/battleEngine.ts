@@ -259,7 +259,8 @@ export function applySlotMoveEffect(
       } else if (eff.enemyStatus) {
         message = `${move.name}: inimigo já tem um status!`
       } else {
-        const turns = -1  // todos os status são indefinidos; sleep usa 35% por turno
+        // poison/burn = indefinido (-1); sleep = 2 turnos máx (com 45% acordar cedo)
+        const turns = move.statusEffect === 'sleep' ? 2 : -1
         eff.enemyStatus = { condition: move.statusEffect, turnsLeft: turns }
         const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
         message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ao inimigo!`

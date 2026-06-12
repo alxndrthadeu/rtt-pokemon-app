@@ -34,10 +34,14 @@ interface GameStore {
   // Pokédex persistente (cross-run)
   pokedexSeen: number[]
 
+  // Erro de API — visível para o usuário
+  apiError: string | null
+
   // Actions — Setup
   setMode: (mode: GameMode) => void
   setGender: (gender: Gender) => void
   setPlayerName: (name: string) => void
+  clearApiError: () => void
 
   // Actions — Draft
   addToDeck: (card: PokemonCard) => void
@@ -75,10 +79,12 @@ export const useGameStore = create<GameStore>()(
       rerollUsed: false,
       battle: null,
       pokedexSeen: [],
+      apiError: null,
 
       setMode: (mode) => set({ mode }),
       setGender: (gender) => set({ gender }),
-      setPlayerName: (playerName) => set({ playerName }),
+      setPlayerName: (name) => set({ playerName: name.trim().slice(0, 20) }),
+      clearApiError: () => set({ apiError: null }),
 
       addToDeck: (card) =>
         set((s) => ({
@@ -159,7 +165,10 @@ export const useGameStore = create<GameStore>()(
                 badges_earned: get().badgesEarned,
                 status: isWon ? 'won' : 'active',
               }),
-            }).catch(console.error)
+            }).catch((e: unknown) => {
+              const msg = e instanceof Error ? e.message : 'Erro ao salvar progresso'
+              set({ apiError: msg })
+            })
           }
         } else {
           set({ battle: null })
@@ -167,7 +176,10 @@ export const useGameStore = create<GameStore>()(
             apiRequest(`/runs/${state.runId}?session_id=${state.sessionId}`, {
               method: 'PATCH',
               body: JSON.stringify({ status: 'lost' }),
-            }).catch(console.error)
+            }).catch((e: unknown) => {
+              const msg = e instanceof Error ? e.message : 'Erro ao salvar resultado'
+              set({ apiError: msg })
+            })
           }
         }
       },
@@ -191,7 +203,8 @@ export const useGameStore = create<GameStore>()(
           })
           set({ runId: run.id })
         } catch (e) {
-          console.error('Falha ao criar run no servidor', e)
+          const msg = e instanceof Error ? e.message : 'Erro ao iniciar run'
+          set({ apiError: msg })
         }
       },
 
@@ -205,7 +218,10 @@ export const useGameStore = create<GameStore>()(
             player_deck: s.playerDeck,
             badges_earned: s.badgesEarned,
           }),
-        }).catch(console.error)
+        }).catch((e: unknown) => {
+          const msg = e instanceof Error ? e.message : 'Erro ao sincronizar run'
+          set({ apiError: msg })
+        })
       },
 
       resetRun: () =>
