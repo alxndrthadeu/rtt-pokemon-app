@@ -1006,32 +1006,47 @@ function rngShuffle<T>(arr: T[]): T[] {
   return a
 }
 
-// Gera 3 IDs para o pool pós-batalha baseado na zona geográfica e no andar
+// Gera 6 IDs para o pool pós-batalha com raridade escalando pelo andar
 export function generateZonePool(prevFloor: number, excludeIds: Set<number>): number[] {
+  const POOL_SIZE = 6
   const zone = ZONE_POOLS.find(z => z.floors.includes(prevFloor)) ?? ZONE_POOLS[ZONE_POOLS.length - 1]
-  const deepInZone = zone.floors.indexOf(prevFloor) > 0
 
-  // Bag ponderada: mais comum no início da zona, mais rara/ultra no final
-  const bag: number[] = deepInZone
-    ? [...zone.common, ...zone.rare, ...zone.rare, ...zone.ultra, ...zone.ultra]
-    : [...zone.common, ...zone.common, ...zone.common, ...zone.rare, ...zone.rare, ...zone.ultra]
+  // Pesos escalonados por andar: ultra começa raro (~8%) e sobe até ~67% no andar 7
+  const ultraWeight  = 1 + prevFloor                   // 1 → 12
+  const commonWeight = Math.max(1, 8 - prevFloor)      // 8 → 1
+  const rareWeight   = 3                               // fixo
+
+  const bag: number[] = [
+    ...Array(commonWeight).fill(zone.common).flat(),
+    ...Array(rareWeight).fill(zone.rare).flat(),
+    ...Array(ultraWeight).fill(zone.ultra).flat(),
+  ]
 
   const shuffled = rngShuffle(bag)
   const result: number[] = []
   const seen = new Set<number>()
 
   for (const id of shuffled) {
-    if (result.length >= 3) break
+    if (result.length >= POOL_SIZE) break
     if (seen.has(id) || excludeIds.has(id)) continue
     seen.add(id)
     result.push(id)
   }
 
+  // A partir do andar 4 (pós-Koga): garante pelo menos 1 ultra no pool
+  if (prevFloor >= 4) {
+    const hasUltra = result.some(id => zone.ultra.includes(id))
+    if (!hasUltra) {
+      const ultraPool = rngShuffle(zone.ultra.filter(id => !excludeIds.has(id) && !result.includes(id)))
+      if (ultraPool.length > 0) result[result.length - 1] = ultraPool[0]
+    }
+  }
+
   // Fallback: se a zona não tem Pokémon suficientes, pega de qualquer zona
-  if (result.length < 3) {
+  if (result.length < POOL_SIZE) {
     const all = rngShuffle(Array.from(new Set(ZONE_POOLS.flatMap(z => [...z.common, ...z.rare, ...z.ultra]))))
     for (const id of all) {
-      if (result.length >= 3) break
+      if (result.length >= POOL_SIZE) break
       if (excludeIds.has(id) || result.includes(id)) continue
       result.push(id)
     }
@@ -1045,7 +1060,7 @@ export function generateZonePool(prevFloor: number, excludeIds: Set<number>): nu
   return result
 }
 
-// Pool para as rodadas 2-6 do draft inicial (Pallet Town / Rota 1 — Z1)
+// Pool para as rodadas 2-6 do draft inicial (Pallet Town / Rota 1 — Z1) — sempre 3 opções
 export function generateInitialDraftPool(excludeIds: Set<number>): number[] {
-  return generateZonePool(0, excludeIds)
+  return generateZonePool(0, excludeIds).slice(0, 3)
 }
