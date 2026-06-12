@@ -249,13 +249,29 @@ export default function EntreAndaresPage() {
         {/* ── CTAs ── */}
         {/* ── Shop CTA (available only on shop floors before first visit) ── */}
         {shopAvailable && (
-          <button
-            onClick={() => router.push('/loja')}
-            className="w-full py-3 font-black text-sm tracking-[0.12em] uppercase border-2 border-ink rounded-2xl text-parchment-light transition-all cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
-            style={{ backgroundColor: '#2C7BB5', boxShadow: '4px 4px 0 #2C1810' }}
-          >
-            🛒 Visitar a Loja Pokémon
-          </button>
+          <div className="rounded-3xl border-2 border-ink overflow-hidden"
+            style={{ boxShadow: '5px 5px 0 #2C1810' }}>
+            <div className="px-4 pt-3 pb-2 flex items-center gap-2"
+              style={{ backgroundColor: '#2C7BB5' }}>
+              <span className="text-2xl">🛒</span>
+              <div>
+                <p className="font-black text-sm text-white uppercase tracking-tight leading-tight">Loja Pokémon</p>
+                <p className="font-game text-[6px] text-white/70 uppercase tracking-widest leading-none">
+                  Disponível neste andar — acesso único!
+                </p>
+              </div>
+              <span className="ml-auto font-game text-[6px] px-2 py-1 rounded-full bg-white/20 text-white border border-white/30">
+                ★ NOVO
+              </span>
+            </div>
+            <button
+              onClick={() => router.push('/loja')}
+              className="w-full py-3 font-black text-sm tracking-[0.15em] uppercase text-white transition-all cursor-pointer hover:brightness-110 active:brightness-90"
+              style={{ backgroundColor: '#1E5F9A' }}
+            >
+              Entrar na Loja →
+            </button>
+          </div>
         )}
 
         {/* ── Mochila ── */}

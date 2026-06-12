@@ -709,7 +709,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
 
 export default function BatalhaPage() {
   const router = useRouter()
-  const { battle, currentFloor, mode, playerDeck, badgesEarned, endBattle, incrementDeathCount } = useGameStore()
+  const { battle, currentFloor, mode, playerDeck, badgesEarned, endBattle, syncDeckAfterBattle, incrementDeathCount } = useGameStore()
   const [showAbandon, setShowAbandon] = useState(false)
 
   const [playerFighters, setPlayerFighters] = useState<Fighter[]>([])
@@ -1242,7 +1242,11 @@ export default function BatalhaPage() {
               {gym.badge ? `${gym.badge} conquistada!` : `${gym.name} foi derrotado!`}
             </p>
             <button
-              onClick={() => { endBattle('win'); router.push(currentFloor >= 11 ? '/entre-andares' : '/pos-batalha') }}
+              onClick={() => {
+                syncDeckAfterBattle(playerFighters.map(f => ({ id: f.pokemon.id, hearts: f.hearts, isFainted: f.hearts <= 0 })))
+                endBattle('win')
+                router.push(currentFloor >= 11 ? '/entre-andares' : '/pos-batalha')
+              }}
               className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
               {currentFloor >= 11 ? '🏆 Ver resultado final →' : 'Pegar novo Pokémon →'}
             </button>

@@ -92,16 +92,17 @@ function generatePostBattlePool(floor: number, deckIds: number[]): PokemonCardTy
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type Phase = 'pick_new' | 'pick_discard'
+type Phase = 'encounter' | 'pick_new' | 'pick_discard'
 
 export default function PosBatalhaPage() {
   const router = useRouter()
-  const { playerDeck, currentFloor, applyPostGymSwap, addPokedexEntry } = useGameStore()
+  const { playerDeck, currentFloor, mode, applyPostGymSwap, addPokedexEntry } = useGameStore()
 
   const [pool, setPool] = useState<PokemonCardType[]>([])
   const [picked, setPicked] = useState<PokemonCardType | null>(null)
   const [discardId, setDiscardId] = useState<number | null>(null)
-  const [phase, setPhase] = useState<Phase>('pick_new')
+  const [phase, setPhase] = useState<Phase>('encounter')
+  const coinsEarned = mode === 'hard' ? 6 : 3
 
   useEffect(() => {
     if (playerDeck.length === 0) { router.replace('/'); return }
@@ -154,12 +155,17 @@ export default function PosBatalhaPage() {
               {gym ? `${gym.name} derrotado!` : 'Ginásio vencido!'}
             </p>
             <p className="font-black text-base uppercase tracking-wide" style={{ color: gymTextColor }}>
-              {phase === 'pick_new' ? 'Escolha um novo Pokémon' : 'Qual vai sair do deck?'}
+              {phase === 'encounter' ? 'Recompensas' : phase === 'pick_new' ? 'Escolha um novo Pokémon' : 'Qual vai sair do deck?'}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Step indicator */}
-            {(['pick_new', 'pick_discard'] as Phase[]).map((p) => (
+          <div className="flex items-center gap-3">
+            {/* Coins earned */}
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full border border-white/30 bg-white/15">
+              <span className="text-[12px]">🪙</span>
+              <span className="font-black text-[11px]" style={{ color: gymTextColor }}>+{coinsEarned}</span>
+            </div>
+            {/* Step indicator (hidden on encounter) */}
+            {phase !== 'encounter' && (['pick_new', 'pick_discard'] as Phase[]).map((p) => (
               <div key={p} className="w-2 h-2 rounded-full border border-white/40" style={{ backgroundColor: phase === p ? 'white' : 'rgba(255,255,255,0.25)' }} />
             ))}
           </div>
@@ -167,6 +173,67 @@ export default function PosBatalhaPage() {
       </header>
 
       <div className="max-w-[680px] mx-auto px-5 py-6 flex flex-col gap-6 pb-32">
+
+        {/* ── Fase 0: encontro selvagem ── */}
+        {phase === 'encounter' && (
+          <div className="flex flex-col items-center gap-8 py-8">
+            {/* Tall grass visual */}
+            <div className="w-full relative overflow-hidden rounded-3xl border-2 border-ink"
+              style={{ backgroundColor: '#2C5A1A', minHeight: 200, boxShadow: '5px 5px 0 #2C1810' }}>
+              {/* Grass strips */}
+              <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-2 pb-1">
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <div key={i} className="flex-1 rounded-t-full"
+                    style={{
+                      height: 24 + (i % 3) * 10,
+                      backgroundColor: i % 2 === 0 ? '#3A7A24' : '#4A9A2E',
+                      opacity: 0.8 + (i % 3) * 0.07,
+                    }} />
+                ))}
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pb-8">
+                <p className="font-game text-[7px] text-white/60 uppercase tracking-[0.4em]">ÁREA 1 — ROTA SELVAGEM</p>
+                <div className="flex gap-2">
+                  {['?', '?', '?'].map((_, i) => (
+                    <div key={i} className="w-14 h-14 rounded-2xl border-2 border-white/20 bg-white/10 flex items-center justify-center">
+                      <span className="font-black text-2xl text-white/40">?</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="font-black text-xl text-white text-center px-4 leading-tight mt-1">
+                  Um Pokémon selvagem apareceu!
+                </p>
+              </div>
+            </div>
+
+            {/* Coins callout */}
+            <div className="w-full border-2 border-ink rounded-2xl px-5 py-4 flex items-center gap-4 bg-white"
+              style={{ boxShadow: '4px 4px 0 #2C1810' }}>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl border-2 border-ink/15"
+                style={{ backgroundColor: `${gymColor}18` }}>
+                🪙
+              </div>
+              <div className="flex-1">
+                <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mb-1">Recompensa de batalha</p>
+                <p className="font-black text-base text-ink leading-tight">
+                  +{coinsEarned} Pokédollars conquistados
+                </p>
+                <p className="font-game text-[7px] text-ink/40 leading-none mt-0.5">
+                  {mode === 'hard' ? 'Modo Hard — bônus de dificuldade' : 'Modo Normal'}
+                </p>
+              </div>
+              <span className="font-black text-2xl" style={{ color: gymColor }}>+{coinsEarned}</span>
+            </div>
+
+            <button
+              onClick={() => setPhase('pick_new')}
+              className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl text-parchment-light transition-all cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+              style={{ backgroundColor: gymColor, boxShadow: '4px 4px 0 #2C1810' }}
+            >
+              Ver Pokémon selvagens →
+            </button>
+          </div>
+        )}
 
         {/* ── Fase 1: escolher novo Pokémon ── */}
         {phase === 'pick_new' && (
@@ -289,7 +356,7 @@ export default function PosBatalhaPage() {
                           <span className="font-game text-[6px] text-ink/50 tracking-widest">HP</span>
                           <span className="font-game text-[7px] font-black"
                             style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
-                            {p.hearts}/{p.hearts}
+                            {p.hearts}/5
                           </span>
                         </div>
                       </div>

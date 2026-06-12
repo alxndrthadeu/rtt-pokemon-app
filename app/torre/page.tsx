@@ -113,53 +113,51 @@ export default function TorrePage() {
     <main className="min-h-screen bg-parchment dots relative overflow-x-hidden">
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-20 bg-parchment/95 backdrop-blur-sm border-b-2 border-ink/10 px-5 py-3">
-        <div className="max-w-[640px] mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowAbandon(true)}
-              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-            >
-              ←
-            </button>
-            <div>
-              <p className="font-game text-[7px] text-ink-soft opacity-50 uppercase tracking-wide">
-                {playerName} · {mode === 'normal' ? 'Normal' : 'Hard'}
-              </p>
-              <p className="font-black text-sm text-ink uppercase">
-                Torre de Kanto
-              </p>
-            </div>
+      <header className="sticky top-0 z-20 bg-parchment/95 backdrop-blur-sm border-b-2 border-ink/10 px-4 py-3">
+        <div className="max-w-[640px] mx-auto flex items-center gap-3">
+          <button
+            onClick={() => setShowAbandon(true)}
+            className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+          >
+            ←
+          </button>
+          <div className="flex-1 min-w-0">
+            <p className="font-game text-[6px] text-ink/40 uppercase tracking-wide leading-none truncate">
+              {playerName} · {mode === 'normal' ? 'Normal' : 'Hard'}
+            </p>
+            <p className="font-black text-sm text-ink uppercase leading-tight truncate">
+              Torre de Kanto
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => router.push('/mochila')}
-              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+              className="border-2 border-ink rounded-full w-8 h-8 flex items-center justify-center font-game text-[11px] bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+              title="Mochila"
             >
-              🎒 Mochila
+              🎒
             </button>
             <button
               onClick={() => router.push('/pokedex')}
-              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+              className="border-2 border-ink rounded-full w-8 h-8 flex items-center justify-center font-game text-[11px] bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+              title="Pokédex"
             >
-              📖 Pokédex
+              📖
             </button>
           </div>
-
-          {/* progress */}
-          <div className="flex items-center gap-1.5">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-2 rounded-full border border-ink/20 transition-all"
-                style={{
-                  width: i === currentFloor ? 20 : 8,
-                  backgroundColor: i < currentFloor ? '#78C850' : i === currentFloor ? typeColor : 'transparent',
-                  opacity: i > currentFloor ? 0.3 : 1,
-                }}
-              />
-            ))}
-          </div>
+        </div>
+        {/* Progress bar — full width, below the header row */}
+        <div className="max-w-[640px] mx-auto mt-2 flex items-center gap-1">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-1.5 flex-1 rounded-full border border-ink/15 transition-all"
+              style={{
+                backgroundColor: i < currentFloor ? '#78C850' : i === currentFloor ? typeColor : 'transparent',
+                opacity: i > currentFloor ? 0.25 : 1,
+              }}
+            />
+          ))}
         </div>
       </header>
 
