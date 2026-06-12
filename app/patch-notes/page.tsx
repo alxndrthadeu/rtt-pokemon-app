@@ -26,6 +26,61 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.8',
+    date: 'Jun 2026',
+    label: 'Zonas & Histórico',
+    labelColor: '#3B4CCA',
+    description: 'O pool de Pokémon agora muda conforme você avança em Kanto — dos comuns de Viridian aos lendários de Victory Road. Mais: histórico completo de runs, tela de encerramento com resultado e o inicial escolhido nunca mais aparece como captura selvagem.',
+    entries: [
+      {
+        icon: '🗺️',
+        title: 'Pools geográficos por zona de Kanto',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'A cada andar, os Pokémon disponíveis para captura agora refletem a região real de Kanto que você está explorando. Andares 1–2 trazem criaturas de Viridian/Pewter; andares 4–5 chegam a Lavender/Celadon; e nos finais surgem os lendários de Victory Road.',
+        detail: 'Cada zona tem três tiers: Comum, Raro e Ultra Raro — com ponderação crescente conforme você avança na zona. E no Victory Road... existe uma chance de 5% de aparecer algo que não deveria existir.',
+      },
+      {
+        icon: '⭐',
+        title: 'Inicial exclusivo — nunca aparece no draft selvagem',
+        tag: 'BALANCE',
+        tagColor: '#78C850',
+        body: 'Bulbasaur, Charmander, Squirtle e todas as suas evoluções foram removidos dos pools de captura pós-batalha e do draft não-inicial. O Pokémon que você escolheu no começo é único na sua run.',
+        detail: 'Antes era possível pegar um segundo Charizard por sorte no pool. Agora a linha completa dos três iniciais é excluída de todos os pools selvagens — independente do andar.',
+      },
+      {
+        icon: '📜',
+        title: 'Histórico de runs',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'Nova página /historico registra todas as suas runs anteriores em formato de trainer card: nome, modo, data, resultado, andares, insígnias e o time final com HP de cada Pokémon.',
+        detail: 'O histórico é salvo localmente e mantém até 50 runs. Acesse pelo botão no header da tela inicial ou pelo link direto após encerrar uma run.',
+      },
+      {
+        icon: '🏁',
+        title: 'Game over com resultado e salvamento automático',
+        tag: 'MELHORIA',
+        tagColor: '#9B59B6',
+        body: 'A tela de encerramento agora exibe o motivo com cor e ícone distintos: 🏳️ Abandono (amarelo), 💀 Derrota (vermelho) ou 🏆 Vitória (verde). Ao chegar na tela, a run é salva automaticamente no histórico.',
+        detail: 'Botão "Ver histórico de runs" direto da tela de game over para revisar todas as suas runs anteriores.',
+      },
+      {
+        icon: '🧑‍🎮',
+        title: 'BOY e GIRL na seleção de personagem',
+        tag: 'UI',
+        tagColor: '#6890F0',
+        body: 'As labels "Trainer" e "Rival" na tela de escolha de personagem foram trocadas por "BOY" e "GIRL" — igualzinho à tela de seleção dos jogos Pokémon FireRed e LeafGreen.',
+      },
+      {
+        icon: '🏠',
+        title: 'Tela inicial atualizada',
+        tag: 'UI',
+        tagColor: '#6890F0',
+        body: 'A seção "Como funciona" ganhou um novo card explicando o sistema de itens e hazards (Stealth Rock, Toxic Spikes, Sticky Web). Os textos existentes foram revisados para refletir o estado atual do jogo: pool lendário correto, Centro Pokémon, Pokémart e o Missingno.',
+      },
+    ],
+  },
+  {
     version: '0.7',
     date: 'Jun 2026',
     label: 'Centro Pokémon',

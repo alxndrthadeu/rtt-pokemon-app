@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.8.0] - 2026-06-12
+
+### Adicionado
+
+- **Zone pools geográficos** (`lib/data/pokemon.ts`)
+  - 5 zonas (`Z1`–`Z5`) mapeadas para regiões de Kanto por `currentFloor`: Viridian/Pewter (0–1), Vermilion/Lavender (2–3), Celadon/Fuchsia (4–5), Saffron/Cinnabar (6–7), Victory Road/Plateau (8–11)
+  - Cada zona tem três tiers: `common`, `rare`, `ultra` — ponderados por weighted bag (`deepInZone` duplica rare/ultra nos andares mais altos da zona)
+  - Fallback garante 3 cards mesmo se o pool filtrado for pequeno
+  - Easter egg: 5% de chance de substituir um slot por Missingno (ID 0) em Z5 — apenas em Victory Road
+  - Exports: `generateZonePool(prevFloor, excludeIds)`, `generateInitialDraftPool(excludeIds)`, `STARTER_LINE_IDS`
+- **`STARTER_LINE_IDS = new Set([1..9])`** — IDs 1–9 (Bulbasaur → Blastoise) excluídos de todos os pools selvagens via `excludeIds`; garante que o inicial escolhido seja único na run
+- **`RunSummary` e `RunEndReason`** em `types/index.ts`
+  - `RunSummary`: `id`, `date`, `playerName`, `mode`, `gender`, `result`, `floorsCompleted`, `badgesEarned`, `deathCount`, `coins`, `teamSnapshot[]`
+- **`runHistory: RunSummary[]`** no store — persiste os últimos 50 resumos via `partialize`
+- **`runEndReason: RunEndReason | null`** e **`runSaved: boolean`** no store
+  - `setRunEndReason(reason)` — chamado em `entre-andares` (→ `'abandoned'`) e em `batalha/handleAbandon` (→ `'lost'`)
+  - `saveRunToHistory()` — idempotente via `runSaved`; snapshot da run salvo ao montar `/game-over`
+- **`/historico/page.tsx`** — página de histórico com trainer card por run
+  - Exibe: sprite do personagem, nome, modo, data, resultado colorido, stats (andares/insígnias/mortes), badges com sprite oficial e team sprites com HP dots
+  - Estado vazio com CTA para jogar
+- **`/game-over/page.tsx`** melhorado
+  - Salva run no histórico em `useEffect` ao montar (sem duplo-save em refresh)
+  - Header muda cor e ícone por resultado (`abandoned`/`lost`/`won`)
+  - Botão "Ver histórico de runs" nos CTAs
+
+### Modificado
+
+- **`app/draft/page.tsx`** — `generatePool` usa `generateInitialDraftPool` com `STARTER_LINE_IDS` no exclude
+- **`app/pos-batalha/page.tsx`** — `generatePostBattlePool` usa `generateZonePool` com `STARTER_LINE_IDS` no exclude; removidas funções locais `shuffle`, `getGuaranteedEvo`, `injectGuaranteed`, `STARTER_STAGE2/3`, `DRAFT_POOL_COMMON/RARE`
+- **`app/personagem/page.tsx`** — `typeLabel`: `'Trainer'` → `'BOY'`, `'Rival'` → `'GIRL'`
+- **`app/page.tsx`** — STEPS atualizados: novo card "Itens & Hazards", textos revisados para refletir Centro Pokémon, Pokémart, pool lendário e Missingno; card misterioso lista os lendários corretos
+- **`store/gameStore.ts`** — `resetRun` preserva `runHistory`, reseta `runEndReason` e `runSaved`; `partialize` inclui `runHistory`
+- **`app/entre-andares/page.tsx`** — `AbandonConfirmModal.onConfirm` chama `setRunEndReason('abandoned')` antes de navegar para `/game-over`
+- **`app/batalha/page.tsx`** — `handleAbandon` chama `setRunEndReason('lost')` antes de `endBattle('lose')`
+
+### Corrigido
+
+- **TypeScript: `Set<number>` spread** — `...STARTER_LINE_IDS` e `...new Set(...)` substituídos por `Array.from()` em `draft/page.tsx`, `pos-batalha/page.tsx` e `lib/data/pokemon.ts` (erro TS2802 com `target < ES2015`)
+
+---
+
 ## [0.5.0] - 2026-06-11
 
 ### Segurança
