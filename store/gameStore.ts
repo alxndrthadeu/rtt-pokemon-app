@@ -13,6 +13,7 @@ function generateSessionId(): string {
 
 // Floors where shop is available (currentFloor value after winning that gym)
 export const SHOP_FLOORS = [3, 6, 9] as const
+export const HEAL_COST = 10
 
 interface GameStore {
   // Sessão anônima (UUID persistido no localStorage)
@@ -84,6 +85,9 @@ interface GameStore {
 
   // Actions — Usar consumíveis (entre andares / mochila)
   useConsumable: (itemId: ConsumableId, pokemonId: number) => void
+
+  // Actions — Centro Pokémon
+  healAtCenter: () => void   // cura todos por HEAL_COST moedas
 
   // Actions — Loja
   markShopVisited: (floor: number) => void
@@ -358,6 +362,22 @@ export const useGameStore = create<GameStore>()(
           })
 
           return { inventory: newInventory, playerDeck: newDeck }
+        }),
+
+      // ── Centro Pokémon ──────────────────────────────────────────────────────
+
+      healAtCenter: () =>
+        set((s) => {
+          if (s.coins < HEAL_COST) return s
+          return {
+            coins: s.coins - HEAL_COST,
+            playerDeck: s.playerDeck.map((p) => ({
+              ...p,
+              hearts: 5,
+              isFainted: false,
+              statusEffects: [],
+            })),
+          }
         }),
 
       // ── Shop ────────────────────────────────────────────────────────────────

@@ -91,6 +91,16 @@ function getBackSpriteUrl(id: number): string {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${realId}.png`
 }
 
+function getAnimatedFrontUrl(id: number): string {
+  const realId = id === 9025 ? 25 : id
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${realId}.gif`
+}
+
+function getAnimatedBackUrl(id: number): string {
+  const realId = id === 9025 ? 25 : id
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${realId}.gif`
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type LocalPhase = 'selecting' | 'result' | 'victory' | 'defeat'
@@ -558,6 +568,9 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
   // Flash de status: detecta queda de HP causada por veneno/queimadura
   const [playerFlash, setPlayerFlash] = useState<string | null>(null)
   const [enemyFlash, setEnemyFlash]   = useState<string | null>(null)
+  // Stores the Pokémon ID that failed to load animated GIF — falls back to static sprite
+  const [enemyAnimErrId, setEnemyAnimErrId] = useState<number | null>(null)
+  const [playerAnimErrId, setPlayerAnimErrId] = useState<number | null>(null)
   const prevPH = useRef(pf.hearts)
   const prevEH = useRef(ef.hearts)
   useEffect(() => {
@@ -636,7 +649,8 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             style={{ boxShadow: `0 0 18px 6px ${enemyTellType}99`, borderRadius: 8 }} />
         )}
         <img
-          src={getPixelSpriteUrl(ef.pokemon.id)}
+          key={ef.pokemon.id}
+          src={enemyAnimErrId === ef.pokemon.id ? getPixelSpriteUrl(ef.pokemon.id) : getAnimatedFrontUrl(ef.pokemon.id)}
           alt={ef.pokemon.name}
           style={{
             width: 92, height: 92,
@@ -644,6 +658,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             objectFit: 'contain',
             filter: eKO ? 'grayscale(1)' : undefined,
           }}
+          onError={() => setEnemyAnimErrId(ef.pokemon.id)}
         />
         {eKO && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -656,7 +671,8 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
       <div className="absolute z-[5] transition-opacity duration-300"
         style={{ left: 6, bottom: 24, opacity: pKO ? 0.22 : 1 }}>
         <img
-          src={getBackSpriteUrl(pf.pokemon.id)}
+          key={pf.pokemon.id}
+          src={playerAnimErrId === pf.pokemon.id ? getBackSpriteUrl(pf.pokemon.id) : getAnimatedBackUrl(pf.pokemon.id)}
           alt={pf.pokemon.name}
           style={{
             width: 120, height: 120,
@@ -664,6 +680,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             objectFit: 'contain',
             filter: pKO ? 'grayscale(1)' : undefined,
           }}
+          onError={() => setPlayerAnimErrId(pf.pokemon.id)}
         />
         {pKO && (
           <div className="absolute inset-0 flex items-center justify-center">
