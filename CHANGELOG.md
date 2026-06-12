@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.5.0] - 2026-06-11
+
+### Segurança
+
+- **Next.js 14.2.3 → 14.2.35** — corrige authorization bypass crítico (CVSS 9.1), cache poisoning e mais 10+ CVEs
+- **Security headers** em todas as rotas: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`
+- **Validação de `NEXT_PUBLIC_API_URL`** — falha explícita em produção se a env var não estiver configurada
+- **Sanitização de `playerName`** — trim + limite de 20 caracteres antes de salvar
+
+### Corrigido
+
+- **Bug de sono** — status `sleep` aplicado via golpe acordava o Pokémon imediatamente no turno seguinte; corrigido para durar 2 turnos com 45% de acordar cedo (comportamento esperado)
+- **Erros de API visíveis** — falhas nas chamadas ao servidor agora aparecem em banner no topo da tela em vez de serem silenciadas com `console.error`
+
+### Performance
+
+- Removidas dependências mortas: `axios` e `framer-motion` (~13 KB + ~80 KB gzipped a menos no bundle)
+- `buildGymDeck` memoizado — custo de `makePokemonCard` pago uma vez por andar, não a cada batalha
+- `loading.tsx` adicionado para `/batalha`, `/draft` e `/torre` — evita tela branca na hidratação mobile
+- `lib/data/mechanics.ts` deletado — 1.100 linhas de dead code nunca importadas em runtime
+
+### Infraestrutura (Vercel)
+
+- **Vercel Analytics + Speed Insights** — Web Vitals reais por rota no painel da Vercel
+- **OG Image dinâmica** (`/api/og`, Edge Runtime) — preview visual ao compartilhar o link em WhatsApp/Slack/Twitter
+- **`vercel.json`** com `Cache-Control: immutable` para assets estáticos — imagens cacheadas por 1 ano no CDN
+- `tsconfig.json` corrigido para excluir `agent-skills/` do type-check
+
+---
+
 ## [0.4.0] - 2026-06-11
 
 ### Adicionado

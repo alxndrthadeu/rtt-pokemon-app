@@ -26,8 +26,52 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.5',
+    date: 'Jun 2026',
+    label: 'Qualidade & Infra',
+    labelColor: '#705898',
+    description: 'Bastidores. Sem novidade visível para o jogador casual — mas o jogo ficou mais seguro, rápido e confiável.',
+    entries: [
+      {
+        icon: '🐛',
+        title: 'Bug de sono corrigido',
+        tag: 'CORREÇÃO',
+        tagColor: '#888870',
+        body: 'Pokémon adormecidos por golpe de status acordavam imediatamente no turno seguinte. Agora dormem de verdade: até 2 turnos, com 45% de chance de acordar cedo.',
+      },
+      {
+        icon: '⚠️',
+        title: 'Erros de servidor visíveis',
+        tag: 'MELHORIA',
+        tagColor: '#9B59B6',
+        body: 'Falhas na comunicação com o servidor apareciam silenciosamente no console. Agora um banner vermelho no topo da tela avisa quando algo deu errado.',
+      },
+      {
+        icon: '🔒',
+        title: 'Segurança reforçada',
+        tag: 'SEGURANÇA',
+        tagColor: '#CC2200',
+        body: 'Next.js atualizado para a versão mais recente, corrigindo múltiplas vulnerabilidades. Headers de segurança HTTP adicionados em todas as páginas.',
+      },
+      {
+        icon: '⚡',
+        title: 'Bundle menor e mais rápido',
+        tag: 'PERFORMANCE',
+        tagColor: '#78C850',
+        body: 'Removidas duas bibliotecas que estavam instaladas mas nunca foram usadas. O app ficou ~93 KB mais leve no download inicial.',
+      },
+      {
+        icon: '🖼️',
+        title: 'Preview ao compartilhar link',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'Ao colar o link do jogo no WhatsApp, Telegram ou Twitter, agora aparece um preview com a identidade visual do Reach the Top.',
+      },
+    ],
+  },
+  {
     version: '0.4',
-    date: 'Jun 2025',
+    date: 'Jun 2026',
     label: 'Redesign Visual',
     labelColor: '#CC2200',
     description: 'Atualização focada em identidade visual e experiência mobile. O jogo mantém a alma dos anos 90 mas agora parece que foi feito assim — não que foi gerado por IA.',
