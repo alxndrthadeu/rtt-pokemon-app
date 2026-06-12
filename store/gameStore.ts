@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { PokemonCard, BattleState, GameMode, Gender, RPS } from '@/types'
-import { apiRequest } from '@/lib/api'
+import { apiRequest, isApiConfigured } from '@/lib/api'
 
 function generateSessionId(): string {
   return crypto.randomUUID()
@@ -156,7 +156,7 @@ export const useGameStore = create<GameStore>()(
                 : s.playerDeck,
           }))
 
-          if (state.runId) {
+          if (isApiConfigured() && state.runId) {
             apiRequest(`/runs/${state.runId}?session_id=${state.sessionId}`, {
               method: 'PATCH',
               body: JSON.stringify({
@@ -172,7 +172,7 @@ export const useGameStore = create<GameStore>()(
           }
         } else {
           set({ battle: null })
-          if (state.runId) {
+          if (isApiConfigured() && state.runId) {
             apiRequest(`/runs/${state.runId}?session_id=${state.sessionId}`, {
               method: 'PATCH',
               body: JSON.stringify({ status: 'lost' }),
@@ -190,6 +190,7 @@ export const useGameStore = create<GameStore>()(
         })),
 
       createRun: async () => {
+        if (!isApiConfigured()) return
         const s = get()
         try {
           const run = await apiRequest<{ id: string }>('/runs', {
@@ -210,7 +211,7 @@ export const useGameStore = create<GameStore>()(
 
       syncRun: () => {
         const s = get()
-        if (!s.runId) return
+        if (!isApiConfigured() || !s.runId) return
         apiRequest(`/runs/${s.runId}?session_id=${s.sessionId}`, {
           method: 'PATCH',
           body: JSON.stringify({
