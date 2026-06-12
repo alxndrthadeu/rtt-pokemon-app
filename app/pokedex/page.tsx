@@ -9,7 +9,7 @@ import { getTypeColor, getTypeTextColor, getSpriteUrl, formatPokemonNumber } fro
 import type { PokemonCard as PokemonCardType } from '@/types'
 
 function makeDummyCard(template: typeof POKEMON_TEMPLATES[0]): PokemonCardType {
-  return { ...template, isShiny: false, hearts: 3, isFainted: false, statusEffects: [] }
+  return { ...template, isShiny: false, hearts: 3, isFainted: false, statusEffects: [], heldItem: null }
 }
 
 const SPECIAL_IDS = new Set([0, 9025])

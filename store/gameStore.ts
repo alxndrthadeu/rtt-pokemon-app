@@ -2,12 +2,17 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { PokemonCard, BattleState, GameMode, Gender, RPS } from '@/types'
+import type { PokemonCard, BattleState, GameMode, Gender, RPS, HeldItem, InventoryItem, ConsumableId, HeldItemId, Rarity } from '@/types'
 import { apiRequest, isApiConfigured } from '@/lib/api'
+import { CONSUMABLES, RARITY_UPGRADE } from '@/lib/data/items'
+import { HELD_ITEMS } from '@/lib/data/items'
 
 function generateSessionId(): string {
   return crypto.randomUUID()
 }
+
+// Floors where shop is available (currentFloor value after winning that gym)
+export const SHOP_FLOORS = [3, 6, 9] as const
 
 interface GameStore {
   // Sessão anônima (UUID persistido no localStorage)
@@ -37,6 +42,12 @@ interface GameStore {
   // Erro de API — visível para o usuário
   apiError: string | null
 
+  // ── Sistema de itens ──────────────────────────────────────────────────────────
+  coins: number
+  inventory: InventoryItem[]          // consumíveis (pilha com quantidade)
+  heldItemBag: HeldItem[]             // hold items no inventário (não equipados)
+  shopVisitedFloors: number[]         // andares onde a loja já foi visitada
+
   // Actions — Setup
   setMode: (mode: GameMode) => void
   setGender: (gender: Gender) => void
@@ -57,6 +68,24 @@ interface GameStore {
 
   // Actions — Pokédex
   addPokedexEntry: (ids: number[]) => void
+
+  // Actions — Itens (economia)
+  addCoins: (amount: number) => void
+  spendCoins: (amount: number) => boolean   // retorna false se saldo insuficiente
+  addConsumable: (itemId: ConsumableId, quantity?: number) => void
+  removeConsumable: (itemId: ConsumableId, quantity?: number) => void
+  addHeldItemToBag: (itemId: HeldItemId) => void
+  removeHeldItemFromBag: (itemId: HeldItemId) => void
+
+  // Actions — Equipar hold items
+  equipHeldItem: (pokemonId: number, itemId: HeldItemId) => void
+  unequipHeldItem: (pokemonId: number) => void
+
+  // Actions — Usar consumíveis (entre andares / mochila)
+  useConsumable: (itemId: ConsumableId, pokemonId: number) => void
+
+  // Actions — Loja
+  markShopVisited: (floor: number) => void
 
   // Actions — Persistência
   createRun: () => Promise<void>
@@ -80,6 +109,10 @@ export const useGameStore = create<GameStore>()(
       battle: null,
       pokedexSeen: [],
       apiError: null,
+      coins: 0,
+      inventory: [],
+      heldItemBag: [],
+      shopVisitedFloors: [],
 
       setMode: (mode) => set({ mode }),
       setGender: (gender) => set({ gender }),
@@ -144,15 +177,22 @@ export const useGameStore = create<GameStore>()(
           const nextFloor = state.currentFloor + 1
           const isWon = nextFloor >= 12
 
+          // Normal mode: fainted revives with 2♥, alive gets +2♥ (cap 5)
+          // Hard mode: no healing
           set((s) => ({
             currentFloor: nextFloor,
             badgesEarned: s.battle
               ? [...s.badgesEarned, s.battle.gymId]
               : s.badgesEarned,
             battle: null,
+            coins: s.coins + (s.mode === 'hard' ? 6 : 3),
             playerDeck:
               s.mode === 'normal'
-                ? s.playerDeck.map((p) => ({ ...p, hearts: 5, isFainted: false }))
+                ? s.playerDeck.map((p) => ({
+                    ...p,
+                    isFainted: false,
+                    hearts: p.isFainted ? 2 : Math.min(p.hearts + 2, 5),
+                  }))
                 : s.playerDeck,
           }))
 
@@ -188,6 +228,146 @@ export const useGameStore = create<GameStore>()(
         set((s) => ({
           playerDeck: s.playerDeck.map((p) => (p.id === discardId ? newCard : p)),
         })),
+
+      // ── Item economy ────────────────────────────────────────────────────────
+
+      addCoins: (amount) => set((s) => ({ coins: s.coins + amount })),
+
+      spendCoins: (amount) => {
+        const s = get()
+        if (s.coins < amount) return false
+        set({ coins: s.coins - amount })
+        return true
+      },
+
+      addConsumable: (itemId, quantity = 1) =>
+        set((s) => {
+          const existing = s.inventory.find((i) => i.itemId === itemId)
+          if (existing) {
+            return {
+              inventory: s.inventory.map((i) =>
+                i.itemId === itemId ? { ...i, quantity: i.quantity + quantity } : i
+              ),
+            }
+          }
+          return { inventory: [...s.inventory, { itemId, quantity }] }
+        }),
+
+      removeConsumable: (itemId, quantity = 1) =>
+        set((s) => {
+          const existing = s.inventory.find((i) => i.itemId === itemId)
+          if (!existing) return {}
+          const newQty = existing.quantity - quantity
+          if (newQty <= 0) {
+            return { inventory: s.inventory.filter((i) => i.itemId !== itemId) }
+          }
+          return {
+            inventory: s.inventory.map((i) =>
+              i.itemId === itemId ? { ...i, quantity: newQty } : i
+            ),
+          }
+        }),
+
+      addHeldItemToBag: (itemId) =>
+        set((s) => {
+          const def = HELD_ITEMS[itemId]
+          if (!def) return {}
+          return { heldItemBag: [...s.heldItemBag, { id: def.id, name: def.name, description: def.description }] }
+        }),
+
+      removeHeldItemFromBag: (itemId) =>
+        set((s) => {
+          const idx = s.heldItemBag.findIndex((i) => i.id === itemId)
+          if (idx === -1) return {}
+          return {
+            heldItemBag: [...s.heldItemBag.slice(0, idx), ...s.heldItemBag.slice(idx + 1)],
+          }
+        }),
+
+      // ── Equip / Unequip ─────────────────────────────────────────────────────
+
+      equipHeldItem: (pokemonId, itemId) =>
+        set((s) => {
+          const def = HELD_ITEMS[itemId]
+          if (!def) return {}
+          const item: HeldItem = { id: def.id, name: def.name, description: def.description }
+          // Remove from bag
+          const bagIdx = s.heldItemBag.findIndex((i) => i.id === itemId)
+          if (bagIdx === -1) return {}
+          const newBag = [...s.heldItemBag.slice(0, bagIdx), ...s.heldItemBag.slice(bagIdx + 1)]
+          // If pokemon already has an item, return it to bag
+          const target = s.playerDeck.find((p) => p.id === pokemonId)
+          const returnedItem = target?.heldItem ? [target.heldItem] : []
+          return {
+            heldItemBag: [...newBag, ...returnedItem],
+            playerDeck: s.playerDeck.map((p) =>
+              p.id === pokemonId ? { ...p, heldItem: item } : p
+            ),
+          }
+        }),
+
+      unequipHeldItem: (pokemonId) =>
+        set((s) => {
+          const target = s.playerDeck.find((p) => p.id === pokemonId)
+          if (!target?.heldItem) return {}
+          return {
+            heldItemBag: [...s.heldItemBag, target.heldItem],
+            playerDeck: s.playerDeck.map((p) =>
+              p.id === pokemonId ? { ...p, heldItem: null } : p
+            ),
+          }
+        }),
+
+      // ── Use consumables ─────────────────────────────────────────────────────
+
+      useConsumable: (itemId, pokemonId) =>
+        set((s) => {
+          const item = s.inventory.find((i) => i.itemId === itemId)
+          if (!item || item.quantity <= 0) return {}
+          const def = CONSUMABLES[itemId]
+          if (!def) return {}
+
+          const newInventory = item.quantity <= 1
+            ? s.inventory.filter((i) => i.itemId !== itemId)
+            : s.inventory.map((i) => i.itemId === itemId ? { ...i, quantity: i.quantity - 1 } : i)
+
+          const newDeck = s.playerDeck.map((p) => {
+            if (p.id !== pokemonId) return p
+            switch (def.effect) {
+              case 'heal':
+                if (p.isFainted) return p  // use revive for fainted
+                return { ...p, hearts: Math.min(5, p.hearts + (def.healAmount ?? 1)) }
+              case 'status-cure':
+                return { ...p, statusEffects: def.curesAll ? [] : p.statusEffects.filter((se) => {
+                  if (itemId === 'antidote')  return se.type !== 'poison'
+                  if (itemId === 'burn-heal') return se.type !== 'burn'
+                  return false
+                })}
+              case 'revive':
+                if (!p.isFainted) return p
+                return { ...p, isFainted: false, hearts: def.healAmount ?? 2 }
+              case 'rare-candy': {
+                const nextRarity = RARITY_UPGRADE[p.rarity] as Rarity | undefined
+                return nextRarity ? { ...p, rarity: nextRarity } : p
+              }
+              default:
+                return p
+            }
+          })
+
+          return { inventory: newInventory, playerDeck: newDeck }
+        }),
+
+      // ── Shop ────────────────────────────────────────────────────────────────
+
+      markShopVisited: (floor) =>
+        set((s) => ({
+          shopVisitedFloors: s.shopVisitedFloors.includes(floor)
+            ? s.shopVisitedFloors
+            : [...s.shopVisitedFloors, floor],
+        })),
+
+      // ── API persistence ─────────────────────────────────────────────────────
 
       createRun: async () => {
         if (!isApiConfigured()) return
@@ -237,6 +417,10 @@ export const useGameStore = create<GameStore>()(
           playerDeck: [],
           rerollUsed: false,
           battle: null,
+          coins: 0,
+          inventory: [],
+          heldItemBag: [],
+          shopVisitedFloors: [],
           pokedexSeen: s.pokedexSeen, // preserved across runs
         })),
     }),
@@ -253,6 +437,10 @@ export const useGameStore = create<GameStore>()(
         playerDeck: s.playerDeck,
         rerollUsed: s.rerollUsed,
         pokedexSeen: s.pokedexSeen,
+        coins: s.coins,
+        inventory: s.inventory,
+        heldItemBag: s.heldItemBag,
+        shopVisitedFloors: s.shopVisitedFloors,
       }),
     },
   ),

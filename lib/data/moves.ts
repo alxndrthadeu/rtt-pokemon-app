@@ -217,6 +217,16 @@ export const MOVES: Record<string, MoveDefinition> = {
   // Special: Protect
   'protect':         { name: 'Protect',           type: 'Normal',   kind: 'buff',
                        special: 'protect' },
+  // ── Hazards (field moves) ────────────────────────────────────────────────────
+  'stealth-rock':    { name: 'Stealth Rock',      type: 'Rock',     kind: 'buff',
+                       special: 'stealth-rock' },
+  'toxic-spikes':    { name: 'Toxic Spikes',      type: 'Poison',   kind: 'buff',
+                       special: 'toxic-spikes' },
+  'sticky-web':      { name: 'Sticky Web',        type: 'Bug',      kind: 'buff',
+                       special: 'sticky-web' },
+  // Rapid Spin: removes player-side hazards
+  'rapid-spin-clear': { name: 'Rapid Spin',       type: 'Normal',   kind: 'buff',
+                        special: 'rapid-spin' },
   // Misc offensive
   'splash':          { name: 'Splash',            type: 'Water',    kind: 'offensive' },
   'super-fang':      { name: 'Super Fang',        type: 'Normal',   kind: 'offensive' },

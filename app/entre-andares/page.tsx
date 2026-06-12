@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useGameStore } from '@/store/gameStore'
+import { useGameStore, SHOP_FLOORS } from '@/store/gameStore'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
 import { getTypeColor, getTypeTextColor, getSpriteUrl, getPixelSpriteUrl } from '@/lib/typeColors'
@@ -50,8 +50,11 @@ function TrainerMini({ name, size = 80 }: { name: string; size?: number }) {
 
 export default function EntreAndaresPage() {
   const router = useRouter()
-  const { currentFloor, playerDeck, badgesEarned } = useGameStore()
+  const { currentFloor, playerDeck, badgesEarned, shopVisitedFloors } = useGameStore()
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
+
+  const shopAvailable = SHOP_FLOORS.includes(currentFloor as (typeof SHOP_FLOORS)[number])
+    && !shopVisitedFloors.includes(currentFloor)
 
   const prevFloor = currentFloor - 1
   const prevGym = GYM_LEADERS[prevFloor]
@@ -244,6 +247,25 @@ export default function EntreAndaresPage() {
         )}
 
         {/* ── CTAs ── */}
+        {/* ── Shop CTA (available only on shop floors before first visit) ── */}
+        {shopAvailable && (
+          <button
+            onClick={() => router.push('/loja')}
+            className="w-full py-3 font-black text-sm tracking-[0.12em] uppercase border-2 border-ink rounded-2xl text-parchment-light transition-all cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+            style={{ backgroundColor: '#2C7BB5', boxShadow: '4px 4px 0 #2C1810' }}
+          >
+            🛒 Visitar a Loja Pokémon
+          </button>
+        )}
+
+        {/* ── Mochila ── */}
+        <button
+          onClick={() => router.push('/mochila')}
+          className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/20 rounded-2xl text-ink/50 hover:text-ink/80 hover:border-ink/40 hover:bg-parchment-light transition-all cursor-pointer"
+        >
+          🎒 Mochila
+        </button>
+
         <button
           onClick={handleContinue}
           className="w-full py-4 font-black text-base tracking-[0.15em] uppercase border-2 border-ink rounded-2xl text-parchment-light shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"

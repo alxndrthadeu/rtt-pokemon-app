@@ -1,3 +1,31 @@
+// ─── Item system ──────────────────────────────────────────────────────────────
+
+export type HeldItemId =
+  | 'leftovers' | 'shell-bell' | 'sitrus-berry' | 'oran-berry'
+  | 'focus-sash' | 'rocky-helmet' | 'lum-berry' | 'white-herb'
+  | 'life-orb' | 'expert-belt' | 'scope-lens' | 'kings-rock' | 'quick-claw'
+  | 'toxic-orb' | 'flame-orb'
+  | 'charcoal' | 'mystic-water' | 'miracle-seed' | 'magnet'
+  | 'twisted-spoon' | 'black-belt' | 'hard-stone' | 'silver-powder'
+  | 'dragon-fang' | 'metal-coat'
+
+export type ConsumableId =
+  | 'potion' | 'super-potion' | 'hyper-potion' | 'full-restore'
+  | 'antidote' | 'burn-heal' | 'full-heal'
+  | 'revive' | 'max-revive'
+  | 'ether' | 'elixir' | 'rare-candy'
+
+export interface HeldItem {
+  id: HeldItemId
+  name: string
+  description: string
+}
+
+export interface InventoryItem {
+  itemId: ConsumableId
+  quantity: number
+}
+
 export type PokemonType =
   | 'Normal' | 'Fire' | 'Water' | 'Grass' | 'Electric' | 'Ice'
   | 'Fighting' | 'Poison' | 'Ground' | 'Flying' | 'Psychic'
@@ -143,6 +171,7 @@ export interface PokemonCard {
   hearts: number
   isFainted: boolean
   statusEffects: StatusEffect[]
+  heldItem: HeldItem | null
 }
 
 export interface TurnResult {
