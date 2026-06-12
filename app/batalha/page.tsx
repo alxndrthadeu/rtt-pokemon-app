@@ -623,7 +623,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
               <StatusPill status={effects.enemyStatus} />
             </div>
             <div style={{ width: 124 }}>
-              <HPBar current={ef.hearts} max={ef.pokemon.hearts} flashColor={enemyFlash} />
+              <HPBar current={ef.hearts} max={5} flashColor={enemyFlash} />
             </div>
             <EffectBadges effects={effects} side="enemy" />
           </div>
@@ -701,7 +701,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
               <StatusPill status={effects.playerStatus} />
             </div>
             <div style={{ width: 124 }}>
-              <HPBar current={pf.hearts} max={pf.pokemon.hearts} flashColor={playerFlash} />
+              <HPBar current={pf.hearts} max={5} flashColor={playerFlash} />
             </div>
             <EffectBadges effects={effects} side="player" />
           </div>

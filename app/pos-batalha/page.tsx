@@ -14,6 +14,21 @@ import type { PokemonCard as PokemonCardType } from '@/types'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const GYM_LOCATION: Record<number, string> = {
+  0: 'ARREDORES DE PEWTER CITY',
+  1: 'ENTRADA DA CERULEAN CAVE',
+  2: 'DOCAS DE VERMILION',
+  3: 'PARQUES DE CELADON',
+  4: 'SAFARI ZONE',
+  5: 'ARREDORES DE SAFFRON',
+  6: 'ILHA CINNABAR',
+  7: 'VIRIDIAN FOREST',
+  8: 'VICTORY ROAD',
+  9: 'POKEMON LEAGUE',
+  10: 'PROFUNDEZAS DA ELITE 4',
+  11: 'SALÃO DO CAMPEÃO',
+}
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -192,7 +207,7 @@ export default function PosBatalhaPage() {
                 ))}
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pb-8">
-                <p className="font-game text-[7px] text-white/60 uppercase tracking-[0.4em]">ÁREA 1 — ROTA SELVAGEM</p>
+                <p className="font-game text-[7px] text-white/60 uppercase tracking-[0.4em]">{GYM_LOCATION[prevFloor] ?? 'ÁREA SELVAGEM'}</p>
                 <div className="flex gap-2">
                   {['?', '?', '?'].map((_, i) => (
                     <div key={i} className="w-14 h-14 rounded-2xl border-2 border-white/20 bg-white/10 flex items-center justify-center">
@@ -245,10 +260,10 @@ export default function PosBatalhaPage() {
                 <div className="h-px w-8 bg-ink opacity-15" />
               </div>
               <h1 className="text-2xl font-black uppercase text-ink tracking-tight">
-                Recrutar <span style={{ color: gymColor }}>Pokémon</span>
+                Capturar <span style={{ color: gymColor }}>Pokémon</span>
               </h1>
               <p className="text-sm text-ink-soft opacity-60 mt-1">
-                Escolha 1 para adicionar ao seu deck — ou pule para continuar com o time atual.
+                Escolha 1 para capturar — ou pule para continuar com o time atual.
               </p>
             </div>
 
@@ -261,6 +276,7 @@ export default function PosBatalhaPage() {
                     pokemon={pokemon}
                     selectable
                     selected={picked?.id === pokemon.id}
+                    hideHp
                     onClick={() => handlePickNew(pokemon)}
                   />
                 </div>
@@ -275,13 +291,13 @@ export default function PosBatalhaPage() {
                 className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl transition-all duration-100 disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer"
                 style={{ backgroundColor: picked ? gymColor : '#E8E0CC', color: picked ? gymTextColor : '#2C1810', boxShadow: picked ? '4px 4px 0 #2C1810' : 'none' }}
               >
-                {picked ? `Recrutar ${picked.name} →` : 'Selecione um Pokémon'}
+                {picked ? `Capturar ${picked.name} →` : 'Selecione um Pokémon'}
               </button>
               <button
                 onClick={handleSkip}
                 className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/20 rounded-2xl text-ink/40 hover:text-ink/70 transition-all cursor-pointer"
               >
-                Pular — manter deck atual
+                Pular — manter time atual
               </button>
             </div>
 
@@ -289,7 +305,7 @@ export default function PosBatalhaPage() {
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-px flex-1 bg-ink opacity-10" />
-                <span className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest">Seu deck atual</span>
+                <span className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest">Seu time atual</span>
                 <div className="h-px flex-1 bg-ink opacity-10" />
               </div>
               <div className="flex gap-2 flex-wrap justify-center">

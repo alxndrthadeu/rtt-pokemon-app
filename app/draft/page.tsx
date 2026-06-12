@@ -120,7 +120,7 @@ export default function DraftPage() {
                 {playerName} · {mode === 'normal' ? 'Normal' : 'Hard'}
               </p>
               <p className="font-black text-sm text-ink uppercase">
-                Deck{' '}
+                Time{' '}
                 <span style={{ color: deck.length === DECK_SIZE ? '#78C850' : '#CC2200' }}>
                   {deck.length}/{DECK_SIZE}
                 </span>
@@ -199,7 +199,7 @@ export default function DraftPage() {
                     Escolha <span style={{ color: '#3B4CCA' }}>1 Pokémon</span>
                   </h1>
                   <p className="text-sm text-ink-soft opacity-60 mt-1">
-                    {DECK_SIZE - deck.length} vagas restantes no deck
+                    {DECK_SIZE - deck.length} vagas restantes no time
                   </p>
                 </>
               )}
@@ -214,6 +214,7 @@ export default function DraftPage() {
                     pokemon={pokemon}
                     selectable
                     selected={selectedId === pokemon.id}
+                    hideHp
                     onClick={() => handleSelect(pokemon)}
                   />
                 </div>
@@ -234,7 +235,7 @@ export default function DraftPage() {
                 style={{ backgroundColor: selectedId !== null ? '#CC2200' : '#E8E0CC' }}
               >
                 {selectedId !== null
-                  ? `Adicionar ${selectedPokemon?.name ?? ''} ao deck →`
+                  ? `Capturar ${selectedPokemon?.name ?? ''} →`
                   : 'Selecione um Pokémon'}
               </button>
 
@@ -273,7 +274,7 @@ export default function DraftPage() {
               </p>
             </div>
 
-            {/* Deck final — grid 3x2 */}
+            {/* Time final — grid 3x2 */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {deck.map((pokemon) => (
                 <PokemonCard key={pokemon.id} pokemon={pokemon} />

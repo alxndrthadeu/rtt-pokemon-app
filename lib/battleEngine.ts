@@ -362,18 +362,26 @@ export function applySlotMoveEffect(
   }
 
   if (move.kind === 'status' && move.statusEffect) {
-    const target = side === 'player' ? opponentPokemon : undefined
-    if (side === 'player' && target) {
-      if (isImmuneToStatus(move.statusEffect, target.type1, target.type2)) {
+    const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
+    if (side === 'player' && opponentPokemon) {
+      if (isImmuneToStatus(move.statusEffect, opponentPokemon.type1, opponentPokemon.type2)) {
         message = `${move.name}: inimigo é imune a ${move.statusEffect}!`
       } else if (eff.enemyStatus) {
         message = `${move.name}: inimigo já tem um status!`
       } else {
-        // poison/burn = indefinido (-1); sleep = 2 turnos máx (com 45% acordar cedo)
         const turns = move.statusEffect === 'sleep' ? 2 : -1
         eff.enemyStatus = { condition: move.statusEffect, turnsLeft: turns }
-        const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
         message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ao inimigo!`
+      }
+    } else if (side === 'enemy' && opponentPokemon) {
+      if (isImmuneToStatus(move.statusEffect, opponentPokemon.type1, opponentPokemon.type2)) {
+        message = `${move.name}: seu Pokémon é imune a ${move.statusEffect}!`
+      } else if (eff.playerStatus) {
+        message = `${move.name}: seu Pokémon já tem um status!`
+      } else {
+        const turns = move.statusEffect === 'sleep' ? 2 : -1
+        eff.playerStatus = { condition: move.statusEffect, turnsLeft: turns }
+        message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ao seu Pokémon!`
       }
     }
     return { effects: eff, message, isProtect }
@@ -870,6 +878,10 @@ export function applyEntryEffects(
     } else if (side === 'player' && !eff.playerStatus &&
                !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
       eff.playerStatus = { condition: 'poison', turnsLeft: -1 }
+      messages.push(`☠️ Toxic Spikes! ${pokemon.name} foi envenenado ao entrar!`)
+    } else if (side === 'enemy' && !eff.enemyStatus &&
+               !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
+      eff.enemyStatus = { condition: 'poison', turnsLeft: -1 }
       messages.push(`☠️ Toxic Spikes! ${pokemon.name} foi envenenado ao entrar!`)
     }
   }

@@ -286,6 +286,32 @@ function NextGymSheetContent({ nextGym, nextGymIdx }: { nextGym: typeof GYM_LEAD
   )
 }
 
+function HeaderBadge({ gymIdx, earned, typeColor }: { gymIdx: number; earned: boolean; typeColor: string }) {
+  const [err, setErr] = useState(false)
+  const gym = GYM_LEADERS[gymIdx]
+  if (err || !BADGE_URLS[gymIdx]) {
+    return (
+      <div className="w-6 h-6 rounded-full border flex items-center justify-center"
+        style={{
+          borderColor: earned ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)',
+          backgroundColor: earned ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
+          filter: earned ? 'none' : 'opacity(0.3)',
+        }}>
+        <span style={{ fontSize: 8, color: 'white', fontWeight: 900 }}>{gym.name[0]}</span>
+      </div>
+    )
+  }
+  return (
+    <div className="w-6 h-6 flex items-center justify-center"
+      style={{ filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>
+      <img src={BADGE_URLS[gymIdx]} alt={gym.badge}
+        className="w-6 h-6 object-contain"
+        style={{ imageRendering: 'pixelated' }}
+        onError={() => setErr(true)} />
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EntreAndaresPage() {
@@ -382,16 +408,10 @@ export default function EntreAndaresPage() {
             <div className="flex items-center gap-1.5">
               {Array.from({ length: 8 }).map((_, i) => {
                 const earned = badgesEarned.includes(i)
+                const gym = GYM_LEADERS[i]
+                const tc = getTypeColor(gym.specialtyType)
                 return (
-                  <div key={i} className="w-6 h-6 flex items-center justify-center"
-                    style={{ filter: earned ? 'none' : 'grayscale(1) opacity(0.3)' }}>
-                    <img
-                      src={BADGE_URLS[i] ?? ''}
-                      alt=""
-                      className="w-6 h-6 object-contain"
-                      style={{ imageRendering: 'pixelated' }}
-                    />
-                  </div>
+                  <HeaderBadge key={i} gymIdx={i} earned={earned} typeColor={tc} />
                 )
               })}
             </div>
@@ -405,8 +425,8 @@ export default function EntreAndaresPage() {
       <div className="max-w-[640px] mx-auto px-4 py-5 flex flex-col gap-4 pb-32">
 
         {/* ── CENTRO POKÉMON BUILDING ── */}
-        <div className="rounded-3xl border-2 border-ink overflow-hidden"
-          style={{ backgroundColor: 'white', boxShadow: '5px 5px 0 #2C1810' }}>
+        <div className="rounded-2xl border-2 border-ink overflow-hidden"
+          style={{ backgroundColor: 'white', boxShadow: '4px 4px 0 #2C1810' }}>
 
           {/* Red roof stripes */}
           <div className="h-3 flex">
@@ -514,11 +534,10 @@ export default function EntreAndaresPage() {
           )}
         </div>
 
-        {/* ── POKÉMART (non-Elite) ── */}
+        {/* ── POKÉMART ── */}
         {!isEliteFour && (
-          <div className="rounded-3xl border-2 border-ink overflow-hidden"
-            style={{ backgroundColor: 'white', boxShadow: '3px 3px 0 #2C1810' }}>
-            {/* Mart roof */}
+          <div className="rounded-2xl border-2 border-ink overflow-hidden"
+            style={{ backgroundColor: 'white', boxShadow: '4px 4px 0 #2C1810' }}>
             <div className="h-2 flex">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="flex-1"
@@ -530,11 +549,7 @@ export default function EntreAndaresPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-black text-sm text-ink uppercase tracking-tight leading-tight">Pokémart</p>
                 <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mt-0.5">
-                  {shopAvailable
-                    ? '★ Reposição disponível neste andar!'
-                    : shopVisited
-                    ? 'Já visitado neste andar'
-                    : `Reposição no andar ${SHOP_FLOORS.find(f => f > currentFloor) ?? '—'}`}
+                  Itens, hold items e consumíveis
                 </p>
               </div>
               {shopAvailable && (
@@ -547,31 +562,53 @@ export default function EntreAndaresPage() {
             <div className="border-t border-ink/8 px-4 pb-3 pt-2">
               <button
                 onClick={() => router.push('/loja')}
-                className="w-full py-2.5 rounded-xl border-2 font-game text-[8px] uppercase tracking-widest transition-all cursor-pointer"
-                style={shopAvailable ? {
+                className="w-full py-2.5 rounded-xl border-2 font-black text-sm uppercase tracking-[0.1em] transition-all cursor-pointer"
+                style={{
                   borderColor: '#2C7BB5',
                   backgroundColor: '#2C7BB5',
                   color: 'white',
                   boxShadow: '3px 3px 0 #2C1810',
-                } : {
-                  borderColor: 'rgba(44,24,16,0.12)',
-                  backgroundColor: 'transparent',
-                  color: 'rgba(44,24,16,0.4)',
                 }}
               >
-                {shopAvailable ? 'Entrar na Loja →' : '🛒 Ver Loja'}
+                Entrar na Loja →
               </button>
             </div>
           </div>
         )}
 
         {/* ── MOCHILA ── */}
-        <button
-          onClick={() => router.push('/mochila')}
-          className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/15 rounded-2xl text-ink/40 hover:text-ink/70 hover:border-ink/30 hover:bg-white/60 transition-all cursor-pointer bg-white/40"
-        >
-          🎒 Mochila e Itens
-        </button>
+        <div className="rounded-2xl border-2 border-ink overflow-hidden"
+          style={{ backgroundColor: 'white', boxShadow: '4px 4px 0 #2C1810' }}>
+          <div className="h-2 flex">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex-1"
+                style={{ backgroundColor: i % 2 === 0 ? '#78C850' : '#5CA832' }} />
+            ))}
+          </div>
+          <div className="px-4 py-3 flex items-center gap-3">
+            <span className="text-2xl">🎒</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-sm text-ink uppercase tracking-tight leading-tight">Mochila</p>
+              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mt-0.5">
+                Use consumíveis e gerencie equipamentos
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-ink/8 px-4 pb-3 pt-2">
+            <button
+              onClick={() => router.push('/mochila')}
+              className="w-full py-2.5 rounded-xl border-2 font-black text-sm uppercase tracking-[0.1em] transition-all cursor-pointer"
+              style={{
+                borderColor: '#78C850',
+                backgroundColor: '#78C850',
+                color: 'white',
+                boxShadow: '3px 3px 0 #2C1810',
+              }}
+            >
+              Abrir Mochila →
+            </button>
+          </div>
+        </div>
 
         {/* ── PRÓXIMO GYM (compact → tap para bottom sheet) ── */}
         {!isGameComplete && nextGym && (

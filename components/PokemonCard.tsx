@@ -39,11 +39,12 @@ interface PokemonCardProps {
   pokemon: PokemonCardType
   selectable?: boolean
   selected?: boolean
+  hideHp?: boolean
   onClick?: () => void
 }
 
 // ─── Card ──────────────────────────────────────────────────────────────────────
-export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonCardProps) {
+export function PokemonCard({ pokemon, selectable, selected, hideHp, onClick }: PokemonCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const type1Color = getTypeColor(pokemon.type1)
 
@@ -165,19 +166,31 @@ export function PokemonCard({ pokemon, selectable, selected, onClick }: PokemonC
           </div>
         )}
 
-        {/* HP X/X */}
-        <div className="flex items-center justify-between pt-1 border-t border-ink/10">
-          <div className="flex items-center gap-1.5">
-            <span className="font-game text-[7px] text-ink tracking-widest">HP</span>
-            <span className="font-game text-[8px] font-black" style={{ color: pokemon.hearts <= 1 ? '#E82020' : pokemon.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
-              {pokemon.hearts}/{pokemon.hearts}
+        {/* HP bar */}
+        {!hideHp && (
+          <div className="flex items-center gap-2 pt-1 border-t border-ink/10">
+            <span className="font-game text-[7px] text-ink/40 tracking-widest shrink-0">HP</span>
+            <div className="flex-1 h-2 rounded-full bg-ink/10 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${(pokemon.hearts / 5) * 100}%`,
+                  backgroundColor: pokemon.hearts <= 1 ? '#E82020' : pokemon.hearts <= 2 ? '#F0C000' : '#4CAF50',
+                }}
+              />
+            </div>
+            <span className="font-game text-[7px] font-black shrink-0" style={{ color: pokemon.hearts <= 1 ? '#E82020' : pokemon.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
+              {pokemon.hearts}/5
             </span>
           </div>
+        )}
+        {/* Selection label */}
+        <div className="flex justify-end pt-0.5">
           {selectable && !selected && (
             <span className="font-game text-[7px] text-ink/30 uppercase tracking-wide">Clique</span>
           )}
           {selected && (
-            <span className="font-game text-[7px] uppercase tracking-wide" style={{ color: type1Color }}>✓ No deck</span>
+            <span className="font-game text-[7px] uppercase tracking-wide" style={{ color: type1Color }}>✓ Capturado</span>
           )}
         </div>
 
