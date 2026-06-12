@@ -63,6 +63,7 @@ interface GameStore {
   submitAction: (action: RPS) => void
   useSwitch: () => void
   endBattle: (result: 'win' | 'lose') => void
+  syncDeckAfterBattle: (fighters: { id: number; hearts: number; isFainted: boolean }[]) => void
   applyPostGymSwap: (newCard: PokemonCard, discardId: number) => void
   incrementDeathCount: () => void
 
@@ -171,14 +172,23 @@ export const useGameStore = create<GameStore>()(
             : null,
         })),
 
+      syncDeckAfterBattle: (fighters) => {
+        const byId = new Map(fighters.map(f => [f.id, f]))
+        set((s) => ({
+          playerDeck: s.playerDeck.map((p) => {
+            const f = byId.get(p.id)
+            if (!f) return p
+            return { ...p, hearts: f.hearts, isFainted: f.isFainted }
+          }),
+        }))
+      },
+
       endBattle: (result) => {
         const state = get()
         if (result === 'win') {
           const nextFloor = state.currentFloor + 1
           const isWon = nextFloor >= 12
 
-          // Normal mode: fainted revives with 2♥, alive gets +2♥ (cap 5)
-          // Hard mode: no healing
           set((s) => ({
             currentFloor: nextFloor,
             badgesEarned: s.battle
@@ -186,14 +196,6 @@ export const useGameStore = create<GameStore>()(
               : s.badgesEarned,
             battle: null,
             coins: s.coins + (s.mode === 'hard' ? 6 : 3),
-            playerDeck:
-              s.mode === 'normal'
-                ? s.playerDeck.map((p) => ({
-                    ...p,
-                    isFainted: false,
-                    hearts: p.isFainted ? 2 : Math.min(p.hearts + 2, 5),
-                  }))
-                : s.playerDeck,
           }))
 
           if (isApiConfigured() && state.runId) {
