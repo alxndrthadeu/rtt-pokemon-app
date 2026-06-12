@@ -4,29 +4,20 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
 import { PokemonCard } from '@/components/PokemonCard'
-import { makePokemonCard, DRAFT_POOL_COMMON, DRAFT_POOL_RARE, ASH_PIKACHU_ID } from '@/lib/data/pokemon'
+import { makePokemonCard, generateInitialDraftPool, STARTER_LINE_IDS, ASH_PIKACHU_ID } from '@/lib/data/pokemon'
 import type { PokemonCard as PokemonCardType } from '@/types'
 
 const DECK_SIZE = 6
 const STARTER_IDS = [1, 4, 7]
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
 
 function generatePool(round: number, pickedIds: number[]): PokemonCardType[] {
   if (round === 1) {
     return STARTER_IDS.map((id) => makePokemonCard(id)!)
   }
-  const pool = shuffle(
-    [...DRAFT_POOL_COMMON, ...DRAFT_POOL_RARE].filter((id) => !pickedIds.includes(id)),
-  ).slice(0, 3)
-  return pool.map((id) => makePokemonCard(id)!)
+  const exclude = new Set([...pickedIds, ...Array.from(STARTER_LINE_IDS)])
+  const ids = generateInitialDraftPool(exclude)
+  return ids.map((id) => makePokemonCard(id)!).filter(Boolean)
 }
 
 export default function DraftPage() {

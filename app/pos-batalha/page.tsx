@@ -6,7 +6,7 @@ import { useGameStore } from '@/store/gameStore'
 import { PokemonCard } from '@/components/PokemonCard'
 import {
   makePokemonCard,
-  DRAFT_POOL_COMMON, DRAFT_POOL_RARE, DRAFT_POOL_ULTRA, LEGENDARY_IDS, MISSINGNO_ID,
+  generateZonePool, STARTER_LINE_IDS,
 } from '@/lib/data/pokemon'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { getTypeColor, getTypeTextColor, getSpriteUrl } from '@/lib/typeColors'
@@ -29,80 +29,12 @@ const GYM_LOCATION: Record<number, string> = {
   11: 'SALÃO DO CAMPEÃO',
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
 
-// Linha evolutiva dos iniciais: qualquer estágio → evolução garantida
-const STARTER_STAGE2: Record<number, number> = { 1: 2, 4: 5, 7: 8 }       // base → 2ª forma
-const STARTER_STAGE3: Record<number, number> = { 1: 3, 2: 3, 4: 6, 5: 6, 7: 9, 8: 9 } // qualquer estágio → final
-
-function getGuaranteedEvo(deckIds: number[], stage: 2 | 3): number | null {
-  const map = stage === 2 ? STARTER_STAGE2 : STARTER_STAGE3
-  for (const id of Object.keys(map).map(Number)) {
-    if (deckIds.includes(id)) return map[id]
-  }
-  return null
-}
-
-function injectGuaranteed(evoId: number, floor: number, exclude: Set<number>): PokemonCardType[] | null {
-  if (exclude.has(evoId)) return null
-  let candidates: number[]
-  if (floor <= 2) candidates = [...DRAFT_POOL_COMMON, ...DRAFT_POOL_RARE]
-  else if (floor <= 5) candidates = [...DRAFT_POOL_RARE, ...DRAFT_POOL_ULTRA]
-  else candidates = [...DRAFT_POOL_ULTRA, ...LEGENDARY_IDS]
-
-  const others = shuffle(candidates.filter(id => !exclude.has(id) && id !== evoId)).slice(0, 2)
-  return shuffle([evoId, ...others]).map(id => makePokemonCard(id)!).filter(Boolean)
-}
-
-// Pool de draft pós-ginásio: raridade aumenta com o andar
-function generatePostBattlePool(floor: number, deckIds: number[]): PokemonCardType[] {
-  const exclude = new Set(deckIds)
-
-  // Andar 0 (Brock): garante 2ª forma do inicial
-  if (floor === 0) {
-    const evoId = getGuaranteedEvo(deckIds, 2)
-    if (evoId) {
-      const result = injectGuaranteed(evoId, floor, exclude)
-      if (result) return result
-    }
-  }
-
-  // Andar 5 (Koga): garante forma final do inicial (qualquer estágio na linha)
-  if (floor === 5) {
-    const evoId = getGuaranteedEvo(deckIds, 3)
-    if (evoId) {
-      const result = injectGuaranteed(evoId, floor, exclude)
-      if (result) return result
-    }
-  }
-
-  let candidates: number[]
-
-  if (floor <= 2) {
-    candidates = [...DRAFT_POOL_COMMON, ...DRAFT_POOL_RARE]
-  } else if (floor <= 5) {
-    candidates = [...DRAFT_POOL_RARE, ...DRAFT_POOL_ULTRA]
-  } else if (floor <= 8) {
-    const withLegendary = Math.random() < 0.20
-      ? [...DRAFT_POOL_ULTRA, ...LEGENDARY_IDS]
-      : DRAFT_POOL_ULTRA
-    candidates = withLegendary
-  } else {
-    const withMissing = Math.random() < 0.05
-      ? [...DRAFT_POOL_ULTRA, ...LEGENDARY_IDS, MISSINGNO_ID]
-      : [...DRAFT_POOL_ULTRA, ...LEGENDARY_IDS]
-    candidates = withMissing
-  }
-
-  const pool = shuffle(candidates.filter(id => !exclude.has(id))).slice(0, 3)
-  return pool.map(id => makePokemonCard(id)!).filter(Boolean)
+// Pool pós-batalha: zona geográfica baseada no andar vencido
+function generatePostBattlePool(prevFloor: number, deckIds: number[]): PokemonCardType[] {
+  const exclude = new Set([...deckIds, ...Array.from(STARTER_LINE_IDS)])
+  const ids = generateZonePool(prevFloor, exclude)
+  return ids.map(id => makePokemonCard(id)!).filter(Boolean)
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────

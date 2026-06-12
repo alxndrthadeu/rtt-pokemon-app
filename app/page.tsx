@@ -54,24 +54,29 @@ function NeoCard({ children, className = '' }: { children: React.ReactNode; clas
 // ─── Steps — cores dos tipos Gen 1 ────────────────────────────────────────────
 const STEPS = [
   {
-    num: '01', bg: '#F08030', // Fire
+    num: '01', bg: '#F08030',
     title: 'Draft de Pokémon',
-    body: 'Você começa escolhendo entre os 3 iniciais de Kanto. A cada ginásio conquistado, 3 novos Pokémon surgem — forme seu deck de 6.',
+    body: 'Escolha um dos 3 iniciais de Kanto. A cada ginásio vencido, 3 novos Pokémon surgem — o pool muda por região, dos comuns de Viridian aos lendários do Plateau.',
   },
   {
-    num: '02', bg: '#6890F0', // Water
+    num: '02', bg: '#6890F0',
     title: 'Combate em Jokenpô',
-    body: 'Cada turno é Pedra, Papel ou Tesoura. Tipo e habilidade do Pokémon modificam o dano. Você pode trocar de Pokémon a qualquer momento — mas o inimigo ataca de graça.',
+    body: 'Pedra, Papel ou Tesoura. Tipo e habilidade modificam o dano. Troque de Pokémon quando quiser — mas o inimigo ataca de graça. Cuidado com status: veneno, paralisia e sono mudam o jogo.',
   },
   {
-    num: '03', bg: '#78C850', // Grass
+    num: '03', bg: '#78C850',
     title: '12 Andares para Escalar',
-    body: '8 líderes de ginásio + Elite 4. A IA evolui: de aleatória até preditiva. Derrote Lance para se tornar Campeão.',
+    body: '8 líderes + Elite 4. A IA evolui de aleatória até preditiva. Entre andares: cure seu time no Centro Pokémon e compre itens no Pokémart.',
   },
   {
-    num: '04', bg: '#F85888', // Psychic
+    num: '04', bg: '#A890F0',
+    title: 'Itens & Hazards',
+    body: 'Equipamentos passivos (Leftovers, Life Orb, Focus Sash) e consumíveis (Potion, Revive, Rare Candy). Ginásios jogam armadilhas de entrada — Spikes e Toxic Spikes — que persistem pela batalha.',
+  },
+  {
+    num: '05', bg: '#F85888',
     title: 'Habilidades & Ataques Únicos',
-    body: 'Cada Pokémon tem habilidade passiva. Formas finais possuem ataque devastador — hover no card para ler a descrição.',
+    body: 'Cada Pokémon tem habilidade passiva. Formas finais possuem ataque único — de cura a OHKO. Toque no card para ver a descrição completa.',
   },
 ]
 
@@ -266,8 +271,8 @@ export default function HomePage() {
             </div>
             <p className="text-[11px] text-ink-soft leading-relaxed opacity-80">
               Após cada ginásio, troque 1 Pokémon entre 3 opções.
-              A partir do <strong className="text-ink opacity-100">Ginásio 7</strong>, lendários aparecem —
-              e existe uma chance <strong style={{ color: '#7038F8' }}>muito pequena</strong> de surgir algo completamente inesperado...
+              Nos últimos andares, <strong className="text-ink opacity-100">Articuno, Zapdos, Moltres, Dragonite e Mewtwo</strong> entram no pool —
+              e existe uma chance <strong style={{ color: '#7038F8' }}>muito pequena</strong> de aparecer algo que não deveria existir...
             </p>
           </div>
         </div>

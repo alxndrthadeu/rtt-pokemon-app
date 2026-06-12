@@ -202,6 +202,28 @@ export interface BattleState {
   statusEffects: StatusEffect[]
 }
 
+export type RunEndReason = 'abandoned' | 'lost' | 'won'
+
+export interface RunSummary {
+  id: string
+  date: string
+  playerName: string
+  mode: GameMode
+  gender: Gender
+  result: RunEndReason
+  floorsCompleted: number
+  badgesEarned: number[]
+  deathCount: number
+  coins: number
+  teamSnapshot: {
+    id: number
+    name: string
+    type1: PokemonType
+    hearts: number
+    isFainted: boolean
+  }[]
+}
+
 export interface Achievement {
   id: string
   name: string

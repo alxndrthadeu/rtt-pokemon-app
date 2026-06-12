@@ -318,7 +318,7 @@ export default function EntreAndaresPage() {
   const router = useRouter()
   const {
     currentFloor, playerDeck, coins, badgesEarned,
-    shopVisitedFloors, healAtCenter,
+    shopVisitedFloors, healAtCenter, setRunEndReason,
   } = useGameStore()
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -728,7 +728,7 @@ export default function EntreAndaresPage() {
           currentFloor={currentFloor}
           badgesEarned={badgesEarned}
           playerDeck={playerDeck}
-          onConfirm={() => router.push('/game-over')}
+          onConfirm={() => { setRunEndReason('abandoned'); router.push('/game-over') }}
           onCancel={() => setShowQuitConfirm(false)}
         />
       )}

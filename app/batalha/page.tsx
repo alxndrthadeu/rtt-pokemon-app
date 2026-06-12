@@ -726,7 +726,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
 
 export default function BatalhaPage() {
   const router = useRouter()
-  const { battle, currentFloor, mode, playerDeck, badgesEarned, endBattle, syncDeckAfterBattle, incrementDeathCount } = useGameStore()
+  const { battle, currentFloor, mode, playerDeck, badgesEarned, endBattle, syncDeckAfterBattle, incrementDeathCount, setRunEndReason } = useGameStore()
   const [showAbandon, setShowAbandon] = useState(false)
 
   const [playerFighters, setPlayerFighters] = useState<Fighter[]>([])
@@ -791,6 +791,7 @@ export default function BatalhaPage() {
   const enemyTellColor = null
 
   function handleAbandon() {
+    setRunEndReason('lost')
     endBattle('lose')
     router.push('/game-over')
   }

@@ -6,6 +6,12 @@ import { useGameStore } from '@/store/gameStore'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { getTypeColor, getTypeTextColor, getSpriteUrl } from '@/lib/typeColors'
 
+const RESULT_META: Record<string, { label: string; color: string; icon: string }> = {
+  abandoned: { label: 'Abandonada', color: '#F0A000', icon: '🏳️' },
+  lost:      { label: 'Derrota',    color: '#CC2200', icon: '💀' },
+  won:       { label: 'Vitória',    color: '#78C850', icon: '🏆' },
+}
+
 const FLOOR_BADGE: Record<number, string> = {
   0: '🪨', 1: '💧', 2: '⚡', 3: '🌿', 4: '☠️', 5: '🔮', 6: '🔥', 7: '🌍',
   8: '❄️', 9: '👊', 10: '👻', 11: '🐉',
@@ -23,7 +29,12 @@ function HeartsRow({ current, max }: { current: number; max: number }) {
 
 export default function GameOverPage() {
   const router = useRouter()
-  const { playerName, playerDeck, badgesEarned, currentFloor, deathCount, mode, resetRun } = useGameStore()
+  const { playerName, playerDeck, badgesEarned, currentFloor, deathCount, mode, runEndReason, runSaved, saveRunToHistory, resetRun } = useGameStore()
+
+  // Salva no histórico uma única vez ao chegar na página
+  useEffect(() => {
+    if (mode && !runSaved) saveRunToHistory()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Se não há run ativa, redireciona para home
   useEffect(() => {
@@ -34,6 +45,7 @@ export default function GameOverPage() {
 
   const totalBadges = badgesEarned.length
   const floorLabel = currentFloor >= 12 ? '12/12 — Torre completa!' : `${currentFloor}/12`
+  const resultMeta = RESULT_META[runEndReason ?? 'abandoned']
 
   function handleNewRun() {
     resetRun()
@@ -44,9 +56,11 @@ export default function GameOverPage() {
     <main className="min-h-screen bg-parchment relative overflow-x-hidden">
 
       {/* Header */}
-      <header className="border-b-4 border-ink px-4 py-5 text-center" style={{ backgroundColor: '#CC2200' }}>
+      <header className="border-b-4 border-ink px-4 py-5 text-center" style={{ backgroundColor: resultMeta.color }}>
         <p className="font-game text-[7px] text-white/60 uppercase tracking-widest mb-1">Reach the Top</p>
-        <p className="font-black text-2xl text-white uppercase tracking-tight">Run Encerrada</p>
+        <p className="font-black text-2xl text-white uppercase tracking-tight">
+          {resultMeta.icon} {resultMeta.label}
+        </p>
       </header>
 
       <div className="max-w-[540px] mx-auto px-4 pt-6 pb-24 flex flex-col gap-6">
@@ -210,9 +224,16 @@ export default function GameOverPage() {
         <div className="flex flex-col gap-3 pt-2">
           <button
             onClick={handleNewRun}
-            className="w-full py-4 font-black text-base tracking-[0.15em] uppercase border-2 border-ink rounded-2xl text-ink bg-parchment-light shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+            className="w-full py-4 font-black text-base tracking-[0.15em] uppercase border-2 border-ink rounded-2xl text-white shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+            style={{ backgroundColor: resultMeta.color }}
           >
             🔄 Nova run
+          </button>
+          <button
+            onClick={() => router.push('/historico')}
+            className="w-full py-3 font-black text-sm tracking-[0.1em] uppercase border-2 border-ink rounded-2xl text-ink bg-parchment-light shadow-neo-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+          >
+            📜 Ver histórico de runs
           </button>
           <button
             onClick={() => { resetRun(); router.push('/') }}

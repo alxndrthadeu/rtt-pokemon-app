@@ -18,16 +18,16 @@ const CHARACTERS: {
     id: 'boy',
     image: '/male_protagonist.png',
     defaultName: 'Red',
-    typeColor: '#C03028',  // Fighting
-    typeLabel: 'Rival',
+    typeColor: '#C03028',
+    typeLabel: 'BOY',
     sprite: '🧢',
   },
   {
     id: 'girl',
     image: '/female_protagonist.png',
     defaultName: 'Leaf',
-    typeColor: '#F85888',  // Psychic
-    typeLabel: 'Trainer',
+    typeColor: '#F85888',
+    typeLabel: 'GIRL',
     sprite: '⭐',
   },
 ]

@@ -875,3 +875,111 @@ export const DRAFT_POOL_ULTRA = POKEMON_TEMPLATES.filter(
 ).map((p) => p.id)
 
 export const LEGENDARY_IDS = [144, 145, 146, 150] as const
+
+// ─── Sistema de zonas geográficas ────────────────────────────────────────────
+// Iniciais e suas evoluções nunca aparecem nos pools selvagens
+export const STARTER_LINE_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+interface ZonePool {
+  name: string
+  floors: number[]  // prevFloor (andar que acabou de ser vencido)
+  common: number[]
+  rare:   number[]
+  ultra:  number[]
+}
+
+export const ZONE_POOLS: readonly ZonePool[] = [
+  // Z1 — Floresta Viridian / Route 1-5 / Mt. Moon (após Brock e Misty)
+  {
+    name: 'Floresta Viridian',
+    floors: [0, 1],
+    common: [10, 13, 16, 19, 21, 29, 32, 41, 74],
+    rare:   [11, 14, 17, 23, 25, 27, 35, 39, 56, 95],
+    ultra:  [12, 15, 18, 20, 22, 24, 26, 28, 30, 33, 36, 37, 40, 42],
+  },
+  // Z2 — Route 6-12 / Rock Tunnel / Celadon / SS Anne (após Surge e Erika)
+  {
+    name: 'Vermilion & Rock Tunnel',
+    floors: [2, 3],
+    common: [43, 46, 60, 69, 79, 84, 96, 100, 118],
+    rare:   [44, 47, 48, 52, 54, 61, 70, 80, 81, 83, 85, 98, 116],
+    ultra:  [45, 49, 51, 53, 55, 57, 62, 71, 82, 86, 97, 99, 101, 117, 119, 120],
+  },
+  // Z3 — Routes 13-18 / Safari Zone / Silph Co. / Torre Lavender (após Koga e Sabrina)
+  {
+    name: 'Safari Zone',
+    floors: [4, 5],
+    common: [102, 104, 108, 113, 114, 115, 128, 129],
+    rare:   [63, 72, 87, 92, 103, 105, 106, 107, 109, 111, 112, 122, 132],
+    ultra:  [64, 65, 73, 88, 89, 93, 94, 110, 121, 123, 127, 130, 131, 133, 143],
+  },
+  // Z4 — Ilha Cinnabar / Power Plant / Routes 19-25 (após Blaine e Giovanni)
+  {
+    name: 'Ilha Cinnabar',
+    floors: [6, 7],
+    common: [58, 77, 90, 129, 138, 140],
+    rare:   [59, 78, 91, 124, 125, 126, 130, 139, 141],
+    ultra:  [68, 134, 135, 136, 137, 142],
+  },
+  // Z5 — Victory Road / Cerulean Cave / Pokemon League (Elite 4)
+  {
+    name: 'Victory Road',
+    floors: [8, 9, 10, 11],
+    common: [66, 75, 147],
+    rare:   [67, 76, 111, 148],
+    ultra:  [144, 145, 146, 149, 150, 151],
+  },
+] as const
+
+function rngShuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+// Gera 3 IDs para o pool pós-batalha baseado na zona geográfica e no andar
+export function generateZonePool(prevFloor: number, excludeIds: Set<number>): number[] {
+  const zone = ZONE_POOLS.find(z => z.floors.includes(prevFloor)) ?? ZONE_POOLS[ZONE_POOLS.length - 1]
+  const deepInZone = zone.floors.indexOf(prevFloor) > 0
+
+  // Bag ponderada: mais comum no início da zona, mais rara/ultra no final
+  const bag: number[] = deepInZone
+    ? [...zone.common, ...zone.rare, ...zone.rare, ...zone.ultra, ...zone.ultra]
+    : [...zone.common, ...zone.common, ...zone.common, ...zone.rare, ...zone.rare, ...zone.ultra]
+
+  const shuffled = rngShuffle(bag)
+  const result: number[] = []
+  const seen = new Set<number>()
+
+  for (const id of shuffled) {
+    if (result.length >= 3) break
+    if (seen.has(id) || excludeIds.has(id)) continue
+    seen.add(id)
+    result.push(id)
+  }
+
+  // Fallback: se a zona não tem Pokémon suficientes, pega de qualquer zona
+  if (result.length < 3) {
+    const all = rngShuffle(Array.from(new Set(ZONE_POOLS.flatMap(z => [...z.common, ...z.rare, ...z.ultra]))))
+    for (const id of all) {
+      if (result.length >= 3) break
+      if (excludeIds.has(id) || result.includes(id)) continue
+      result.push(id)
+    }
+  }
+
+  // Missingno easter egg em Z5 (5% de chance)
+  if (zone.name === 'Victory Road' && !excludeIds.has(0) && Math.random() < 0.05) {
+    result[Math.floor(Math.random() * result.length)] = 0
+  }
+
+  return result
+}
+
+// Pool para as rodadas 2-6 do draft inicial (Pallet Town / Rota 1 — Z1)
+export function generateInitialDraftPool(excludeIds: Set<number>): number[] {
+  return generateZonePool(0, excludeIds)
+}

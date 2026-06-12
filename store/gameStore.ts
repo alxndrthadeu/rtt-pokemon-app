@@ -2,7 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { PokemonCard, BattleState, GameMode, Gender, RPS, HeldItem, InventoryItem, ConsumableId, HeldItemId, Rarity } from '@/types'
+import type { PokemonCard, BattleState, GameMode, Gender, RPS, HeldItem, InventoryItem, ConsumableId, HeldItemId, Rarity, RunSummary, RunEndReason } from '@/types'
 import { apiRequest, isApiConfigured } from '@/lib/api'
 import { CONSUMABLES, RARITY_UPGRADE } from '@/lib/data/items'
 import { HELD_ITEMS } from '@/lib/data/items'
@@ -92,6 +92,13 @@ interface GameStore {
   // Actions — Loja
   markShopVisited: (floor: number) => void
 
+  // Actions — Histórico de runs
+  runEndReason: RunEndReason | null
+  runSaved: boolean
+  runHistory: RunSummary[]
+  setRunEndReason: (reason: RunEndReason) => void
+  saveRunToHistory: () => void
+
   // Actions — Persistência
   createRun: () => Promise<void>
   syncRun: () => void
@@ -118,6 +125,9 @@ export const useGameStore = create<GameStore>()(
       inventory: [],
       heldItemBag: [],
       shopVisitedFloors: [],
+      runEndReason: null,
+      runSaved: false,
+      runHistory: [],
 
       setMode: (mode) => set({ mode }),
       setGender: (gender) => set({ gender }),
@@ -389,6 +399,38 @@ export const useGameStore = create<GameStore>()(
             : [...s.shopVisitedFloors, floor],
         })),
 
+      // ── Run history ─────────────────────────────────────────────────────────
+
+      setRunEndReason: (reason) => set({ runEndReason: reason }),
+
+      saveRunToHistory: () => {
+        const s = get()
+        if (s.runSaved || !s.mode || !s.gender) return
+        const summary: RunSummary = {
+          id: crypto.randomUUID(),
+          date: new Date().toISOString(),
+          playerName: s.playerName,
+          mode: s.mode,
+          gender: s.gender,
+          result: s.runEndReason ?? 'abandoned',
+          floorsCompleted: s.currentFloor,
+          badgesEarned: [...s.badgesEarned],
+          deathCount: s.deathCount,
+          coins: s.coins,
+          teamSnapshot: s.playerDeck.map((p) => ({
+            id: p.id,
+            name: p.name,
+            type1: p.type1,
+            hearts: p.hearts,
+            isFainted: p.isFainted,
+          })),
+        }
+        set((state) => ({
+          runHistory: [summary, ...state.runHistory].slice(0, 50),
+          runSaved: true,
+        }))
+      },
+
       // ── API persistence ─────────────────────────────────────────────────────
 
       createRun: async () => {
@@ -443,7 +485,10 @@ export const useGameStore = create<GameStore>()(
           inventory: [],
           heldItemBag: [],
           shopVisitedFloors: [],
-          pokedexSeen: s.pokedexSeen, // preserved across runs
+          runEndReason: null,
+          runSaved: false,
+          pokedexSeen: s.pokedexSeen,
+          runHistory: s.runHistory,
         })),
     }),
     {
@@ -463,6 +508,7 @@ export const useGameStore = create<GameStore>()(
         inventory: s.inventory,
         heldItemBag: s.heldItemBag,
         shopVisitedFloors: s.shopVisitedFloors,
+        runHistory: s.runHistory,
       }),
     },
   ),
