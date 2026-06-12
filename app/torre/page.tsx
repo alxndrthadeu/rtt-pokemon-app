@@ -24,8 +24,12 @@ const TRAINER_PORTRAIT: Record<string, string> = {
   'Lance':     'https://play.pokemonshowdown.com/sprites/trainers/lance.png',
 }
 
-const FLOOR_BADGE: Record<number, string> = {
-  0: '🪨', 1: '💧', 2: '⚡', 3: '🌿', 4: '☠️', 5: '🔮', 6: '🔥', 7: '🌍',
+const BADGE_URLS: Record<number, string> = {
+  0: '/badges/1.png', 1: '/badges/2.png', 2: '/badges/3.png', 3: '/badges/4.png',
+  4: '/badges/5.png', 5: '/badges/6.png', 6: '/badges/7.png', 7: '/badges/8.png',
+}
+// Elite 4 don't have official badge sprites
+const ELITE4_BADGE: Record<number, string> = {
   8: '❄️', 9: '👊', 10: '👻', 11: '🐉',
 }
 
@@ -110,7 +114,8 @@ export default function TorrePage() {
 
 
   return (
-    <main className="min-h-screen bg-parchment dots relative overflow-x-hidden">
+    <main className="min-h-screen bg-parchment dots relative overflow-x-hidden"
+      style={{ overscrollBehaviorX: 'none' }}>
 
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 bg-parchment/95 backdrop-blur-sm border-b-2 border-ink/10 px-4 py-3">
@@ -210,9 +215,12 @@ export default function TorrePage() {
                   <p className="text-sm text-ink-soft opacity-60">{gym.title}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  {FLOOR_BADGE[currentFloor] && (
-                    <span className="text-3xl">{FLOOR_BADGE[currentFloor]}</span>
-                  )}
+                  {BADGE_URLS[currentFloor] ? (
+                    <img src={BADGE_URLS[currentFloor]} alt={gym.badge}
+                      style={{ width: 40, height: 40, imageRendering: 'pixelated' }} />
+                  ) : ELITE4_BADGE[currentFloor] ? (
+                    <span className="text-3xl">{ELITE4_BADGE[currentFloor]}</span>
+                  ) : null}
                   {gym.badge && (
                     <span className="font-game text-[7px] text-ink-soft opacity-50">{gym.badge}</span>
                   )}
@@ -292,7 +300,13 @@ export default function TorrePage() {
                     backgroundColor: active ? `${tc}22` : done ? `${tc}12` : 'transparent',
                     opacity: locked ? 0.35 : 1,
                   }}>
-                  <span className={`text-base ${locked ? 'grayscale' : ''}`}>{FLOOR_BADGE[i]}</span>
+                  {BADGE_URLS[i] ? (
+                    <img src={BADGE_URLS[i]} alt=""
+                      style={{ width: 22, height: 22, imageRendering: 'pixelated',
+                        filter: locked ? 'grayscale(1) opacity(0.4)' : done ? 'none' : 'grayscale(0.3)' }} />
+                  ) : (
+                    <span className={`text-base ${locked ? 'grayscale' : ''}`}>{ELITE4_BADGE[i]}</span>
+                  )}
                   <p className="font-game text-[5px] text-ink/60 text-center leading-tight w-full truncate px-0.5">
                     {g.name.split(' ')[0]}
                   </p>
@@ -368,7 +382,7 @@ export default function TorrePage() {
               </div>
 
               {/* Grid do deck */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3" style={{ touchAction: 'pan-y' }}>
                 {playerDeck.map(card => {
                   const selIdx = selected.findIndex(p => p.id === card.id)
                   const isSelected = selIdx !== -1

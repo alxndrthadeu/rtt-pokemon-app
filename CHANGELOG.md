@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.1] - 2026-06-12
+
+### Corrigido
+
+- **Hazard damage on entry** (`app/batalha/page.tsx`) — `applyEntryEffects` retorna `hazardDamage` mas nunca era aplicado ao HP. Corrigido nos 4 call sites: mount inicial, `handleNext` (inimigo entra), `handleSwitchTurn` (troca voluntária) e `confirmSwitch` (troca após faint)
+- **Torre — insígnias emoji substituídas por sprites reais** (`app/torre/page.tsx`) — `FLOOR_BADGE` emoji removido; `BADGE_URLS` com `/badges/1.png`–`/badges/8.png` adicionado; Elite 4 mantém emoji via `ELITE4_BADGE`; grid de progresso e card do líder usam imagem real
+- **Swipe back acidental no mobile** — `overscrollBehaviorX: 'none'` adicionado ao `<main>` das páginas `batalha` e `torre`; `touchAction: 'pan-y'` adicionado ao grid de seleção de Pokémon na Torre para impedir que swipe horizontal acione navegação do browser
+
+---
+
 ## [0.9.0] - 2026-06-12
 
 ### Adicionado

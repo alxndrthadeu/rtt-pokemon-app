@@ -26,6 +26,36 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.9.1',
+    date: 'Jun 2026',
+    label: 'Ajustes Finos',
+    labelColor: '#888',
+    description: 'Hazards agora causam dano na entrada do Pokémon (não no final do turno). Sprites reais das insígnias no detalhes do ginásio. Swipe de seleção não volta mais a tela acidentalmente.',
+    entries: [
+      {
+        icon: '🪨',
+        title: 'Hazards causam dano na entrada',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'Stealth Rock, Toxic Spikes e Sticky Web agora aplicam seus efeitos imediatamente quando um Pokémon entra em campo — não mais ao fim do turno. Todos os casos de troca (inicial, voluntária, após faint e troca do inimigo) foram corrigidos.',
+      },
+      {
+        icon: '🏅',
+        title: 'Sprites reais das insígnias no ginásio',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'A tela de detalhes do próximo ginásio (Torre) agora exibe os sprites oficiais das insígnias de Kanto em vez dos emojis antigos. O grid de progresso de 12 andares também usa as imagens reais para os 8 ginásios.',
+      },
+      {
+        icon: '📱',
+        title: 'Swipe de seleção não navega mais de volta',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'O gesto de deslizar para selecionar Pokémon na Torre não aciona mais a navegação "voltar" do browser iOS por engano. O grid de seleção agora usa touch-action: pan-y. Se o back-swipe nativo for detectado, o modal de abandono de run aparece normalmente.',
+      },
+    ],
+  },
+  {
     version: '0.9',
     date: 'Jun 2026',
     label: 'Evolução & Hazards',

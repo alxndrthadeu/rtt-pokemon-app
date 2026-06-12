@@ -778,10 +778,11 @@ export default function BatalhaPage() {
     if (!battle) { router.replace('/torre'); return }
     const pf = battle.playerSelected.map(p => ({ pokemon: p, hearts: p.hearts }))
     const ef = battle.enemyDeck.map(p => ({ pokemon: p, hearts: p.hearts }))
+    const { newEffects, message, hazardDamage } = applyEntryEffects(battle.playerSelected[0], 'player', DEFAULT_EFFECTS)
+    if (hazardDamage > 0) pf[0] = { ...pf[0], hearts: Math.max(0, pf[0].hearts - hazardDamage) }
     setPlayerFighters(pf)
     setEnemyFighters(ef)
     setUniqueUsed(battle.playerSelected.map(() => false))
-    const { newEffects, message } = applyEntryEffects(battle.playerSelected[0], 'player', DEFAULT_EFFECTS)
     setEffects(newEffects)
     if (message) setEntryMsg(message)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -1109,9 +1110,10 @@ export default function BatalhaPage() {
       const next = enemyIdx + 1
       if (next >= enemyFighters.length) { setPhase('victory'); return }
       setEnemyIdx(next)
-      const { newEffects, message } = applyEntryEffects(enemyFighters[next].pokemon, 'enemy', effects)
+      const { newEffects, message, hazardDamage } = applyEntryEffects(enemyFighters[next].pokemon, 'enemy', effects)
       setEffects({ ...newEffects, enemyStatus: null, enemyTiredTurns: 0, enemySturdyUsed: false })
       if (message) setEntryMsg(message)
+      if (hazardDamage > 0) setEnemyFighters(fs => fs.map((f, i) => i === next ? { ...f, hearts: Math.max(0, f.hearts - hazardDamage) } : f))
     }
 
     if (currentPF.hearts <= 0) {
@@ -1142,7 +1144,7 @@ export default function BatalhaPage() {
     const incoming = playerFighters[targetIdx]
     const activations: string[] = [`🔄 ${incoming.pokemon.name} entrou em campo!`]
 
-    const { newEffects: entryEffects, message: entryMessage } = applyEntryEffects(incoming.pokemon, 'player', effects)
+    const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg } = applyEntryEffects(incoming.pokemon, 'player', effects)
     let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false }
     if (entryMessage) activations.push(entryMessage)
 
@@ -1151,7 +1153,7 @@ export default function BatalhaPage() {
     const attackType = ef.pokemon.moves[aiMove].type
     const pAbility = incoming.pokemon.ability.name
 
-    let newPHearts = incoming.hearts
+    let newPHearts = Math.max(0, incoming.hearts - entryHazardDmg)
     let playerDmg = 0
     let multiplier = 1
     let immune = false
@@ -1228,9 +1230,10 @@ export default function BatalhaPage() {
     setShowSwitchPicker(false)
     setSwitchRequired(false)
     setPlayerIdx(targetIdx)
-    const { newEffects, message } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
+    const { newEffects, message, hazardDamage } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
     setEffects({ ...newEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false })
     if (message) setEntryMsg(message)
+    if (hazardDamage > 0) setPlayerFighters(fs => fs.map((f, i) => i === targetIdx ? { ...f, hearts: Math.max(0, f.hearts - hazardDamage) } : f))
     setLastResult(null)
     setTurn(t => t + 1)
     setPhase('selecting')
@@ -1248,7 +1251,8 @@ export default function BatalhaPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <main className="min-h-screen bg-parchment relative overflow-x-hidden">
+    <main className="min-h-screen bg-parchment relative overflow-x-hidden"
+      style={{ overscrollBehaviorX: 'none' }}>
 
       {/* ── HEADER ── */}
       <header className="sticky top-0 z-20 border-b-4 border-ink px-4 py-3"
