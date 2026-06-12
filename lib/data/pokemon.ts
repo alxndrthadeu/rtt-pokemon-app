@@ -875,9 +875,75 @@ export const DRAFT_POOL_ULTRA = POKEMON_TEMPLATES.filter(
 ).map((p) => p.id)
 
 export const LEGENDARY_IDS = [144, 145, 146, 150] as const
+export const LEGENDARY_IDS_SET = new Set<number>(LEGENDARY_IDS)
+
+// Gen 1 evolution chains (key → evolved form; branching evolutions handled separately)
+export const EVOLUTION_MAP: Record<number, number> = {
+  1: 2,   2: 3,        // Bulbasaur line
+  4: 5,   5: 6,        // Charmander line
+  7: 8,   8: 9,        // Squirtle line
+  10: 11, 11: 12,      // Caterpie line
+  13: 14, 14: 15,      // Weedle line
+  16: 17, 17: 18,      // Pidgey line
+  19: 20,              // Rattata
+  21: 22,              // Spearow
+  23: 24,              // Ekans
+  25: 26,              // Pikachu → Raichu (9025 Ash's Pikachu excluded by callers)
+  27: 28,              // Sandshrew
+  29: 30, 30: 31,      // Nidoran♀ line
+  32: 33, 33: 34,      // Nidoran♂ line
+  35: 36,              // Clefairy
+  37: 38,              // Vulpix
+  39: 40,              // Jigglypuff
+  41: 42,              // Zubat
+  43: 44, 44: 45,      // Oddish line
+  46: 47,              // Paras
+  48: 49,              // Venonat
+  50: 51,              // Diglett
+  52: 53,              // Meowth
+  54: 55,              // Psyduck
+  56: 57,              // Mankey
+  58: 59,              // Growlithe
+  60: 61, 61: 62,      // Poliwag line
+  63: 64, 64: 65,      // Abra line
+  66: 67, 67: 68,      // Machop line
+  69: 70, 70: 71,      // Bellsprout line
+  72: 73,              // Tentacool
+  74: 75, 75: 76,      // Geodude line
+  77: 78,              // Ponyta
+  79: 80,              // Slowpoke
+  81: 82,              // Magnemite
+  84: 85,              // Doduo
+  86: 87,              // Seel
+  88: 89,              // Grimer
+  90: 91,              // Shellder
+  92: 93, 93: 94,      // Gastly line
+  96: 97,              // Drowzee
+  98: 99,              // Krabby
+  100: 101,            // Voltorb
+  102: 103,            // Exeggcute
+  104: 105,            // Cubone
+  109: 110,            // Koffing
+  111: 112,            // Rhyhorn
+  116: 117,            // Horsea
+  118: 119,            // Goldeen
+  120: 121,            // Staryu
+  129: 130,            // Magikarp
+  138: 139,            // Omanyte
+  140: 141,            // Kabuto
+  147: 148, 148: 149,  // Dratini line
+}
+
+// Returns the full evolution line [stage1, stage2, stage3] for any Pokémon in that line
+export function getStarterLine(starterId: number): number[] {
+  if (starterId >= 1 && starterId <= 3)  return [1, 2, 3]
+  if (starterId >= 4 && starterId <= 6)  return [4, 5, 6]
+  if (starterId >= 7 && starterId <= 9)  return [7, 8, 9]
+  return []
+}
 
 // ─── Sistema de zonas geográficas ────────────────────────────────────────────
-// Iniciais e suas evoluções nunca aparecem nos pools selvagens
+// Only the chosen starter's line is excluded from wild pools; other starters can appear
 export const STARTER_LINE_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 interface ZonePool {
@@ -895,7 +961,7 @@ export const ZONE_POOLS: readonly ZonePool[] = [
     floors: [0, 1],
     common: [10, 13, 16, 19, 21, 29, 32, 41, 74],
     rare:   [11, 14, 17, 23, 25, 27, 35, 39, 56, 95],
-    ultra:  [12, 15, 18, 20, 22, 24, 26, 28, 30, 33, 36, 37, 40, 42],
+    ultra:  [1, 2, 12, 15, 18, 20, 22, 24, 26, 28, 30, 33, 36, 37, 40, 42],
   },
   // Z2 — Route 6-12 / Rock Tunnel / Celadon / SS Anne (após Surge e Erika)
   {
@@ -903,7 +969,7 @@ export const ZONE_POOLS: readonly ZonePool[] = [
     floors: [2, 3],
     common: [43, 46, 60, 69, 79, 84, 96, 100, 118],
     rare:   [44, 47, 48, 52, 54, 61, 70, 80, 81, 83, 85, 98, 116],
-    ultra:  [45, 49, 51, 53, 55, 57, 62, 71, 82, 86, 97, 99, 101, 117, 119, 120],
+    ultra:  [4, 5, 7, 8, 45, 49, 51, 53, 55, 57, 62, 71, 82, 86, 97, 99, 101, 117, 119, 120],
   },
   // Z3 — Routes 13-18 / Safari Zone / Silph Co. / Torre Lavender (após Koga e Sabrina)
   {
@@ -911,7 +977,7 @@ export const ZONE_POOLS: readonly ZonePool[] = [
     floors: [4, 5],
     common: [102, 104, 108, 113, 114, 115, 128, 129],
     rare:   [63, 72, 87, 92, 103, 105, 106, 107, 109, 111, 112, 122, 132],
-    ultra:  [64, 65, 73, 88, 89, 93, 94, 110, 121, 123, 127, 130, 131, 133, 143],
+    ultra:  [3, 6, 9, 64, 65, 73, 88, 89, 93, 94, 110, 121, 123, 127, 130, 131, 133, 143],
   },
   // Z4 — Ilha Cinnabar / Power Plant / Routes 19-25 (após Blaine e Giovanni)
   {

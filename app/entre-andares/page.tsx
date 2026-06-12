@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore, SHOP_FLOORS, HEAL_COST } from '@/store/gameStore'
+import { EVOLUTION_MAP, ASH_PIKACHU_ID, getStarterLine } from '@/lib/data/pokemon'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
 import { PokemonCard as PokemonCardDisplay } from '@/components/PokemonCard'
@@ -20,14 +21,14 @@ function getAnimatedSpriteUrl(id: number): string {
 
 // Official Kanto badge sprites (PokéAPI items)
 const BADGE_URLS: Record<number, string> = {
-  0: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/boulder-badge.png',
-  1: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/cascade-badge.png',
-  2: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-badge.png',
-  3: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rainbow-badge.png',
-  4: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soul-badge.png',
-  5: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/marsh-badge.png',
-  6: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/volcano-badge.png',
-  7: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/earth-badge.png',
+  0: '/badges/1.png',
+  1: '/badges/2.png',
+  2: '/badges/3.png',
+  3: '/badges/4.png',
+  4: '/badges/5.png',
+  5: '/badges/6.png',
+  6: '/badges/7.png',
+  7: '/badges/8.png',
 }
 
 const ELITE_FOUR_START = 9 // currentFloor >= 9 → entre Elite 4, sem Centro
@@ -312,6 +313,76 @@ function HeaderBadge({ gymIdx, earned, typeColor }: { gymIdx: number; earned: bo
   )
 }
 
+// ─── Starter Evolution Overlay ────────────────────────────────────────────────
+
+function StarterEvolutionOverlay({
+  fromId, toId, pokemonName, onDone,
+}: {
+  fromId: number; toId: number; pokemonName: string; onDone: () => void
+}) {
+  const [phase, setPhase] = useState<'flash' | 'crossfade' | 'done'>('flash')
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase('crossfade'), 800)
+    const t2 = setTimeout(() => setPhase('done'), 2000)
+    const t3 = setTimeout(onDone, 2800)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [onDone])
+
+  const fromUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${fromId}.gif`
+  const toUrl   = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${toId}.gif`
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center"
+      style={{
+        backgroundColor: phase === 'flash' ? 'rgba(255,255,255,0.97)' : 'rgba(20,12,8,0.95)',
+        transition: 'background-color 0.6s ease',
+      }}
+    >
+      <div className="relative flex items-center justify-center" style={{ width: 180, height: 180 }}>
+        <img
+          src={fromUrl}
+          alt={pokemonName}
+          style={{
+            width: 128, height: 128,
+            imageRendering: 'pixelated',
+            objectFit: 'contain',
+            position: 'absolute',
+            filter: phase === 'flash' ? 'brightness(10)' : 'brightness(1)',
+            opacity: phase === 'crossfade' || phase === 'done' ? 0 : 1,
+            transition: 'opacity 0.5s ease, filter 0.4s ease',
+          }}
+        />
+        <img
+          src={toUrl}
+          alt=""
+          style={{
+            width: 128, height: 128,
+            imageRendering: 'pixelated',
+            objectFit: 'contain',
+            position: 'absolute',
+            filter: phase === 'crossfade' ? 'brightness(10)' : 'brightness(1)',
+            opacity: phase === 'crossfade' || phase === 'done' ? 1 : 0,
+            transition: 'opacity 0.5s ease, filter 0.6s ease 0.3s',
+          }}
+        />
+      </div>
+
+      <p
+        className="font-game text-[9px] uppercase tracking-widest mt-6"
+        style={{
+          color: phase === 'flash' ? '#2C1810' : '#FBF5E6',
+          transition: 'color 0.6s ease',
+          opacity: phase === 'flash' ? 0.7 : 1,
+        }}
+      >
+        {pokemonName} está evoluindo!
+      </p>
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EntreAndaresPage() {
@@ -319,6 +390,7 @@ export default function EntreAndaresPage() {
   const {
     currentFloor, playerDeck, coins, badgesEarned,
     shopVisitedFloors, healAtCenter, setRunEndReason,
+    starterId, evolvePokemon,
   } = useGameStore()
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -327,6 +399,31 @@ export default function EntreAndaresPage() {
   const [selectedPokemon, setSelectedPokemon] = useState<PokemonCardType | null>(null)
   const [healAnimation, setHealAnimation] = useState(false)
   const [nurseErr, setNurseErr] = useState(false)
+  const [evoOverlay, setEvoOverlay] = useState<{ fromId: number; toId: number; name: string } | null>(null)
+
+  // Starter evolution detection — floor 2 (Misty) → stage 2; floor 5 (Koga) → stage 3
+  useEffect(() => {
+    if (!starterId || starterId === ASH_PIKACHU_ID) return
+    const line = getStarterLine(starterId)
+    if (line.length < 3) return
+    const [s1, s2] = line
+    // currentFloor 2 means Misty was just beaten; look for stage-1 in deck
+    if (currentFloor === 2) {
+      const card = playerDeck.find(p => p.id === s1)
+      if (card) {
+        const toId = EVOLUTION_MAP[s1]
+        if (toId) setEvoOverlay({ fromId: s1, toId, name: card.name })
+      }
+    }
+    // currentFloor 5 means Koga was just beaten; look for stage-2 in deck
+    if (currentFloor === 5) {
+      const card = playerDeck.find(p => p.id === s2)
+      if (card) {
+        const toId = EVOLUTION_MAP[s2]
+        if (toId) setEvoOverlay({ fromId: s2, toId, name: card.name })
+      }
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const prevFloor = currentFloor - 1
   const prevGym   = GYM_LEADERS[prevFloor]
@@ -368,7 +465,21 @@ export default function EntreAndaresPage() {
     router.push(isGameComplete ? '/conclusao' : '/torre')
   }
 
+  function handleEvoDone() {
+    if (evoOverlay) evolvePokemon(evoOverlay.fromId)
+    setEvoOverlay(null)
+  }
+
   return (
+    <>
+    {evoOverlay && (
+      <StarterEvolutionOverlay
+        fromId={evoOverlay.fromId}
+        toId={evoOverlay.toId}
+        pokemonName={evoOverlay.name}
+        onDone={handleEvoDone}
+      />
+    )}
     <main className="min-h-screen relative overflow-x-hidden"
       style={{ backgroundColor: '#F0F4F8' }}>
 
@@ -734,5 +845,6 @@ export default function EntreAndaresPage() {
       )}
 
     </main>
+    </>
   )
 }

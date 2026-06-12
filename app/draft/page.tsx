@@ -4,25 +4,26 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
 import { PokemonCard } from '@/components/PokemonCard'
-import { makePokemonCard, generateInitialDraftPool, STARTER_LINE_IDS, ASH_PIKACHU_ID } from '@/lib/data/pokemon'
+import { makePokemonCard, generateInitialDraftPool, getStarterLine, ASH_PIKACHU_ID } from '@/lib/data/pokemon'
 import type { PokemonCard as PokemonCardType } from '@/types'
 
 const DECK_SIZE = 6
 const STARTER_IDS = [1, 4, 7]
 
 
-function generatePool(round: number, pickedIds: number[]): PokemonCardType[] {
+function generatePool(round: number, pickedIds: number[], starterId: number | null): PokemonCardType[] {
   if (round === 1) {
     return STARTER_IDS.map((id) => makePokemonCard(id)!)
   }
-  const exclude = new Set([...pickedIds, ...Array.from(STARTER_LINE_IDS)])
+  const starterLine = starterId ? getStarterLine(starterId) : []
+  const exclude = new Set([...pickedIds, ...starterLine])
   const ids = generateInitialDraftPool(exclude)
   return ids.map((id) => makePokemonCard(id)!).filter(Boolean)
 }
 
 export default function DraftPage() {
   const router = useRouter()
-  const { mode, gender, playerName, rerollUsed, addToDeck, useReroll, createRun, playerDeck } =
+  const { mode, gender, playerName, rerollUsed, addToDeck, useReroll, createRun, playerDeck, starterId, setStarterId } =
     useGameStore()
 
   const [round, setRound] = useState(1)
@@ -38,7 +39,7 @@ export default function DraftPage() {
 
   // Gera pool inicial
   useEffect(() => {
-    const initial = generatePool(1, [])
+    const initial = generatePool(1, [], null)
     // Easter egg: personagem masculino chamado Ash → Ash's Pikachu como 4ª opção
     if (gender === 'boy' && playerName.trim().toLowerCase() === 'ash') {
       const ashPikachu = makePokemonCard(ASH_PIKACHU_ID)
@@ -60,15 +61,17 @@ export default function DraftPage() {
     if (!picked) return
 
     setConfirming(true)
+    if (round === 1) setStarterId(picked.id)
     const newDeck = [...deck, picked]
     setDeck(newDeck)
     setSelectedId(null)
 
+    const pickedStarterId = round === 1 ? picked.id : starterId
     setTimeout(() => {
       if (newDeck.length < DECK_SIZE) {
         const nextRound = round + 1
         setRound(nextRound)
-        setPool(generatePool(nextRound, newDeck.map((p) => p.id)))
+        setPool(generatePool(nextRound, newDeck.map((p) => p.id), pickedStarterId))
       }
       setConfirming(false)
     }, 300)
@@ -78,7 +81,7 @@ export default function DraftPage() {
     if (rerollUsed || round === 1) return
     useReroll()
     setSelectedId(null)
-    setPool(generatePool(round, pickedIds))
+    setPool(generatePool(round, pickedIds, starterId))
   }
 
   async function handleStartAdventure() {

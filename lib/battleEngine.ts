@@ -332,6 +332,12 @@ export function applySlotMoveEffect(
         toxicSpikes: move.special === 'toxic-spikes' ? true : eff.playerHazards.toxicSpikes,
         stickyWeb:   move.special === 'sticky-web'   ? true : eff.playerHazards.stickyWeb,
       }
+      const labels: Record<string, string> = {
+        'stealth-rock': '🪨 Stealth Rock no seu campo!',
+        'toxic-spikes': '☠️ Toxic Spikes no seu campo!',
+        'sticky-web':   '🕸️ Sticky Web no seu campo!',
+      }
+      message = labels[move.special]
     }
     return { effects: eff, message, isProtect }
   }

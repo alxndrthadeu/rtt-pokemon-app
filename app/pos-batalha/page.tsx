@@ -6,7 +6,7 @@ import { useGameStore } from '@/store/gameStore'
 import { PokemonCard } from '@/components/PokemonCard'
 import {
   makePokemonCard,
-  generateZonePool, STARTER_LINE_IDS,
+  generateZonePool, getStarterLine,
 } from '@/lib/data/pokemon'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { getTypeColor, getTypeTextColor, getSpriteUrl } from '@/lib/typeColors'
@@ -31,8 +31,9 @@ const GYM_LOCATION: Record<number, string> = {
 
 
 // Pool pós-batalha: zona geográfica baseada no andar vencido
-function generatePostBattlePool(prevFloor: number, deckIds: number[]): PokemonCardType[] {
-  const exclude = new Set([...deckIds, ...Array.from(STARTER_LINE_IDS)])
+function generatePostBattlePool(prevFloor: number, deckIds: number[], starterId: number | null): PokemonCardType[] {
+  const starterLine = starterId ? getStarterLine(starterId) : []
+  const exclude = new Set([...deckIds, ...starterLine])
   const ids = generateZonePool(prevFloor, exclude)
   return ids.map(id => makePokemonCard(id)!).filter(Boolean)
 }
@@ -43,7 +44,7 @@ type Phase = 'encounter' | 'pick_new' | 'pick_discard'
 
 export default function PosBatalhaPage() {
   const router = useRouter()
-  const { playerDeck, currentFloor, mode, applyPostGymSwap, addPokedexEntry } = useGameStore()
+  const { playerDeck, currentFloor, mode, starterId, applyPostGymSwap, addPokedexEntry } = useGameStore()
 
   const [pool, setPool] = useState<PokemonCardType[]>([])
   const [picked, setPicked] = useState<PokemonCardType | null>(null)
@@ -53,7 +54,7 @@ export default function PosBatalhaPage() {
 
   useEffect(() => {
     if (playerDeck.length === 0) { router.replace('/'); return }
-    setPool(generatePostBattlePool(currentFloor - 1, playerDeck.map(p => p.id)))
+    setPool(generatePostBattlePool(currentFloor - 1, playerDeck.map(p => p.id), starterId))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // currentFloor já foi avançado pelo endBattle — a batalha que vencemos era floor-1

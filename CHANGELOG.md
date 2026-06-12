@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.9.0] - 2026-06-12
+
+### Adicionado
+
+- **`EVOLUTION_MAP: Record<number, number>`** em `lib/data/pokemon.ts` — mapa completo Gen 1 (todas as linhas de evolução exceto ramificações)
+- **`LEGENDARY_IDS_SET`** em `lib/data/pokemon.ts` — Set para checagem O(1) de lendários
+- **`getStarterLine(starterId): number[]`** — retorna linha completa [stage1, stage2, stage3] de qualquer ID na linha do inicial
+- **`starterId: number | null`** no store — persistido via `partialize`; definido em `setStarterId(id)` no round 1 do draft
+- **`evolvePokemon(pokemonId)`** no store — evolui Pokémon pelo `EVOLUTION_MAP`, preserva `hearts`/`statusEffects`/`heldItem`/`rarity`/`isShiny`
+- **`StarterEvolutionOverlay`** em `entre-andares/page.tsx` — evento especial fullscreen: flash branco → crossfade de sprites → "X está evoluindo!"; dura ~2.8s e dispara `evolvePokemon` ao fechar
+- **Chips de hazards visuais** em `app/batalha/page.tsx` — componente `HazardChips` mostra 🪨/☠️/🕸️ posicionados absolutamente nos campos do inimigo e do jogador; lê de `effects.enemyHazards` e `effects.playerHazards`
+
+### Modificado
+
+- **Rare Candy** (`store/gameStore.ts`) — agora evolui Pokémon via `EVOLUTION_MAP` + `makePokemonCard` em vez de subir raridade. Eevee (133) evolui aleatoriamente para 134/135/136. Imune: `ASH_PIKACHU_ID` e `LEGENDARY_IDS_SET`
+- **`app/draft/page.tsx`** — `generatePool` aceita `starterId` e usa `getStarterLine(starterId)` no exclude em vez de `STARTER_LINE_IDS` completo; `handleConfirm` chama `setStarterId` no round 1
+- **`app/pos-batalha/page.tsx`** — `generatePostBattlePool` usa `getStarterLine(starterId)` em vez de `STARTER_LINE_IDS`
+- **Zone pools** (`lib/data/pokemon.ts`) — iniciais dos oponentes adicionados de volta: Bulbasaur/Ivysaur em Z1 ultra; Charmander/Charmeleon/Squirtle/Wartortle em Z2 ultra; Venusaur/Charizard/Blastoise em Z3 ultra
+- **`app/entre-andares/page.tsx`** — detecta `currentFloor === 2` (Misty) e `currentFloor === 5` (Koga) e dispara overlay de evolução se o inicial (stage 1 ou 2) ainda estiver no deck
+
+### Corrigido
+
+- **Pokémon desmaiados selecionáveis** na torre (`app/torre/page.tsx`) — guard `isFainted || hearts <= 0`; grayscale + badge "Desmaiado"; barra HP em vez de ♥ (sessão anterior)
+- **Hazards do inimigo não funcionavam** (`app/batalha/page.tsx`) — bloco `enemy_wins` agora chama `applySlotMoveEffect` para moves não-ofensivos antes de `calcSlotDamage` (sessão anterior)
+
+---
+
 ## [0.8.0] - 2026-06-12
 
 ### Adicionado

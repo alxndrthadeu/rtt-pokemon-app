@@ -26,6 +26,51 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.9',
+    date: 'Jun 2026',
+    label: 'Evolução & Hazards',
+    labelColor: '#CC2200',
+    description: 'Rare Candy agora evolui Pokémon de verdade. O inicial escolhido evolui automaticamente após Misty e Koga com animação fullscreen. Hazards visuais na arena. Iniciais dos oponentes aparecem como selvagens.',
+    entries: [
+      {
+        icon: '🍬',
+        title: 'Rare Candy — evolução real',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'Usar Rare Candy agora evolui o Pokémon para a próxima forma (ex: Charmander → Charmeleon → Charizard) em vez de apenas subir a raridade. Eevee evolui aleatoriamente para Vaporeon, Jolteon ou Flareon. Lendários e o Pikachu do Ash são imunes.',
+      },
+      {
+        icon: '✨',
+        title: 'Evolução do inicial — evento especial',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'Após derrotar Misty (andar 2) e Koga (andar 5), o Pokémon inicial evolui automaticamente com uma animação fullscreen: flash branco, crossfade de sprite e mensagem "X está evoluindo!". O evento não ocorre se o inicial foi trocado.',
+        detail: 'Bulbasaur → Ivysaur após Misty; Ivysaur → Venusaur após Koga. Mesmo para as linhas do Charmander e Squirtle. Ash\'s Pikachu nunca evolui.',
+      },
+      {
+        icon: '🪨',
+        title: 'Indicadores visuais de hazards na arena',
+        tag: 'MELHORIA',
+        tagColor: '#9B59B6',
+        body: 'Stealth Rock 🪨, Toxic Spikes ☠️ e Sticky Web 🕸️ agora aparecem como chips sobrepostos na arena de batalha, cada um no campo do Pokémon afetado — igual ao Pokémon Showdown.',
+      },
+      {
+        icon: '🌿',
+        title: 'Iniciais dos oponentes aparecem como selvagens',
+        tag: 'BALANCE',
+        tagColor: '#78C850',
+        body: 'Bulbasaur e Ivysaur agora aparecem no pool selvagem de Viridian (Z1). Charmander, Charmeleon, Squirtle e Wartortle surgem em Vermilion/Rock Tunnel (Z2). Venusaur, Charizard e Blastoise na Safari Zone (Z3). Apenas a linha do inicial escolhido continua excluída.',
+      },
+      {
+        icon: '🚫',
+        title: 'Pokémon desmaiados desabilitados na seleção de batalha',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'Na tela da Torre, Pokémon com HP zero ou marcados como desmaiados não podiam mais ser selecionados — ficam acinzentados com badge "Desmaiado". A barra de HP substituiu os corações ♥ por uma barra colorida X/5.',
+      },
+    ],
+  },
+  {
     version: '0.8',
     date: 'Jun 2026',
     label: 'Zonas & Histórico',

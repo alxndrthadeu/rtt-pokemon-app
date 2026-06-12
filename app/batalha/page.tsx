@@ -561,6 +561,25 @@ interface ArenaProps {
   enemyTellType?: string | null   // cor do tipo do próximo move do inimigo (visual tell)
 }
 
+function HazardChips({ hazards }: { hazards: BattleEffects['playerHazards'] }) {
+  const chips = [
+    hazards.stealthRock && { label: '🪨', title: 'Stealth Rock' },
+    hazards.toxicSpikes && { label: '☠️', title: 'Toxic Spikes' },
+    hazards.stickyWeb   && { label: '🕸️', title: 'Sticky Web' },
+  ].filter(Boolean) as { label: string; title: string }[]
+  if (chips.length === 0) return null
+  return (
+    <div className="flex gap-1">
+      {chips.map(c => (
+        <span key={c.title} title={c.title}
+          className="text-[11px] leading-none px-1 py-0.5 rounded bg-black/40 backdrop-blur-sm border border-white/20">
+          {c.label}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters, playerIdx, enemyIdx, phase, enemyTellType }: ArenaProps) {
   const pKO = pf.hearts <= 0
   const eKO = ef.hearts <= 0
@@ -687,6 +706,16 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             <span className="font-game text-[7px] bg-black/50 text-white px-1.5 py-0.5 rounded uppercase tracking-widest">KO</span>
           </div>
         )}
+      </div>
+
+      {/* ── Hazard chips — enemy side (player set hazards on enemy) ── */}
+      <div className="absolute z-20 flex gap-1" style={{ right: 14, top: 120 }}>
+        <HazardChips hazards={effects.enemyHazards} />
+      </div>
+
+      {/* ── Hazard chips — player side (enemy set hazards on player) ── */}
+      <div className="absolute z-20 flex gap-1" style={{ left: 10, bottom: 38 }}>
+        <HazardChips hazards={effects.playerHazards} />
       </div>
 
       {/* ── Player info box — bottom-right ── */}
@@ -988,56 +1017,65 @@ export default function BatalhaPage() {
 
     // ── Enemy wins ──────────────────────────────────────────────────────────
     if (outcome === 'enemy_wins') {
-      const attackType = ef.pokemon.moves[aiMove].type
-      const pAbility = pf.pokemon.ability.name
-      let immune = false
+      const enemyChosenMove = ef.pokemon.moves[aiMove]
 
-      if (pAbility === 'VoltAbsorb' && attackType === 'Electric') {
-        immune = true; multiplier = 0
-        newPHearts = Math.min(pf.pokemon.hearts, newPHearts + 1)
-        activations.push(`🔋 VoltAbsorb! ${pf.pokemon.name} absorveu e recuperou 1 ♥!`)
-      } else if (pAbility === 'WaterAbsorb' && attackType === 'Water') {
-        immune = true; multiplier = 0
-        newPHearts = Math.min(pf.pokemon.hearts, newPHearts + 1)
-        activations.push(`💧 WaterAbsorb! ${pf.pokemon.name} absorveu e recuperou 1 ♥!`)
-      } else if (pAbility === 'FlashFire' && attackType === 'Fire') {
-        immune = true; multiplier = 0; eff = { ...eff, flashFireActive: true }
-        activations.push(`🔥 FlashFire! ${pf.pokemon.name} é imune! Fogo potencializado!`)
-      } else if (pAbility === 'Levitate' && attackType === 'Ground') {
-        immune = true; multiplier = 0
-        activations.push(`🌬️ Levitate! ${pf.pokemon.name} flutua sobre o ataque!`)
-      } else if (pAbility === 'Lightning Rod' && Math.random() < 0.40) {
-        immune = true; multiplier = 0
-        activations.push(`⚡ Lightning Rod! ${pf.pokemon.name} absorveu o golpe!`)
-      }
+      if (enemyChosenMove.kind !== 'offensive') {
+        // Non-offensive enemy move (hazard, status, buff, protect)
+        const sideEff = applySlotMoveEffect(enemyChosenMove, 'enemy', eff, pf.pokemon, ef.pokemon)
+        eff = sideEff.effects
+        if (sideEff.message) activations.push(sideEff.message)
+      } else {
+        const attackType = enemyChosenMove.type
+        const pAbility = pf.pokemon.ability.name
+        let immune = false
 
-      if (!immune && !isProtect) {
-        const slotRes = calcSlotDamage(
-          attackType, ef.pokemon, newEHearts, pf.pokemon, false,
-          eff.enemyAttackMod, eff.playerDefenseMod,
-        )
-        playerDmg = slotRes.damage
-        multiplier = slotRes.multiplier
-        activations.push(...slotRes.messages)
-        eff = { ...eff, enemyAttackMod: 0, playerDefenseMod: 0 }
-
-        if (attackType === 'Fire') {
-          const { effects: newEff, thawed } = applyThaw(eff, 'player', attackType)
-          eff = newEff
-          if (thawed) activations.push(`🔥 ${pf.pokemon.name} descongelou!`)
+        if (pAbility === 'VoltAbsorb' && attackType === 'Electric') {
+          immune = true; multiplier = 0
+          newPHearts = Math.min(pf.pokemon.hearts, newPHearts + 1)
+          activations.push(`🔋 VoltAbsorb! ${pf.pokemon.name} absorveu e recuperou 1 ♥!`)
+        } else if (pAbility === 'WaterAbsorb' && attackType === 'Water') {
+          immune = true; multiplier = 0
+          newPHearts = Math.min(pf.pokemon.hearts, newPHearts + 1)
+          activations.push(`💧 WaterAbsorb! ${pf.pokemon.name} absorveu e recuperou 1 ♥!`)
+        } else if (pAbility === 'FlashFire' && attackType === 'Fire') {
+          immune = true; multiplier = 0; eff = { ...eff, flashFireActive: true }
+          activations.push(`🔥 FlashFire! ${pf.pokemon.name} é imune! Fogo potencializado!`)
+        } else if (pAbility === 'Levitate' && attackType === 'Ground') {
+          immune = true; multiplier = 0
+          activations.push(`🌬️ Levitate! ${pf.pokemon.name} flutua sobre o ataque!`)
+        } else if (pAbility === 'Lightning Rod' && Math.random() < 0.40) {
+          immune = true; multiplier = 0
+          activations.push(`⚡ Lightning Rod! ${pf.pokemon.name} absorveu o golpe!`)
         }
 
-        const { damage: finalDmg, sturdyTriggered } = applySturdy(
-          playerDmg, newPHearts, eff.playerSturdyUsed, pAbility === 'Sturdy',
-        )
-        if (sturdyTriggered) {
-          eff = { ...eff, playerSturdyUsed: true }
-          activations.push(`🛡️ Sturdy! ${pf.pokemon.name} sobreviveu com 1 ♥!`)
+        if (!immune && !isProtect) {
+          const slotRes = calcSlotDamage(
+            attackType, ef.pokemon, newEHearts, pf.pokemon, false,
+            eff.enemyAttackMod, eff.playerDefenseMod,
+          )
+          playerDmg = slotRes.damage
+          multiplier = slotRes.multiplier
+          activations.push(...slotRes.messages)
+          eff = { ...eff, enemyAttackMod: 0, playerDefenseMod: 0 }
+
+          if (attackType === 'Fire') {
+            const { effects: newEff, thawed } = applyThaw(eff, 'player', attackType)
+            eff = newEff
+            if (thawed) activations.push(`🔥 ${pf.pokemon.name} descongelou!`)
+          }
+
+          const { damage: finalDmg, sturdyTriggered } = applySturdy(
+            playerDmg, newPHearts, eff.playerSturdyUsed, pAbility === 'Sturdy',
+          )
+          if (sturdyTriggered) {
+            eff = { ...eff, playerSturdyUsed: true }
+            activations.push(`🛡️ Sturdy! ${pf.pokemon.name} sobreviveu com 1 ♥!`)
+          }
+          playerDmg = finalDmg
+          newPHearts = Math.max(0, newPHearts - playerDmg)
+        } else if (!immune && isProtect) {
+          activations.push(`🛡️ Protect absorveu o ataque!`)
         }
-        playerDmg = finalDmg
-        newPHearts = Math.max(0, newPHearts - playerDmg)
-      } else if (!immune && isProtect) {
-        activations.push(`🛡️ Protect absorveu o ataque!`)
       }
     }
 

@@ -2,10 +2,11 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { PokemonCard, BattleState, GameMode, Gender, RPS, HeldItem, InventoryItem, ConsumableId, HeldItemId, Rarity, RunSummary, RunEndReason } from '@/types'
+import type { PokemonCard, BattleState, GameMode, Gender, RPS, HeldItem, InventoryItem, ConsumableId, HeldItemId, RunSummary, RunEndReason } from '@/types'
 import { apiRequest, isApiConfigured } from '@/lib/api'
-import { CONSUMABLES, RARITY_UPGRADE } from '@/lib/data/items'
+import { CONSUMABLES } from '@/lib/data/items'
 import { HELD_ITEMS } from '@/lib/data/items'
+import { EVOLUTION_MAP, ASH_PIKACHU_ID, LEGENDARY_IDS_SET, makePokemonCard } from '@/lib/data/pokemon'
 
 function generateSessionId(): string {
   return crypto.randomUUID()
@@ -92,6 +93,11 @@ interface GameStore {
   // Actions — Loja
   markShopVisited: (floor: number) => void
 
+  // Starter tracking (set on draft round 1 pick)
+  starterId: number | null
+  setStarterId: (id: number) => void
+  evolvePokemon: (pokemonId: number) => void
+
   // Actions — Histórico de runs
   runEndReason: RunEndReason | null
   runSaved: boolean
@@ -125,6 +131,7 @@ export const useGameStore = create<GameStore>()(
       inventory: [],
       heldItemBag: [],
       shopVisitedFloors: [],
+      starterId: null,
       runEndReason: null,
       runSaved: false,
       runHistory: [],
@@ -363,8 +370,15 @@ export const useGameStore = create<GameStore>()(
                 if (!p.isFainted) return p
                 return { ...p, isFainted: false, hearts: def.healAmount ?? 2 }
               case 'rare-candy': {
-                const nextRarity = RARITY_UPGRADE[p.rarity] as Rarity | undefined
-                return nextRarity ? { ...p, rarity: nextRarity } : p
+                if (p.id === ASH_PIKACHU_ID || LEGENDARY_IDS_SET.has(p.id)) return p
+                const EEVEE_EVOS = [134, 135, 136]
+                const evolvedId = p.id === 133
+                  ? EEVEE_EVOS[Math.floor(Math.random() * EEVEE_EVOS.length)]
+                  : EVOLUTION_MAP[p.id]
+                if (!evolvedId) return p
+                const evolved = makePokemonCard(evolvedId)
+                if (!evolved) return p
+                return { ...evolved, hearts: p.hearts, isFainted: p.isFainted, statusEffects: p.statusEffects, heldItem: p.heldItem, rarity: p.rarity, isShiny: p.isShiny }
               }
               default:
                 return p
@@ -400,6 +414,21 @@ export const useGameStore = create<GameStore>()(
         })),
 
       // ── Run history ─────────────────────────────────────────────────────────
+
+      setStarterId: (id) => set({ starterId: id }),
+
+      evolvePokemon: (pokemonId) =>
+        set((s) => ({
+          playerDeck: s.playerDeck.map((p) => {
+            if (p.id !== pokemonId) return p
+            if (p.id === ASH_PIKACHU_ID || LEGENDARY_IDS_SET.has(p.id)) return p
+            const evolvedId = EVOLUTION_MAP[p.id]
+            if (!evolvedId) return p
+            const evolved = makePokemonCard(evolvedId)
+            if (!evolved) return p
+            return { ...evolved, hearts: p.hearts, isFainted: p.isFainted, statusEffects: p.statusEffects, heldItem: p.heldItem, rarity: p.rarity, isShiny: p.isShiny }
+          }),
+        })),
 
       setRunEndReason: (reason) => set({ runEndReason: reason }),
 
@@ -485,6 +514,7 @@ export const useGameStore = create<GameStore>()(
           inventory: [],
           heldItemBag: [],
           shopVisitedFloors: [],
+          starterId: null,
           runEndReason: null,
           runSaved: false,
           pokedexSeen: s.pokedexSeen,
@@ -508,6 +538,7 @@ export const useGameStore = create<GameStore>()(
         inventory: s.inventory,
         heldItemBag: s.heldItemBag,
         shopVisitedFloors: s.shopVisitedFloors,
+        starterId: s.starterId,
         runHistory: s.runHistory,
       }),
     },

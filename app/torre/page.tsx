@@ -372,19 +372,21 @@ export default function TorrePage() {
                 {playerDeck.map(card => {
                   const selIdx = selected.findIndex(p => p.id === card.id)
                   const isSelected = selIdx !== -1
+                  const isFainted = card.isFainted || card.hearts <= 0
                   const tc = getTypeColor(card.type1)
+                  const isDisabled = isFainted || (!isSelected && selected.length >= 3)
                   return (
                     <button
                       key={card.id}
-                      onClick={() => toggleSelect(card)}
-                      disabled={!isSelected && selected.length >= 3}
+                      onClick={() => !isFainted && toggleSelect(card)}
+                      disabled={isDisabled}
                       className="relative border-2 border-ink rounded-2xl overflow-hidden transition-all duration-100 text-left"
                       style={{
-                        backgroundColor: isSelected ? `${tc}20` : '#FFFFFF',
-                        borderColor: isSelected ? tc : '#2C1810',
-                        boxShadow: isSelected ? `3px 3px 0 ${tc}` : '3px 3px 0 #2C1810',
+                        backgroundColor: isFainted ? '#f5f5f5' : isSelected ? `${tc}20` : '#FFFFFF',
+                        borderColor: isFainted ? '#ccc' : isSelected ? tc : '#2C1810',
+                        boxShadow: isFainted ? 'none' : isSelected ? `3px 3px 0 ${tc}` : '3px 3px 0 #2C1810',
                         transform: isSelected ? 'translate(2px,2px)' : undefined,
-                        opacity: !isSelected && selected.length >= 3 ? 0.4 : 1,
+                        opacity: isFainted ? 0.45 : (!isSelected && selected.length >= 3 ? 0.4 : 1),
                       }}
                     >
                       {/* Order badge */}
@@ -396,24 +398,44 @@ export default function TorrePage() {
                           {selIdx + 1}
                         </span>
                       )}
+                      {/* KO badge */}
+                      {isFainted && (
+                        <span className="absolute top-1.5 right-1.5 z-10 font-game text-[6px] bg-red-500 text-white px-1.5 py-0.5 rounded-full uppercase leading-none">
+                          KO
+                        </span>
+                      )}
                       {/* Top bar */}
-                      <div className="h-1.5" style={{ backgroundColor: tc }} />
+                      <div className="h-1.5" style={{ backgroundColor: isFainted ? '#ccc' : tc }} />
                       {/* Sprite */}
                       <div className="flex justify-center py-1 bg-white">
                         <img
                           src={getSpriteUrl(card.id)}
                           alt={card.name}
-                          style={{ width: 64, height: 64, objectFit: 'contain' }}
+                          style={{
+                            width: 64, height: 64, objectFit: 'contain',
+                            filter: isFainted ? 'grayscale(1) brightness(0.7)' : undefined,
+                          }}
                         />
                       </div>
-                      {/* Name + hearts */}
+                      {/* Name + HP bar */}
                       <div className="px-2 py-1.5 bg-parchment-light">
                         <p className="font-black text-[9px] text-ink uppercase truncate">{card.name}</p>
-                        <div className="flex gap-0.5 mt-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <span key={i} className="text-[10px]" style={{ opacity: i < card.hearts ? 1 : 0.2 }}>♥</span>
-                          ))}
-                        </div>
+                        {isFainted ? (
+                          <p className="font-game text-[6px] text-red-400 mt-0.5 uppercase">Desmaiado</p>
+                        ) : (
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <div className="flex-1 h-1.5 bg-ink/10 rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${(card.hearts / 5) * 100}%`,
+                                  backgroundColor: card.hearts <= 1 ? '#E82020' : card.hearts <= 2 ? '#F0A000' : '#4CAF50',
+                                }}
+                              />
+                            </div>
+                            <span className="font-game text-[6px] text-ink/50 shrink-0">{card.hearts}/5</span>
+                          </div>
+                        )}
                       </div>
                     </button>
                   )

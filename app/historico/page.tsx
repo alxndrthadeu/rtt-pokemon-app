@@ -13,14 +13,14 @@ const RESULT_META: Record<string, { label: string; color: string; icon: string }
 }
 
 const BADGE_URLS: Record<number, string> = {
-  0: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/boulder-badge.png',
-  1: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/cascade-badge.png',
-  2: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-badge.png',
-  3: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rainbow-badge.png',
-  4: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soul-badge.png',
-  5: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/marsh-badge.png',
-  6: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/volcano-badge.png',
-  7: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/earth-badge.png',
+  0: '/badges/1.png',
+  1: '/badges/2.png',
+  2: '/badges/3.png',
+  3: '/badges/4.png',
+  4: '/badges/5.png',
+  5: '/badges/6.png',
+  6: '/badges/7.png',
+  7: '/badges/8.png',
 }
 
 function formatDate(iso: string): string {
