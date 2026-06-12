@@ -120,6 +120,7 @@ export interface TurnStartResult {
   playerHeartsGained: number    // Aqua Ring passive heal
   messages: string[]
   enemyAutoLose: boolean        // enemy sleeping/frozen, player wins automatically
+  playerSkipsTurn: boolean      // sleeping → true; can still switch but cannot act
 }
 
 export function processTurnStart(
@@ -132,6 +133,7 @@ export function processTurnStart(
   let playerForcedRps: RPS | null = null
   let enemyForcedRps: RPS | null = null
   let enemyAutoLose = false
+  let playerSkipsTurn = false
   let playerHeartsLost = 0
   let enemyHeartsLost = 0
   let playerHeartsGained = 0
@@ -171,14 +173,14 @@ export function processTurnStart(
         // 45% de acordar cedo (só verificado quando há mais de 1 turno restante)
         if (turnsLeft > 1 && Math.random() < 0.45) {
           eff.playerStatus = null
-          playerForcedRps = 'rock'
-          messages.push(`😴 ${pf.pokemon.name} acordou! (último turno dormindo)`)
+          messages.push(`😴 ${pf.pokemon.name} acordou cedo! Pode agir no próximo turno.`)
         } else {
           const newTurns = turnsLeft - 1
           eff.playerStatus = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
-          playerForcedRps = 'rock'
-          messages.push(`😴 ${pf.pokemon.name} está dormindo — perdeu o turno!`)
+          if (eff.playerStatus === null) messages.push(`😴 ${pf.pokemon.name} acordou!`)
+          else messages.push(`😴 ${pf.pokemon.name} está dormindo — turno nulo!`)
         }
+        playerSkipsTurn = true   // sempre perde este turno, mesmo se acordar agora
       } else {
         // turnsLeft === 0 (legado -1 ou expirado): acorda
         eff.playerStatus = null
@@ -284,7 +286,7 @@ export function processTurnStart(
     void def  // suppress unused warning — def used implicitly via item.id checks
   }
 
-  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, playerHeartsGained, enemyHeartsLost, messages, enemyAutoLose }
+  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, playerHeartsGained, enemyHeartsLost, messages, enemyAutoLose, playerSkipsTurn }
 }
 
 // ─── Slot move side-effects (buff / status) ───────────────────────────────────

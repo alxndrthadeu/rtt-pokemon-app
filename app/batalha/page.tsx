@@ -104,9 +104,12 @@ interface TurnResult {
   enemyDmg: number
   multiplier: number
   activations: string[]
-  lostTurn: boolean       // player dormiu/congelou/exausto — não atuou
-  enemyLostTurn: boolean  // inimigo dormiu/congelou — player vence automaticamente
-  switchedIn?: string     // nome do pokemon que entrou via troca voluntária (inimigo ataca de graça)
+  lostTurn: boolean          // player congelou/exausto — forçado a jogar pedra, perdeu
+  playerSkippedTurn: boolean // player dormindo — turno nulo, tomou o ataque
+  enemyLostTurn: boolean     // inimigo dormiu/congelou — player vence automaticamente
+  switchedIn?: string        // nome do pokemon que entrou via troca voluntária
+  playerProtected: boolean   // player usou Protect com sucesso neste turno
+  enemyProtected: boolean    // inimigo usou Protect com sucesso neste turno
 }
 
 // ─── Atoms ────────────────────────────────────────────────────────────────────
@@ -258,13 +261,14 @@ function getCategoryLabel(move: Move): string {
 
 // ─── Move grid 2×2 com flip 3D ───────────────────────────────────────────────
 function MoveGrid({
-  pokemon, effects, uniqueUsed, playerIsForced,
+  pokemon, effects, uniqueUsed, playerIsForced, forcedButtonLabel,
   onAttack,
 }: {
   pokemon: PokemonCard
   effects: BattleEffects
   uniqueUsed: boolean
   playerIsForced: boolean
+  forcedButtonLabel?: string
   onAttack: (move: PlayerMove) => void
 }) {
   const [flipped, setFlipped] = useState<RPS | 'unique' | null>(null)
@@ -447,7 +451,7 @@ function MoveGrid({
           className="w-full py-4 font-black text-sm uppercase border-2 border-ink rounded-2xl cursor-pointer transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           style={{ backgroundColor: '#F5EDD8', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }}
         >
-          ▶ Confirmar turno perdido
+          {forcedButtonLabel ?? '▶ Confirmar turno perdido'}
         </button>
         <div className="opacity-20 pointer-events-none select-none">{gridContent}</div>
       </div>
@@ -776,8 +780,8 @@ export default function BatalhaPage() {
 
   const ps = effects.playerStatus
   const playerIsSleeping = ps?.condition === 'sleep'
-  const playerIsForcedByStatus = ps?.condition === 'freeze'  // sleep tem botões habilitados
-  const playerIsForced = playerIsForcedByStatus || effects.playerTiredTurns > 0
+  const playerIsForcedByStatus = ps?.condition === 'freeze'
+  const playerIsForced = playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerIsSleeping
 
   // ── Core battle logic ────────────────────────────────────────────────────────
 
@@ -812,17 +816,17 @@ export default function BatalhaPage() {
       playerRPS = move as RPS
     }
 
-    const chosenMove = (!playerForcedThisTurn && !isUnique) ? pf.pokemon.moves[playerRPS] : null
+    const chosenMove = (!playerForcedThisTurn && !isUnique && !turnStart.playerSkipsTurn) ? pf.pokemon.moves[playerRPS] : null
     const isProtect = chosenMove?.special === 'protect' && !eff.playerProtectCooldown
-    eff = { ...eff, playerProtectCooldown: false }
+    if (!isProtect) eff = { ...eff, playerProtectCooldown: false }
 
     const aiMove = turnStart.enemyForcedRps ?? precomputedEnemyRPS ?? generateAIMove(gym.aiLevel, moveHistory, null)
     const enemyIsProtect = ef.pokemon.moves[aiMove].special === 'protect' && !eff.enemyProtectCooldown
-    eff = { ...eff, enemyProtectCooldown: false }
+    if (!enemyIsProtect) eff = { ...eff, enemyProtectCooldown: false }
     if (enemyIsProtect) eff = { ...eff, enemyProtectCooldown: true }
 
     let outcome: 'player_wins' | 'enemy_wins' | 'tie'
-    if (isUnique && !playerForcedThisTurn) {
+    if (isUnique && !playerForcedThisTurn && !turnStart.playerSkipsTurn) {
       outcome = 'player_wins'
     } else {
       outcome = resolveRPS(playerRPS, aiMove)
@@ -831,11 +835,14 @@ export default function BatalhaPage() {
     // Enemy sleep/freeze → player wins automatically (null turn, symmetric to player sleep)
     if (turnStart.enemyAutoLose) outcome = 'player_wins'
 
-    // Player sleep/freeze/tired → enemy wins automatically
+    // Player sleeping → turno nulo, inimigo ataca livremente
+    if (turnStart.playerSkipsTurn) outcome = 'enemy_wins'
+
+    // Player freeze/tired → enemy wins automatically
     if (playerForcedThisTurn) {
-      const forcedBySleepOrFreeze = eff.playerStatus?.condition === 'sleep' || eff.playerStatus?.condition === 'freeze'
+      const forcedByFreeze = eff.playerStatus?.condition === 'freeze'
       const forcedByTired = effects.playerTiredTurns > 0
-      if (forcedBySleepOrFreeze || forcedByTired) outcome = 'enemy_wins'
+      if (forcedByFreeze || forcedByTired) outcome = 'enemy_wins'
     }
 
     let playerDmg = 0
@@ -1023,8 +1030,8 @@ export default function BatalhaPage() {
       activations.push(`💀 Destiny Bond! ${ef.pokemon.name} também é derrotado!`)
     }
 
+    const playerSkippedTurn = turnStart.playerSkipsTurn
     const lostTurn = playerForcedThisTurn && outcome === 'enemy_wins' && (
-      eff.playerStatus?.condition === 'sleep' ||
       eff.playerStatus?.condition === 'freeze' ||
       effects.playerTiredTurns > 0
     )
@@ -1033,8 +1040,8 @@ export default function BatalhaPage() {
     setPlayerFighters(prev => prev.map((f, i) => i === playerIdx ? { ...f, hearts: newPHearts } : f))
     setEnemyFighters(prev => prev.map((f, i) => i === enemyIdx ? { ...f, hearts: newEHearts } : f))
     setEffects(eff)
-    if (!lostTurn) setMoveHistory(h => [...h, playerRPS])
-    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations, lostTurn, enemyLostTurn })
+    if (!lostTurn && !playerSkippedTurn) setMoveHistory(h => [...h, playerRPS])
+    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations, lostTurn, playerSkippedTurn, enemyLostTurn, playerProtected: isProtect, enemyProtected: enemyIsProtect })
     setPhase('result')
   }
 
@@ -1151,8 +1158,11 @@ export default function BatalhaPage() {
       multiplier,
       activations,
       lostTurn: false,
+      playerSkippedTurn: false,
       enemyLostTurn: false,
       switchedIn: incoming.pokemon.name,
+      playerProtected: false,
+      enemyProtected: false,
     })
     setPhase('result')
   }
@@ -1173,6 +1183,7 @@ export default function BatalhaPage() {
   // ── Derived display values ──────────────────────────────────────────────────
 
   const forcedLabel = (() => {
+    if (ps?.condition === 'sleep')     return `😴 ${pf.pokemon.name} está dormindo — turno nulo`
     if (ps?.condition === 'freeze')    return `🧊 ${pf.pokemon.name} está congelado — turno perdido!`
     if (effects.playerTiredTurns > 0)  return `💤 ${pf.pokemon.name} está exausto — turno perdido!`
     return null
@@ -1321,15 +1332,6 @@ export default function BatalhaPage() {
                 <div className="flex flex-col gap-2">
                   {forcedLabel ? (
                     <p className="font-game text-[9px] text-ink-soft uppercase tracking-widest leading-relaxed">{forcedLabel}</p>
-                  ) : playerIsSleeping ? (
-                    <div>
-                      <p className="font-black text-base text-ink leading-tight">
-                        😴 <span style={{ color: STATUS_BG['sleep'] }}>{pf.pokemon.name}</span> está dormindo
-                      </p>
-                      <p className="font-game text-[8px] uppercase tracking-widest leading-none mt-1" style={{ color: STATUS_BG['sleep'] }}>
-                        35% de acordar — escolha o ataque!
-                      </p>
-                    </div>
                   ) : (
                     <p className="font-black text-base text-ink leading-tight">
                       <span className="blink-cursor">▶</span>
@@ -1346,17 +1348,27 @@ export default function BatalhaPage() {
               )}
 
               {phase === 'result' && lastResult && (() => {
+                const enemyWinsLabel = lastResult.switchedIn
+                  ? `🔄 Troca! ${ef.pokemon.name} atacou!`
+                  : lastResult.playerSkippedTurn
+                  ? '💤 Turno Nulo — inimigo atacou!'
+                  : lastResult.lostTurn
+                  ? '🧊 Turno perdido!'
+                  : lastResult.playerProtected
+                  ? '🛡️ Você bloqueou o ataque!'
+                  : '💥 Inimigo venceu este turno'
                 const cfg = {
-                  player_wins: { color: '#2AAA2A', label: lastResult.enemyLostTurn ? '😴 Inimigo perdeu o turno!' : '🏆 Você venceu este turno!' },
-                  enemy_wins:  { color: '#CC2200', label: lastResult.switchedIn ? `🔄 Troca! ${ef.pokemon.name} atacou!` : lastResult.lostTurn ? '😴 Turno perdido' : '💥 Inimigo venceu este turno' },
+                  player_wins: { color: '#2AAA2A', label: lastResult.enemyLostTurn ? '😴 Inimigo perdeu o turno!' : lastResult.enemyProtected ? '🛡️ Inimigo bloqueou seu ataque!' : '🏆 Você venceu este turno!' },
+                  enemy_wins:  { color: '#CC2200', label: enemyWinsLabel },
                   tie:         { color: '#888870', label: '🤝 Empate — ninguém atacou' },
                 }[lastResult.outcome]
                 const wasUnique = lastResult.playerMove === 'unique'
                 const playerRpsKey = wasUnique ? null : lastResult.playerMove as RPS
+                const skipBeatLabel = lastResult.lostTurn || lastResult.playerSkippedTurn || lastResult.enemyLostTurn || lastResult.switchedIn || lastResult.playerProtected || lastResult.enemyProtected
                 return (
                   <div className="flex flex-col gap-1">
                     <p className="font-black text-base text-ink leading-tight">{cfg.label}</p>
-                    {!wasUnique && !lastResult.lostTurn && !lastResult.enemyLostTurn && !lastResult.switchedIn && lastResult.outcome !== 'tie' && (
+                    {!wasUnique && !skipBeatLabel && lastResult.outcome !== 'tie' && (
                       <p className="font-game text-[9px] leading-none" style={{ color: cfg.color }}>
                         {getBeatLabel(
                           lastResult.outcome === 'player_wins' ? playerRpsKey! : lastResult.enemyMove,
@@ -1383,15 +1395,16 @@ export default function BatalhaPage() {
                   effects={effects}
                   uniqueUsed={uniqueUsed[playerIdx] ?? false}
                   playerIsForced={playerIsForced}
+                  forcedButtonLabel={playerIsSleeping ? '😴 Confirmar turno nulo' : undefined}
                   onAttack={handleAttack}
                 />
 
                 <div className="flex gap-2 mt-1">
                   <button
                     onClick={handleSwitch}
-                    disabled={playerFighters.filter(f => f.hearts > 0).length <= 1}
+                    disabled={playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1}
                     className="flex-1 py-3 font-black text-sm uppercase border-2 rounded-2xl transition-all duration-75 cursor-pointer disabled:cursor-not-allowed"
-                    style={playerFighters.filter(f => f.hearts > 0).length <= 1
+                    style={(playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1)
                       ? { borderColor: 'rgba(44,24,16,0.15)', backgroundColor: '#F5EDD8', color: 'rgba(44,24,16,0.3)' }
                       : { borderColor: '#2C1810', backgroundColor: '#FBF5E6', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }}>
                     🔄 Trocar Pokémon
@@ -1438,6 +1451,24 @@ export default function BatalhaPage() {
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none bg-ink/10 text-ink/50">TROCA</span>
                         <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
+                    ) : lastResult.playerSkippedTurn ? (
+                      <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
+                        style={{ boxShadow: '3px 3px 0 rgba(44,24,16,0.12)', opacity: 0.7 }}>
+                        <span className="text-3xl leading-none">😴</span>
+                        <p className="font-black text-[11px] text-ink text-center leading-tight">{pf.pokemon.name}</p>
+                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
+                          style={{ backgroundColor: '#8060A8' }}>DORMINDO</span>
+                        <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                      </div>
+                    ) : lastResult.playerProtected ? (
+                      <div className="rounded-2xl border-2 px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
+                        style={{ borderColor: '#2C7BB5', boxShadow: '3px 3px 0 #2C7BB5' }}>
+                        <span className="text-3xl leading-none">🛡️</span>
+                        <p className="font-black text-[11px] text-ink text-center leading-tight">{playerMoveName}</p>
+                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
+                          style={{ backgroundColor: '#2C7BB5' }}>BLOQUEOU!</span>
+                        <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                      </div>
                     ) : (
                     <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
                       style={{ boxShadow: lastResult.outcome === 'player_wins' ? '3px 3px 0 #38C838' : '3px 3px 0 rgba(44,24,16,0.12)' }}>
@@ -1459,16 +1490,22 @@ export default function BatalhaPage() {
                     )}
 
                     {/* Enemy move */}
-                    <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
-                      style={{ boxShadow: lastResult.outcome === 'enemy_wins' ? '3px 3px 0 #CC2200' : '3px 3px 0 rgba(44,24,16,0.12)' }}>
+                    <div className="rounded-2xl border-2 px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
+                      style={{
+                        borderColor: lastResult.enemyProtected ? '#2C7BB5' : '#2C1810',
+                        boxShadow: lastResult.enemyProtected ? '3px 3px 0 #2C7BB5' : lastResult.outcome === 'enemy_wins' ? '3px 3px 0 #CC2200' : '3px 3px 0 rgba(44,24,16,0.12)'
+                      }}>
                       <span className="text-3xl leading-none">{RPS_ICON[lastResult.enemyMove]}</span>
                       <p className="font-black text-[11px] text-ink text-center leading-tight">{enemyMoveName}</p>
-                      {enemyMoveType && (
+                      {lastResult.enemyProtected ? (
+                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
+                          style={{ backgroundColor: '#2C7BB5' }}>BLOQUEOU!</span>
+                      ) : enemyMoveType ? (
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none"
                           style={{ backgroundColor: getTypeColor(enemyMoveType), color: getTypeTextColor(enemyMoveType) }}>
                           {enemyMoveType}
                         </span>
-                      )}
+                      ) : null}
                       <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">{gym.name}</p>
                       {lastResult.playerDmg > 0 && (
                         <p className="font-black text-sm leading-none" style={{ color: '#CC2200' }}>

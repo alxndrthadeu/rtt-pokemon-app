@@ -26,6 +26,38 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.6',
+    date: 'Jun 2026',
+    label: 'Combate Refinado',
+    labelColor: '#2C7BB5',
+    description: 'Duas mecânicas de batalha que estavam se comportando de forma incorreta foram corrigidas e melhoradas: o turno de sono agora é verdadeiramente nulo, e o Protect não pode mais ser usado em sequência.',
+    entries: [
+      {
+        icon: '😴',
+        title: 'Sono vira turno nulo — não mais pedra forçada',
+        tag: 'CORREÇÃO',
+        tagColor: '#888870',
+        body: 'Antes, dormir forçava o Pokémon a jogar Pedra — o que era injusto e contraditório. Agora o turno é realmente nulo: seu Pokémon não ataca, e o inimigo aplica o golpe livremente.',
+        detail: 'Você ainda pode trocar de Pokémon durante o sono (a troca continua disponível). A caixa de diálogo exibe "😴 turno nulo" e o card de resultado mostra o Pokémon dormindo em vez de um golpe.',
+      },
+      {
+        icon: '🛡️',
+        title: 'Protect agora alterna — sem mais spam',
+        tag: 'BALANCE',
+        tagColor: '#78C850',
+        body: 'Protect colocava um cooldown, mas o código resetava o cooldown imediatamente no mesmo turno — tornando o bloqueio infinito. Agora ele funciona como deveria: um turno sim, um turno não.',
+        detail: 'A regra vale tanto para o jogador quanto para o inimigo. Quem usou Protect neste turno verá o botão em cooldown no próximo.',
+      },
+      {
+        icon: '🎨',
+        title: 'Visual mais claro quando o Protect bloqueia',
+        tag: 'UI',
+        tagColor: '#6890F0',
+        body: 'Ficou confuso saber quem bloqueou o quê. Agora o card de resultado muda completamente: azul com badge "BLOQUEOU!" aparece para quem usou Protect, e o texto da caixa de diálogo informa explicitamente "🛡️ Você bloqueou" ou "🛡️ Inimigo bloqueou".',
+      },
+    ],
+  },
+  {
     version: '0.5',
     date: 'Jun 2026',
     label: 'Qualidade & Infra',
