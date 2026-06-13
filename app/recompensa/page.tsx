@@ -9,6 +9,7 @@ import {
   HELD_ITEMS, CONSUMABLES, getRewardTier, getHeldItemsForTier, getConsumablesForTier,
   type HeldItemDef, type ConsumableDef,
 } from '@/lib/data/items'
+import { rollForEvent } from '@/lib/data/events'
 import { getItemSpriteUrl } from '@/lib/itemSprite'
 import type { HeldItemId, ConsumableId } from '@/types'
 
@@ -172,7 +173,7 @@ function RewardCard({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function RecompensaPage() {
   const router = useRouter()
-  const { currentFloor, mode, coins, addConsumable, addHeldItemToBag, addCoins } = useGameStore()
+  const { currentFloor, mode, coins, addConsumable, addHeldItemToBag, addCoins, legendaryEventUsed, setSpecialBattle } = useGameStore()
   const [options, setOptions] = useState<RewardOption[]>([])
   const [selected, setSelected] = useState<number | null>(null)
 
@@ -201,7 +202,13 @@ export default function RecompensaPage() {
       addConsumable('rare-candy', 1)
     }
 
-    router.push(prevFloor >= 8 ? '/entre-andares' : '/pos-batalha')
+    const event = rollForEvent(prevFloor, legendaryEventUsed)
+    if (event) {
+      setSpecialBattle(event)
+      router.push('/evento')
+    } else {
+      router.push(prevFloor >= 8 ? '/entre-andares' : '/pos-batalha')
+    }
   }
 
   if (options.length === 0) {

@@ -761,7 +761,12 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
 
 export default function BatalhaPage() {
   const router = useRouter()
-  const { battle, currentFloor, mode, playerDeck, badgesEarned, endBattle, syncDeckAfterBattle, incrementDeathCount, setRunEndReason } = useGameStore()
+  const {
+    battle, currentFloor, mode, playerDeck, badgesEarned,
+    endBattle, clearBattle, syncDeckAfterBattle, incrementDeathCount, setRunEndReason,
+    specialBattle, setSpecialBattle, markLegendaryEventUsed, setPendingLegendaryCard,
+    addCoins, spendCoins, addConsumable,
+  } = useGameStore()
   const [showAbandon, setShowAbandon] = useState(false)
 
   const [playerFighters, setPlayerFighters] = useState<Fighter[]>([])
@@ -812,19 +817,21 @@ export default function BatalhaPage() {
   // Pré-computa o RPS do inimigo ao entrar em fase de seleção (visual tell + Quick Claw)
   useEffect(() => {
     if (phase !== 'selecting' || !battle) return
-    const gym = GYM_LEADERS[currentFloor]
-    if (!gym) return
+    const effectiveAI = specialBattle?.aiLevel ?? GYM_LEADERS[currentFloor]?.aiLevel
+    if (!effectiveAI) return
     const forced = effects.enemyTiredTurns > 0 ? 'rock' as RPS
       : (effects.enemyForcedMove && effects.enemyForcedTurnsLeft > 0 ? effects.enemyForcedMove : null)
-    const rps = forced ?? generateAIMove(gym.aiLevel, moveHistory, null)
+    const rps = forced ?? generateAIMove(effectiveAI, moveHistory, null)
     setPrecomputedEnemyRPS(rps)
-    // Quick Claw: 25% chance per turn to explicitly reveal enemy move name
     const currentPf = playerFighters[playerIdx]
     if (currentPf) setQuickClawRevealed(checkQuickClaw(currentPf.pokemon))
     else setQuickClawRevealed(false)
   }, [phase, enemyIdx, playerIdx]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const gym = GYM_LEADERS[currentFloor]
+  const gymLeader = GYM_LEADERS[currentFloor]
+  const gym = specialBattle
+    ? { name: specialBattle.opponentName, specialtyType: specialBattle.specialtyType, aiLevel: specialBattle.aiLevel, badge: null, floor: -1, title: '', teamIds: [], postGymDraftPool: [], description: '' }
+    : gymLeader
   if (!battle || !gym || playerFighters.length === 0 || enemyFighters.length === 0) return null
 
   const typeColor = getTypeColor(gym.specialtyType)
@@ -833,7 +840,28 @@ export default function BatalhaPage() {
   const enemyTellColor = (phase === 'selecting' && precomputedEnemyRPS && ef)
     ? getTypeColor(ef.pokemon.moves[precomputedEnemyRPS].type) : null
 
+  function handleSpecialDefeat() {
+    const sb = specialBattle!
+    if (sb.type === 'legendary') {
+      markLegendaryEventUsed()
+    } else {
+      spendCoins(3)
+    }
+    syncDeckAfterBattle(
+      playerFighters.map(f => ({
+        id: f.pokemon.id,
+        hearts: Math.max(0.5, f.hearts),
+        isFainted: false,
+      }))
+    )
+    setSpecialBattle(null)
+    clearBattle()
+    const prevFloor = currentFloor - 1
+    router.push(prevFloor >= 8 ? '/entre-andares' : '/pos-batalha')
+  }
+
   function handleAbandon() {
+    if (specialBattle) { handleSpecialDefeat(); return }
     setRunEndReason('lost')
     endBattle('lose')
     router.push('/game-over')
@@ -1373,17 +1401,63 @@ export default function BatalhaPage() {
             <button
               onClick={() => {
                 syncDeckAfterBattle(playerFighters.map(f => ({ id: f.pokemon.id, hearts: f.hearts, isFainted: f.hearts <= 0 })))
-                endBattle('win')
-                router.push(currentFloor >= 11 ? '/entre-andares' : '/recompensa')
+                if (specialBattle) {
+                  if (specialBattle.type === 'legendary') {
+                    if (specialBattle.legendaryTeamCard) setPendingLegendaryCard(specialBattle.legendaryTeamCard)
+                    markLegendaryEventUsed()
+                  } else {
+                    addCoins(specialBattle.coinsOnWin)
+                    if (specialBattle.itemOnWin) addConsumable(specialBattle.itemOnWin, 1)
+                  }
+                  setSpecialBattle(null)
+                  clearBattle()
+                  if (specialBattle.type === 'legendary') {
+                    router.push('/recrutar-lendario')
+                  } else {
+                    const prevFloor = currentFloor - 1
+                    router.push(prevFloor >= 8 ? '/entre-andares' : '/pos-batalha')
+                  }
+                } else {
+                  endBattle('win')
+                  router.push(currentFloor >= 11 ? '/entre-andares' : '/recompensa')
+                }
               }}
               className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
-              {currentFloor >= 11 ? '🏆 Ver resultado final →' : 'Ver recompensa →'}
+              {specialBattle?.type === 'legendary' ? '⚡ Recrutar Lendário →'
+                : specialBattle?.type === 'rocket' ? 'Coletar recompensa →'
+                : currentFloor >= 11 ? '🏆 Ver resultado final →'
+                : 'Ver recompensa →'}
             </button>
           </div>
         )}
 
         {/* ── DEFEAT ── */}
         {phase === 'defeat' && (() => {
+          // Batalha especial: não é game-over
+          if (specialBattle) {
+            const isLegendary = specialBattle.type === 'legendary'
+            const sbColor = isLegendary ? getTypeColor(specialBattle.specialtyType) : '#CC2200'
+            return (
+              <div className="rounded-3xl border-2 border-ink overflow-hidden text-center p-8"
+                style={{ backgroundColor: sbColor, boxShadow: '6px 6px 0 #2C1810' }}>
+                <p className="text-6xl mb-3">{isLegendary ? '🌠' : '💸'}</p>
+                <p className="font-black text-2xl text-white uppercase tracking-tight">
+                  {isLegendary ? `${specialBattle.opponentName} escapou...` : 'Roubado!'}
+                </p>
+                <p className="text-base text-white/70 mt-2 mb-6">
+                  {isLegendary
+                    ? 'O lendário voou para longe. Você não terá outra chance nessa run.'
+                    : 'A Equipe Rocket roubou 3₽ e fugiu na escuridão.'}
+                </p>
+                <button
+                  onClick={handleSpecialDefeat}
+                  className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
+                  Continuar →
+                </button>
+              </div>
+            )
+          }
+
           const selectedIds = new Set(battle.playerSelected.map(p => p.id))
           const hardSurvivors = playerDeck.filter(p => !selectedIds.has(p.id) && p.hearts > 0 && !p.isFainted)
           function handleNormalRetry()      { incrementDeathCount(); endBattle('lose'); router.push('/torre') }

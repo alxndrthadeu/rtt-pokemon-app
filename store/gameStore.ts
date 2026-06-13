@@ -7,6 +7,7 @@ import { apiRequest, isApiConfigured } from '@/lib/api'
 import { CONSUMABLES } from '@/lib/data/items'
 import { HELD_ITEMS } from '@/lib/data/items'
 import { EVOLUTION_MAP, ASH_PIKACHU_ID, LEGENDARY_IDS_SET, makePokemonCard } from '@/lib/data/pokemon'
+import type { SpecialBattleConfig } from '@/lib/data/events'
 
 function generateSessionId(): string {
   return crypto.randomUUID()
@@ -38,6 +39,11 @@ interface GameStore {
   // Batalha
   battle: BattleState | null
 
+  // Batalha especial (lendário / Rocket)
+  specialBattle: SpecialBattleConfig | null
+  legendaryEventUsed: boolean
+  pendingLegendaryCard: PokemonCard | null
+
   // Pokédex persistente (cross-run)
   pokedexSeen: number[]
 
@@ -65,9 +71,16 @@ interface GameStore {
   submitAction: (action: RPS) => void
   useSwitch: () => void
   endBattle: (result: 'win' | 'lose') => void
+  clearBattle: () => void
   syncDeckAfterBattle: (fighters: { id: number; hearts: number; isFainted: boolean }[]) => void
   applyPostGymSwap: (newCard: PokemonCard, discardId: number) => void
   incrementDeathCount: () => void
+
+  // Actions — Batalha especial
+  setSpecialBattle: (battle: SpecialBattleConfig | null) => void
+  markLegendaryEventUsed: () => void
+  setPendingLegendaryCard: (card: PokemonCard | null) => void
+  recruitLegendary: (discardId: number) => void
 
   // Actions — Pokédex
   addPokedexEntry: (ids: number[]) => void
@@ -125,6 +138,9 @@ export const useGameStore = create<GameStore>()(
       playerDeck: [],
       rerollUsed: false,
       battle: null,
+      specialBattle: null,
+      legendaryEventUsed: false,
+      pendingLegendaryCard: null,
       pokedexSeen: [],
       apiError: null,
       coins: 0,
@@ -192,6 +208,25 @@ export const useGameStore = create<GameStore>()(
             ? { ...s.battle, playerSwitchUsed: true, phase: 'switch_risk' }
             : null,
         })),
+
+      clearBattle: () => set({ battle: null }),
+
+      setSpecialBattle: (battle) => set({ specialBattle: battle }),
+
+      markLegendaryEventUsed: () => set({ legendaryEventUsed: true }),
+
+      setPendingLegendaryCard: (card) => set({ pendingLegendaryCard: card }),
+
+      recruitLegendary: (discardId) =>
+        set((s) => {
+          if (!s.pendingLegendaryCard) return {}
+          return {
+            playerDeck: s.playerDeck.map((p) =>
+              p.id === discardId ? s.pendingLegendaryCard! : p
+            ),
+            pendingLegendaryCard: null,
+          }
+        }),
 
       syncDeckAfterBattle: (fighters) => {
         const byId = new Map(fighters.map(f => [f.id, f]))
@@ -517,6 +552,9 @@ export const useGameStore = create<GameStore>()(
           starterId: null,
           runEndReason: null,
           runSaved: false,
+          specialBattle: null,
+          legendaryEventUsed: false,
+          pendingLegendaryCard: null,
           pokedexSeen: s.pokedexSeen,
           runHistory: s.runHistory,
         })),
@@ -539,6 +577,7 @@ export const useGameStore = create<GameStore>()(
         heldItemBag: s.heldItemBag,
         shopVisitedFloors: s.shopVisitedFloors,
         starterId: s.starterId,
+        legendaryEventUsed: s.legendaryEventUsed,
         runHistory: s.runHistory,
         runSaved: s.runSaved,
       }),
