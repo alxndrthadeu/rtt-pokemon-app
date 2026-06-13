@@ -64,7 +64,7 @@ export const HELD_ITEMS: Record<HeldItemId, HeldItemDef> = {
   // ── Ataque / Risco ───────────────────────────────────────────────────────────
   'life-orb': {
     id: 'life-orb', name: 'Orbe Vida', shopTier: 3, shopPrice: 6,
-    description: 'Ao ganhar o RPP, causa +1 dano extra — mas sofre 0.5♥ de recuo.',
+    description: 'Ao ganhar o RPP, causa +0.5♥ de dano extra — mas sofre 0.5♥ de recuo.',
     onHit: 'life-orb',
   },
   'expert-belt': {
@@ -103,52 +103,52 @@ export const HELD_ITEMS: Record<HeldItemId, HeldItemDef> = {
   // ── Boosts de Tipo ───────────────────────────────────────────────────────────
   'charcoal': {
     id: 'charcoal', name: 'Carvão', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Fogo causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Fogo causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Fire',
   },
   'mystic-water': {
     id: 'mystic-water', name: 'Água Mística', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Água causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Água causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Water',
   },
   'miracle-seed': {
     id: 'miracle-seed', name: 'Semente Milagrosa', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Grama causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Grama causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Grass',
   },
   'magnet': {
     id: 'magnet', name: 'Ímã', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Elétrico causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Elétrico causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Electric',
   },
   'twisted-spoon': {
     id: 'twisted-spoon', name: 'Colher Torcida', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Psíquico causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Psíquico causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Psychic',
   },
   'black-belt': {
     id: 'black-belt', name: 'Faixa Preta', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Lutador causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Lutador causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Fighting',
   },
   'hard-stone': {
     id: 'hard-stone', name: 'Pedra Dura', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Pedra causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Pedra causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Rock',
   },
   'silver-powder': {
     id: 'silver-powder', name: 'Pó Prateado', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Bug causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Bug causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Bug',
   },
   'dragon-fang': {
     id: 'dragon-fang', name: 'Presa do Dragão', shopTier: 2, shopPrice: 5,
-    description: 'Golpes do tipo Dragão causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Dragão causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Dragon',
   },
   'metal-coat': {
     id: 'metal-coat', name: 'Manto Metálico', shopTier: 1, shopPrice: 4,
-    description: 'Golpes do tipo Aço causam +0.5♥ de dano ao vencer o RPP.',
+    description: 'Golpes do tipo Aço causam +0.5♥ de dano (+1♥ se super efetivo).',
     onHit: 'type-boost', typeBoost: 'Steel',
   },
 }

@@ -68,7 +68,7 @@ function TrainerPortrait({ name, size = 160 }: { name: string; size?: number }) 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function TorrePage() {
   const router = useRouter()
-  const { mode, gender, playerName, playerDeck, currentFloor, badgesEarned, startBattle } = useGameStore()
+  const { mode, gender, playerName, playerDeck, currentFloor, badgesEarned, coins, startBattle } = useGameStore()
 
   const [showSetup, setShowSetup] = useState(false)
   const [selected, setSelected] = useState<PokemonCardType[]>([])
@@ -107,7 +107,8 @@ export default function TorrePage() {
 
   function handleStartBattle() {
     if (selected.length < 3) return
-    const enemyDeck = buildGymDeck(currentFloor).slice(0, 3)
+    const allSix = buildGymDeck(currentFloor)
+    const enemyDeck = [...allSix].sort(() => Math.random() - 0.5).slice(0, 3)
     startBattle(currentFloor, enemyDeck, selected, [0, 1, 2])
     router.push('/batalha')
   }
@@ -135,6 +136,10 @@ export default function TorrePage() {
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-0.5 px-2 py-1 rounded-full border-2 border-ink/15 bg-parchment-light shadow-neo-sm">
+              <span className="font-black text-[11px] text-ink/50 leading-none">₽</span>
+              <span className="font-black text-[12px] text-ink leading-none">{coins}</span>
+            </div>
             <button
               onClick={() => router.push('/mochila')}
               className="border-2 border-ink rounded-full w-8 h-8 flex items-center justify-center font-game text-[11px] bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"

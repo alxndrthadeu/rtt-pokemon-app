@@ -355,7 +355,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   { id: 68, name: 'Machamp',     type1: 'Fighting', type2: null,      rarity: 'ultra-rara',
     abilityId: 'inner-focus',
     moves: { rock: 'hammer-arm',  paper: 'bullet-punch', scissors: 'thunder-punch' },
-    uniqueId: 'focus-punch' },
+    uniqueId: 'focus-punch-hitmonchan' },
   // ─── #69 BELLSPROUT ───
   { id: 69, name: 'Bellsprout',  type1: 'Grass',    type2: 'Poison',  rarity: 'comum',
     abilityId: 'overgrow',

@@ -31,6 +31,7 @@ export default function DraftPage() {
   const [deck, setDeck] = useState<PokemonCardType[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [confirming, setConfirming] = useState(false)
+  const [hasSkipped, setHasSkipped] = useState(false)
 
   // Redireciona se veio sem setup
   useEffect(() => {
@@ -67,8 +68,9 @@ export default function DraftPage() {
     setSelectedId(null)
 
     const pickedStarterId = round === 1 ? picked.id : starterId
+    const effectiveMax = hasSkipped ? DECK_SIZE - 1 : DECK_SIZE
     setTimeout(() => {
-      if (newDeck.length < DECK_SIZE) {
+      if (newDeck.length < effectiveMax) {
         const nextRound = round + 1
         setRound(nextRound)
         setPool(generatePool(nextRound, newDeck.map((p) => p.id), pickedStarterId))
@@ -84,13 +86,23 @@ export default function DraftPage() {
     setPool(generatePool(round, pickedIds, starterId))
   }
 
+  function handleSkip() {
+    if (rerollUsed || isStarterRound || hasSkipped) return
+    useReroll()
+    setHasSkipped(true)
+    setSelectedId(null)
+    const nextRound = round + 1
+    setRound(nextRound)
+    setPool(generatePool(nextRound, pickedIds, starterId))
+  }
+
   async function handleStartAdventure() {
     deck.forEach((p) => addToDeck(p))
     await createRun()
     router.push('/torre')
   }
 
-  const isDraftComplete = deck.length === DECK_SIZE
+  const isDraftComplete = deck.length >= (hasSkipped ? DECK_SIZE - 1 : DECK_SIZE)
   const isStarterRound = round === 1
   const selectedPokemon = pool.find((p) => p.id === selectedId) ?? null
 
@@ -185,7 +197,7 @@ export default function DraftPage() {
                   <div className="flex items-center justify-center gap-3 mb-2">
                     <div className="h-px w-8 bg-ink opacity-15" />
                     <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
-                      Rodada {round} de {DECK_SIZE}
+                      Rodada {deck.length + 1} de {hasSkipped ? DECK_SIZE - 1 : DECK_SIZE}
                     </span>
                     <div className="h-px w-8 bg-ink opacity-15" />
                   </div>
@@ -193,7 +205,7 @@ export default function DraftPage() {
                     Escolha <span style={{ color: '#3B4CCA' }}>1 Pokémon</span>
                   </h1>
                   <p className="text-sm text-ink-soft opacity-60 mt-1">
-                    {DECK_SIZE - deck.length} vagas restantes no time
+                    {(hasSkipped ? DECK_SIZE - 1 : DECK_SIZE) - deck.length} vagas restantes no time
                   </p>
                 </>
               )}
@@ -245,6 +257,21 @@ export default function DraftPage() {
                   }`}
                 >
                   {rerollUsed ? '↺ Reroll já utilizado' : '↺ Reroll (1 disponível)'}
+                </button>
+              )}
+
+              {/* Pular rodada — consome o reroll, sai com 5 Pokémon */}
+              {!isStarterRound && !hasSkipped && (
+                <button
+                  onClick={handleSkip}
+                  disabled={rerollUsed}
+                  className={`w-full py-2.5 font-game text-[7px] tracking-widest uppercase border border-dashed rounded-2xl transition-all duration-100 ${
+                    !rerollUsed
+                      ? 'border-ink/40 text-ink/50 hover:border-ink/70 hover:text-ink/70 cursor-pointer'
+                      : 'border-ink/15 text-ink/20 cursor-not-allowed'
+                  }`}
+                >
+                  {rerollUsed ? '⤵ Pular indisponível' : '⤵ Pular rodada (usa o reroll)'}
                 </button>
               )}
             </div>

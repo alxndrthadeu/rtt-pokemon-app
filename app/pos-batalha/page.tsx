@@ -44,13 +44,12 @@ type Phase = 'encounter' | 'pick_new' | 'pick_discard'
 
 export default function PosBatalhaPage() {
   const router = useRouter()
-  const { playerDeck, currentFloor, mode, starterId, applyPostGymSwap, addPokedexEntry } = useGameStore()
+  const { playerDeck, currentFloor, coins, starterId, applyPostGymSwap, addPokedexEntry } = useGameStore()
 
   const [pool, setPool] = useState<PokemonCardType[]>([])
   const [picked, setPicked] = useState<PokemonCardType | null>(null)
   const [discardId, setDiscardId] = useState<number | null>(null)
   const [phase, setPhase] = useState<Phase>('encounter')
-  const coinsEarned = mode === 'hard' ? 6 : 3
 
   useEffect(() => {
     if (playerDeck.length === 0) { router.replace('/'); return }
@@ -77,11 +76,11 @@ export default function PosBatalhaPage() {
     if (!picked || discardId === null) return
     addPokedexEntry([picked.id])
     applyPostGymSwap(picked, discardId)
-    router.push('/recompensa')
+    router.push('/entre-andares')
   }
 
   function handleSkip() {
-    router.push('/recompensa')
+    router.push('/entre-andares')
   }
 
   if (pool.length === 0) {
@@ -106,13 +105,11 @@ export default function PosBatalhaPage() {
               {phase === 'encounter' ? 'Recompensas' : phase === 'pick_new' ? 'Escolha um novo Pokémon' : 'Qual vai sair do deck?'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Coins earned */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full border border-white/30 bg-white/15">
-              <span className="text-[12px]">🪙</span>
-              <span className="font-black text-[11px]" style={{ color: gymTextColor }}>+{coinsEarned}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 px-2 py-1 rounded-full border border-white/30 bg-white/15">
+              <span className="font-black text-[11px] leading-none" style={{ color: `${gymTextColor}80` }}>₽</span>
+              <span className="font-black text-[12px] leading-none" style={{ color: gymTextColor }}>{coins}</span>
             </div>
-            {/* Step indicator (hidden on encounter) */}
             {phase !== 'encounter' && (['pick_new', 'pick_discard'] as Phase[]).map((p) => (
               <div key={p} className="w-2 h-2 rounded-full border border-white/40" style={{ backgroundColor: phase === p ? 'white' : 'rgba(255,255,255,0.25)' }} />
             ))}
@@ -152,25 +149,6 @@ export default function PosBatalhaPage() {
                   Um Pokémon selvagem apareceu!
                 </p>
               </div>
-            </div>
-
-            {/* Coins callout */}
-            <div className="w-full border-2 border-ink rounded-2xl px-5 py-4 flex items-center gap-4 bg-white"
-              style={{ boxShadow: '4px 4px 0 #2C1810' }}>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl border-2 border-ink/15"
-                style={{ backgroundColor: `${gymColor}18` }}>
-                🪙
-              </div>
-              <div className="flex-1">
-                <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mb-1">Recompensa de batalha</p>
-                <p className="font-black text-base text-ink leading-tight">
-                  +{coinsEarned} Pokédollars conquistados
-                </p>
-                <p className="font-game text-[7px] text-ink/40 leading-none mt-0.5">
-                  {mode === 'hard' ? 'Modo Hard — bônus de dificuldade' : 'Modo Normal'}
-                </p>
-              </div>
-              <span className="font-black text-2xl" style={{ color: gymColor }}>+{coinsEarned}</span>
             </div>
 
             <button

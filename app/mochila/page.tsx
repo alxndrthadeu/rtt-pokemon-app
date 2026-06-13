@@ -91,7 +91,7 @@ function PokemonSelector({
 
 export default function MochilaPage() {
   const router = useRouter()
-  const { inventory, heldItemBag, playerDeck, useConsumable, equipHeldItem, unequipHeldItem } = useGameStore()
+  const { inventory, heldItemBag, playerDeck, coins, useConsumable, equipHeldItem, unequipHeldItem } = useGameStore()
   const [tab, setTab] = useState<Tab>('uso')
   const [feedback, setFeedback] = useState<string | null>(null)
 
@@ -148,12 +148,18 @@ export default function MochilaPage() {
             <p className="font-game text-[6px] text-white/40 uppercase tracking-widest mb-0.5">Inventário</p>
             <p className="font-black text-xl text-white uppercase tracking-tight leading-none">Mochila</p>
           </div>
-          <button
-            onClick={() => router.back()}
-            className="border-2 border-white/20 rounded-full px-4 py-1.5 font-game text-[7px] text-white/70 hover:text-white hover:border-white/50 transition-all cursor-pointer"
-          >
-            ← Voltar
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-full border-2 border-white/20 bg-white/10">
+              <span className="font-black text-sm leading-none text-white/60">₽</span>
+              <span className="font-black text-sm leading-none text-white">{coins}</span>
+            </div>
+            <button
+              onClick={() => router.back()}
+              className="border-2 border-white/20 rounded-full px-4 py-1.5 font-game text-[7px] text-white/70 hover:text-white hover:border-white/50 transition-all cursor-pointer"
+            >
+              ← Voltar
+            </button>
+          </div>
         </div>
       </header>
 

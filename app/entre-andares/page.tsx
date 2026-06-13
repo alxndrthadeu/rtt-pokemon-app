@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useGameStore, SHOP_FLOORS, HEAL_COST } from '@/store/gameStore'
+import { useGameStore, HEAL_COST } from '@/store/gameStore'
 import { EVOLUTION_MAP, ASH_PIKACHU_ID, getStarterLine } from '@/lib/data/pokemon'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
@@ -434,9 +434,8 @@ export default function EntreAndaresPage() {
   const prevGymColor = prevGym ? getTypeColor(prevGym.specialtyType) : '#CC2200'
   const nextGymColor = nextGym ? getTypeColor(nextGym.specialtyType) : '#CC2200'
 
-  const shopAvailable = SHOP_FLOORS.includes(currentFloor as (typeof SHOP_FLOORS)[number])
-    && !shopVisitedFloors.includes(currentFloor)
   const shopVisited   = shopVisitedFloors.includes(currentFloor)
+  const shopAvailable = !isEliteFour && !shopVisited
 
   const allHealthy = playerDeck.every(p => !p.isFainted && p.hearts >= 5)
   const canHeal    = !isEliteFour && coins >= HEAL_COST && !allHealthy
@@ -481,7 +480,7 @@ export default function EntreAndaresPage() {
       />
     )}
     <main className="min-h-screen relative overflow-x-hidden"
-      style={{ backgroundColor: '#F0F4F8' }}>
+      style={{ backgroundColor: '#F5EDD8' }}>
 
       {/* ── HEADER ── */}
       <header className="border-b-4 border-ink px-5 py-4" style={{ backgroundColor: prevGymColor }}>
@@ -505,8 +504,8 @@ export default function EntreAndaresPage() {
               </div>
             </div>
             {/* Coins */}
-            <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-2 border-white/25 bg-white/15">
-              <span className="text-lg leading-none">🪙</span>
+            <div className="flex items-center gap-1 px-3 py-2 rounded-2xl border-2 border-white/25 bg-white/15">
+              <span className="font-black text-base text-white/70 leading-none">₽</span>
               <span className="font-black text-base text-white leading-none">{coins}</span>
             </div>
           </div>
@@ -633,12 +632,12 @@ export default function EntreAndaresPage() {
                 {allHealthy
                   ? '✅ Time em plena saúde'
                   : canHeal
-                  ? `💊 Curar todos — ${HEAL_COST} 🪙`
-                  : `💊 Curar todos — ${HEAL_COST} 🪙 (sem moedas)`}
+                  ? `💊 Curar todos — ₽${HEAL_COST}`
+                  : `💊 Curar todos — ₽${HEAL_COST} (sem saldo)`}
               </button>
               {!allHealthy && (
                 <p className="text-center font-game text-[6px] text-ink/30 uppercase tracking-widest mt-1.5">
-                  Saldo atual: {coins} 🪙
+                  Saldo: ₽{coins}
                 </p>
               )}
             </div>

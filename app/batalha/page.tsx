@@ -130,7 +130,7 @@ interface TurnResult {
 function PartyBall({ alive, active, color }: { alive: boolean; active?: boolean; color?: string }) {
   if (!alive) {
     return (
-      <svg width="13" height="13" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+      <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
         style={{ imageRendering: 'pixelated', flexShrink: 0 }}>
         <circle cx="8" cy="8" r="7" fill="#888870" stroke="#5C5C50" strokeWidth="1.5"/>
         <rect x="1.5" y="7" width="13" height="2" fill="#5C5C50"/>
@@ -141,7 +141,7 @@ function PartyBall({ alive, active, color }: { alive: boolean; active?: boolean;
   }
   const topColor = active && color ? color : '#CC2200'
   return (
-    <svg width="13" height="13" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
       style={{ imageRendering: 'pixelated', flexShrink: 0 }}>
       <path d="M8 1 A7 7 0 0 1 15 8 L1 8 A7 7 0 0 1 8 1 Z" fill={topColor}/>
       <path d="M8 15 A7 7 0 0 1 1 8 L15 8 A7 7 0 0 1 8 15 Z" fill="#FBF5E6"/>
@@ -169,14 +169,14 @@ function HPBar({ current, max, flashColor }: { current: number; max: number; fla
   return (
     <div className="flex flex-col gap-[3px]">
       <div className="flex items-center justify-between">
-        <span className="font-game text-[6px] tracking-widest" style={{ color: '#2C1810' }}>HP</span>
-        <span className="font-game text-[6px]" style={{ color: pct <= 0.2 ? '#E82020' : 'rgba(44,24,16,0.55)' }}>
+        <span className="font-game text-[9px] tracking-widest" style={{ color: '#2C1810' }}>HP</span>
+        <span className="font-game text-[9px]" style={{ color: pct <= 0.2 ? '#E82020' : 'rgba(44,24,16,0.55)' }}>
           {displayed}/{max}
         </span>
       </div>
       <div
         key={animKey}
-        className={`h-[6px] rounded-full overflow-hidden border border-black/10 ${flashColor ? 'hp-bar-flash' : ''}`}
+        className={`h-[10px] rounded-full overflow-hidden border border-black/10 ${flashColor ? 'hp-bar-flash' : ''}`}
         style={{
           backgroundColor: 'rgba(0,0,0,0.2)',
           ['--flash-color' as string]: flashColor ?? undefined,
@@ -337,8 +337,8 @@ function MoveGrid({
                 {/* Botão info — não dispara ataque */}
                 <button
                   onClick={(e) => { e.stopPropagation(); setFlipped(rps) }}
-                  className="absolute top-1.5 right-1.5 w-[18px] h-[18px] rounded-full border border-ink/20 bg-white/80 flex items-center justify-center cursor-pointer hover:border-ink/50 z-10"
-                  style={{ fontSize: 9, color: 'rgba(44,24,16,0.4)', fontWeight: 900, lineHeight: 1 }}
+                  className="absolute top-1 right-1 w-[32px] h-[32px] rounded-full border border-ink/20 bg-white/80 flex items-center justify-center cursor-pointer hover:border-ink/50 z-10"
+                  style={{ fontSize: 11, color: 'rgba(44,24,16,0.4)', fontWeight: 900, lineHeight: 1 }}
                 >?</button>
               </div>
 
@@ -388,7 +388,8 @@ function MoveGrid({
 
         const tc = getTypeColor(unique.type)
         return (
-          <div className={`move-cell-flip ${borders[3]}`} style={{ minHeight: 90 }}>
+          <div className={`move-cell-flip ${borders[3]}`}
+            style={{ minHeight: 90, boxShadow: !disabled ? '0 0 8px 3px #F8D03066' : undefined, outline: !disabled ? '1px solid #F8D03055' : undefined }}>
             <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 90 }}>
 
               {/* ── FRENTE único ── */}
@@ -422,8 +423,8 @@ function MoveGrid({
                 {!disabled && (
                   <button
                     onClick={(e) => { e.stopPropagation(); setFlipped('unique') }}
-                    className="absolute top-1.5 right-1.5 w-[18px] h-[18px] rounded-full border flex items-center justify-center cursor-pointer hover:border-opacity-70 z-10"
-                    style={{ borderColor: tc, backgroundColor: `${tc}18`, fontSize: 9, color: tc, fontWeight: 900, lineHeight: 1 }}
+                    className="absolute top-1 right-1 w-[32px] h-[32px] rounded-full border flex items-center justify-center cursor-pointer hover:border-opacity-70 z-10"
+                    style={{ borderColor: tc, backgroundColor: `${tc}18`, fontSize: 11, color: tc, fontWeight: 900, lineHeight: 1 }}
                   >?</button>
                 )}
               </div>
@@ -669,6 +670,13 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
           <div className="absolute inset-0 pointer-events-none rounded-xl z-10 transition-all duration-500"
             style={{ boxShadow: `0 0 18px 6px ${enemyTellType}99`, borderRadius: 8 }} />
         )}
+        {/* Ícone RPS semi-transparente — complementa a aura, mais legível para novatos */}
+        {phase === 'selecting' && !eKO && precomputedEnemyRPS && (
+          <div className="absolute bottom-1 right-1 pointer-events-none z-20 text-xl leading-none"
+            style={{ opacity: 0.55, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+            {RPS_ICON[precomputedEnemyRPS]}
+          </div>
+        )}
         <img
           key={ef.pokemon.id}
           src={enemyAnimErrId === ef.pokemon.id ? getPixelSpriteUrl(ef.pokemon.id) : getAnimatedFrontUrl(ef.pokemon.id)}
@@ -683,7 +691,8 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
         />
         {eKO && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-game text-[7px] bg-black/50 text-white px-1.5 py-0.5 rounded uppercase tracking-widest">KO</span>
+            <span className="font-black text-sm text-white px-3 py-1.5 rounded-xl uppercase tracking-wider"
+              style={{ backgroundColor: '#CC2200', boxShadow: '2px 2px 0 rgba(0,0,0,0.5)' }}>✕ KO</span>
           </div>
         )}
       </div>
@@ -705,7 +714,8 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
         />
         {pKO && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-game text-[7px] bg-black/50 text-white px-1.5 py-0.5 rounded uppercase tracking-widest">KO</span>
+            <span className="font-black text-sm text-white px-3 py-1.5 rounded-xl uppercase tracking-wider"
+              style={{ backgroundColor: '#CC2200', boxShadow: '2px 2px 0 rgba(0,0,0,0.5)' }}>✕ KO</span>
           </div>
         )}
       </div>
@@ -950,6 +960,8 @@ export default function BatalhaPage() {
         if (uRes.activateShellSmash) eff = { ...eff, playerShellSmashTurns: 3 }
         if (uRes.activateAquaRing) eff = { ...eff, playerAquaRingActive: true, playerAquaRingHealIn: 2 }
         if (uRes.activateDestinyBond) eff = { ...eff, playerDestinyBond: true }
+        if (uRes.playerAttackBuff > 0) eff = { ...eff, playerAttackMod: Math.min(1, eff.playerAttackMod + uRes.playerAttackBuff) }
+        if (uRes.playerDefenseBuff > 0) eff = { ...eff, playerDefenseMod: Math.min(1, eff.playerDefenseMod + uRes.playerDefenseBuff) }
 
         if (uRes.benchDamage > 0) {
           setEnemyFighters(prev => prev.map((f, i) =>
@@ -1207,7 +1219,7 @@ export default function BatalhaPage() {
     const activations: string[] = [`🔄 ${incoming.pokemon.name} entrou em campo!`]
 
     const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg, forcedFirstMove: switchStickyForced } = applyEntryEffects(incoming.pokemon, 'player', effects)
-    let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false }
+    let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false, playerDestinyBond: false, playerAquaRingActive: false, playerAquaRingHealIn: 2 }
     if (entryMessage) activations.push(entryMessage)
     if (switchStickyForced) setStickyWebForcedMove(switchStickyForced)
 
@@ -1353,7 +1365,8 @@ export default function BatalhaPage() {
         </div>
       </header>
 
-      <div className="max-w-[640px] mx-auto px-4 pt-4 pb-28 flex flex-col gap-3">
+      <div className="max-w-[640px] mx-auto px-4 pt-4 flex flex-col gap-3"
+        style={{ paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))' }}>
 
         {/* ── ARENA ── */}
         <BattleArena
@@ -1381,10 +1394,10 @@ export default function BatalhaPage() {
               onClick={() => {
                 syncDeckAfterBattle(playerFighters.map(f => ({ id: f.pokemon.id, hearts: f.hearts, isFainted: f.hearts <= 0 })))
                 endBattle('win')
-                router.push(currentFloor >= 11 ? '/entre-andares' : '/pos-batalha')
+                router.push(currentFloor >= 11 ? '/entre-andares' : '/recompensa')
               }}
               className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
-              {currentFloor >= 11 ? '🏆 Ver resultado final →' : 'Pegar novo Pokémon →'}
+              {currentFloor >= 11 ? '🏆 Ver resultado final →' : 'Ver recompensa →'}
             </button>
           </div>
         )}
@@ -1490,6 +1503,11 @@ export default function BatalhaPage() {
                       🐾 Garra Rápida! {ef.pokemon.name} vai usar {RPS_ICON[precomputedEnemyRPS]} {ef.pokemon.moves[precomputedEnemyRPS].name}
                     </p>
                   )}
+                  {gym.aiLevel === 'predictive' && (
+                    <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest leading-none">
+                      🤖 IA preditiva — analisa seus padrões de ataque
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -1549,21 +1567,28 @@ export default function BatalhaPage() {
                   onAttack={handleAttack}
                 />
 
-                <div className="flex gap-2 mt-1">
-                  <button
-                    onClick={handleSwitch}
-                    disabled={playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1}
-                    className="flex-1 py-3 font-black text-sm uppercase border-2 rounded-2xl transition-all duration-75 cursor-pointer disabled:cursor-not-allowed"
-                    style={(playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1)
-                      ? { borderColor: 'rgba(44,24,16,0.15)', backgroundColor: '#F5EDD8', color: 'rgba(44,24,16,0.3)' }
-                      : { borderColor: '#2C1810', backgroundColor: '#FBF5E6', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }}>
-                    🔄 Trocar Pokémon
-                  </button>
-                  <button
-                    onClick={() => setShowAbandon(true)}
-                    className="px-5 py-3 font-game text-[8px] uppercase border-2 border-ink/25 rounded-2xl text-ink/45 hover:text-ink/70 hover:border-ink/50 hover:bg-white/60 transition-all cursor-pointer">
-                    🏳️ Fugir
-                  </button>
+                <div className="flex flex-col gap-1">
+                  <div className="flex gap-2 mt-1">
+                    <button
+                      onClick={handleSwitch}
+                      disabled={playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1}
+                      className="flex-1 py-3 font-black text-sm uppercase border-2 rounded-2xl transition-all duration-75 cursor-pointer disabled:cursor-not-allowed"
+                      style={(playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1)
+                        ? { borderColor: 'rgba(44,24,16,0.15)', backgroundColor: '#F5EDD8', color: 'rgba(44,24,16,0.3)' }
+                        : { borderColor: '#2C1810', backgroundColor: '#FBF5E6', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }}>
+                      🔄 Trocar Pokémon
+                    </button>
+                    <button
+                      onClick={() => setShowAbandon(true)}
+                      className="px-5 py-3 font-game text-[8px] uppercase border-2 border-ink/25 rounded-2xl text-ink/45 hover:text-ink/70 hover:border-ink/50 hover:bg-white/60 transition-all cursor-pointer">
+                      🏳️ Fugir
+                    </button>
+                  </div>
+                  {playerFighters.filter(f => f.hearts > 0).length > 1 && !playerIsForcedByStatus && !effects.playerTiredTurns && (
+                    <p className="font-game text-[7px] text-ink/40 text-center uppercase tracking-widest leading-none">
+                      ⚠️ Trocar gasta o turno — inimigo ataca de graça
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -1675,7 +1700,7 @@ export default function BatalhaPage() {
                         </p>
                       )}
                       {lastResult.activations.map((msg, i) => (
-                        <p key={i} className="font-game text-[8px] text-ink/60 text-center leading-relaxed">{msg}</p>
+                        <p key={i} className="font-game text-[9px] text-ink/75 text-center leading-relaxed">{msg}</p>
                       ))}
                     </div>
                   )}

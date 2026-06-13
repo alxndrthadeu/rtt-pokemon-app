@@ -1,5 +1,53 @@
 # Changelog
 
+## [0.9.4] - 2026-06-12
+
+### Corrigido
+
+- **Loja sempre acessível** (`app/loja/page.tsx`) — removida guarda `SHOP_FLOORS.includes()` que redirecionava para entre-andares em andares fora de 3/6/9; `shopAvailable` em entre-andares agora é `!isEliteFour && !shopVisited`
+- **Focus Sash multi-uso** (`lib/battleEngine.ts`) — `applyEntryEffects()` resetava `playerSashUsed = false` a cada troca; linha removida; sash reseta apenas no início de nova batalha via `DEFAULT_EFFECTS`
+- **Lum Berry não cancelava turno perdido por sono** (`lib/battleEngine.ts`) — adicionado `playerSkipsTurn = false` no bloco de cura da Lum Berry
+- **Destiny Bond e Aqua Ring herdados na troca** (`app/batalha/page.tsx`) — `handleSwitchTurn` não limpava `playerDestinyBond` nem `playerAquaRingActive`; ambos adicionados ao reset de efeitos na entrada
+- **Ancient Power buff desconectado** (`lib/battleEngine.ts`) — `buffed` era calculado mas nunca atribuído; adicionado `res.playerAttackBuff = 1`
+- **Acid Armor / Barrier sem efeito mecânico** (`lib/battleEngine.ts`) — casos exibiam mensagem mas não alteravam nada; adicionado `res.playerDefenseBuff = 1`
+- **Quiver Dance sem efeito mecânico** (`lib/battleEngine.ts`) — separado de Acid Armor; aplica `playerAttackBuff = 1` e `playerDefenseBuff = 1`
+- **Tri Attack mensagem de status falsa** (`lib/battleEngine.ts`) — mensagem sempre mostrava o status sorteado mesmo quando bloqueado por imunidade; adicionado check `statusApplied`
+- **Machamp golpe único era OHKO** (`lib/data/pokemon.ts`) — `uniqueId: 'focus-punch'` mapeava para `kind: 'ohko'`; corrigido para `'focus-punch-hitmonchan'` (`kind: 'super'`, 2 dano)
+- **Líderes sempre usavam os mesmos 3 Pokémon** (`app/torre/page.tsx`) — `.slice(0, 3)` substituído por shuffle aleatório dos 6 a cada batalha
+
+### Adicionado
+
+- **Fluxo pós-vitória reordenado** — `batalha → recompensa (item + moedas) → pos-batalha (encontro selvagem) → entre-andares`; tela de recompensa exibe "+N ganhos · saldo: ₽XX"
+- **₽ (Pokédollar) visível em toda a run** — símbolo ₽ substitui 🪙; saldo exibido no header de Torre, Mochila, Pos-Batalha, Loja e Entre-Andares
+- **Draft: pular rodada** (`app/draft/page.tsx`) — botão "Pular rodada" consome o reroll e avança sem capturar; deck final com 5 Pokémon
+
+### Balanceamento
+
+- **Life Orb** (`lib/battleEngine.ts`) — dano extra +1 → +0.5♥
+- **Itens de tipo** (`lib/battleEngine.ts`) — boost fixo substituído por +0.5♥ normal / +1♥ se super efetivo
+- **Paralisia** (`lib/battleEngine.ts`) — chance de travar turno 30% → 40%
+- **Congelamento** (`lib/battleEngine.ts`) — adicionado 20% de chance de descongelar espontaneamente por turno (player e inimigo)
+- **Hard Mode moedas** (`store/gameStore.ts`) — 6 → 4 por vitória
+- **Lt. Surge** (`lib/data/gyms.ts`) — Voltorb (#100) → Electabuzz (#125)
+- **Sabrina** (`lib/data/gyms.ts`) — Abra (#63) → Jynx (#124)
+- **Bruno** (`lib/data/gyms.ts`) — Omastar/Kabutops → Primeape (#57) / Machoke (#67)
+- **Lance** (`lib/data/gyms.ts`) — Horsea (#116) → Seadra (#117)
+- **Descrições de itens** (`lib/data/items.ts`) — Life Orb e itens de tipo atualizados para refletir novos valores
+
+### UI
+
+- **Shake sprite ao receber dano** (`app/globals.css`) — animação `sprite-shake` com guard `prefers-reduced-motion`
+- **HPBar**: 6px → 10px; texto de HP: 6px → 9px (`app/batalha/page.tsx`)
+- **Botões de move e slot único maiores**: 18px → 32px
+- **KO banner** vermelho com `font-black`
+- **Aviso de troca** — "⚠️ Trocar gasta o turno — inimigo ataca de graça"
+- **Ícone RPS do inimigo** — exibido no sprite durante fase de seleção (opacity 55%)
+- **Brilho dourado no slot único** disponível (`boxShadow: '0 0 8px 3px #F8D03066'`)
+- **Safe area insets** no footer de batalha
+- **Cor de fundo entre-andares**: `#F0F4F8` → `#F5EDD8`
+
+---
+
 ## [0.9.3] - 2026-06-12
 
 ### Corrigido

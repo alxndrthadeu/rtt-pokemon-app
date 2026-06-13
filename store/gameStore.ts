@@ -216,7 +216,7 @@ export const useGameStore = create<GameStore>()(
               ? [...s.badgesEarned, s.battle.gymId]
               : s.badgesEarned,
             battle: null,
-            coins: s.coins + (s.mode === 'hard' ? 6 : 3),
+            coins: s.coins + (s.mode === 'hard' ? 4 : 3),
           }))
 
           if (isApiConfigured() && state.runId) {

@@ -172,7 +172,7 @@ function RewardCard({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function RecompensaPage() {
   const router = useRouter()
-  const { currentFloor, addConsumable, addHeldItemToBag, addCoins } = useGameStore()
+  const { currentFloor, mode, coins, addConsumable, addHeldItemToBag, addCoins } = useGameStore()
   const [options, setOptions] = useState<RewardOption[]>([])
   const [selected, setSelected] = useState<number | null>(null)
 
@@ -180,6 +180,7 @@ export default function RecompensaPage() {
   const gym = GYM_LEADERS[prevFloor]
   const gymColor = gym ? getTypeColor(gym.specialtyType) : '#CC2200'
   const gymTextColor = gym ? getTypeTextColor(gym.specialtyType) : 'white'
+  const coinsEarned = mode === 'hard' ? 4 : 3
 
   useEffect(() => {
     if (currentFloor === 0) { router.replace('/'); return }
@@ -200,7 +201,7 @@ export default function RecompensaPage() {
       addConsumable('rare-candy', 1)
     }
 
-    router.push('/entre-andares')
+    router.push('/pos-batalha')
   }
 
   if (options.length === 0) {
@@ -219,15 +220,30 @@ export default function RecompensaPage() {
       {/* Header */}
       <header className="border-b-4 border-ink px-5 py-4" style={{ backgroundColor: gymColor }}>
         <div className="max-w-[640px] mx-auto">
-          <p className="font-game text-[6px] uppercase tracking-widest mb-0.5" style={{ color: `${gymTextColor}80` }}>
-            {gym ? `${gym.name} derrotado!` : 'Vitória!'}
-          </p>
-          <p className="font-black text-xl uppercase tracking-tight leading-none" style={{ color: gymTextColor }}>
-            Escolha sua recompensa
-          </p>
-          <p className="text-sm mt-0.5" style={{ color: `${gymTextColor}90` }}>
-            Escolha 1 de 3 opções
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-game text-[6px] uppercase tracking-widest mb-0.5" style={{ color: `${gymTextColor}80` }}>
+                {gym ? `${gym.name} derrotado!` : 'Vitória!'}
+              </p>
+              <p className="font-black text-xl uppercase tracking-tight leading-none" style={{ color: gymTextColor }}>
+                Escolha sua recompensa
+              </p>
+              <p className="text-sm mt-0.5" style={{ color: `${gymTextColor}90` }}>
+                Escolha 1 de 3 opções
+              </p>
+            </div>
+            {/* Coins earned badge */}
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <div className="flex items-center gap-1 px-3 py-1.5 rounded-xl border-2"
+                style={{ borderColor: `${gymTextColor}35`, backgroundColor: 'rgba(0,0,0,0.18)' }}>
+                <span className="font-black text-sm leading-none" style={{ color: `${gymTextColor}80` }}>₽</span>
+                <span className="font-black text-sm leading-none" style={{ color: gymTextColor }}>+{coinsEarned}</span>
+              </div>
+              <p className="font-game text-[6px] uppercase tracking-wide text-right leading-none" style={{ color: `${gymTextColor}60` }}>
+                por vencer · saldo: ₽{coins}
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 

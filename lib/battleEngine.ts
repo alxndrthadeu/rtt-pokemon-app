@@ -187,10 +187,15 @@ export function processTurnStart(
         messages.push(`😴 ${pf.pokemon.name} acordou!`)
       }
     } else if (condition === 'freeze') {
-      playerForcedRps = 'rock'
-      messages.push(`🧊 ${pf.pokemon.name} está congelado — perdeu o turno!`)
+      if (Math.random() < 0.20) {
+        eff.playerStatus = null
+        messages.push(`🧊 ${pf.pokemon.name} descongelou espontaneamente!`)
+      } else {
+        playerForcedRps = 'rock'
+        messages.push(`🧊 ${pf.pokemon.name} está congelado — perdeu o turno!`)
+      }
     } else if (condition === 'paralysis') {
-      if (Math.random() < 0.30) {
+      if (Math.random() < 0.40) {
         playerForcedRps = 'rock'
         messages.push(`⚡ ${pf.pokemon.name} ficou paralisado — ✊ automático`)
       }
@@ -227,9 +232,14 @@ export function processTurnStart(
         messages.push(`😴 ${ef.pokemon.name} acordou!`)
       }
     } else if (condition === 'freeze') {
-      enemyAutoLose = true
+      if (Math.random() < 0.20) {
+        eff.enemyStatus = null
+        messages.push(`🧊 ${ef.pokemon.name} descongelou espontaneamente!`)
+      } else {
+        enemyAutoLose = true
+      }
     } else if (condition === 'paralysis') {
-      if (Math.random() < 0.30) enemyForcedRps = 'rock'
+      if (Math.random() < 0.40) enemyForcedRps = 'rock'
     }
   }
 
@@ -279,7 +289,8 @@ export function processTurnStart(
     if (item.id === 'lum-berry' && !eff.playerLumUsed && eff.playerStatus) {
       eff.playerLumUsed = true
       eff.playerStatus = null
-      playerForcedRps = null  // remove any forced move from status
+      playerForcedRps = null   // remove any forced move from status
+      playerSkipsTurn = false  // berry cures before the turn is lost
       messages.push(`🍋 ${item.name}! Status curado!`)
     }
 
@@ -480,10 +491,10 @@ export function calcSlotDamage(
   const messages: string[] = []
   const abilityName = attackerPokemon.ability.name
 
-  // Glitch: instant KO
+  // Glitch: fixed 2 damage (nerfed from instant KO — too swingy for a non-legendary)
   if (abilityName === 'Glitch') {
-    messages.push('⚠️ GLITCH! KO instantâneo!')
-    return { damage: defenderPokemon.hearts, multiplier: 4, messages }
+    messages.push('⚠️ GLITCH! Dados corrompidos — 2 dano fixo!')
+    return { damage: 2, multiplier: 2, messages }
   }
 
   let mult = getCombinedMultiplier(attackType, defenderPokemon.type1, defenderPokemon.type2)
@@ -520,10 +531,11 @@ export function calcSlotDamage(
     const hid = attackerPokemon.heldItem.id
     const itemDef = HELD_ITEMS[hid]
 
-    // Type boost items: +0.5♥ when move type matches
+    // Type boost items: +1♥ super efetivo, +0.5♥ normal
     if (itemDef?.onHit === 'type-boost' && itemDef.typeBoost === attackType) {
-      dmg += 0.5
-      messages.push(`✨ ${attackerPokemon.heldItem.name}! +0.5 dano (${attackType})`)
+      const boost = mult >= 2 ? 1 : 0.5
+      dmg += boost
+      messages.push(`✨ ${attackerPokemon.heldItem.name}! +${boost} dano (${attackType}${mult >= 2 ? ' super efetivo' : ''})`)
     }
 
     // Expert Belt: +0.5♥ on super effective
@@ -532,10 +544,10 @@ export function calcSlotDamage(
       messages.push(`🥊 ${attackerPokemon.heldItem.name}! +0.5 dano super efetivo!`)
     }
 
-    // Life Orb: +1 damage (recoil handled in batalha/page.tsx via lifeOrbRecoil flag)
+    // Life Orb: +0.5 damage (recoil handled in batalha/page.tsx via lifeOrbRecoil flag)
     if (hid === 'life-orb') {
-      dmg += 1
-      messages.push(`🔮 ${attackerPokemon.heldItem.name}! +1 dano`)
+      dmg += 0.5
+      messages.push(`🔮 ${attackerPokemon.heldItem.name}! +0.5 dano`)
     }
   }
 
@@ -560,6 +572,8 @@ export interface UniqueResult {
   activateShellSmash: boolean // ativa Shell Smash 3-turn buff/debuff
   activateAquaRing: boolean   // ativa Aqua Ring regen passiva
   activateDestinyBond: boolean // ativa Destiny Bond
+  playerAttackBuff: number    // +N temporário a playerAttackMod (0 = nenhum)
+  playerDefenseBuff: number   // +N temporário a playerDefenseMod (0 = nenhum)
   messages: string[]
 }
 
@@ -570,6 +584,7 @@ const EMPTY_UNIQUE_RESULT: UniqueResult = {
   playerTiredTurns: 0, userFaints: false, cooldown: false,
   drainHearts: 0,
   activateShellSmash: false, activateAquaRing: false, activateDestinyBond: false,
+  playerAttackBuff: 0, playerDefenseBuff: 0,
   messages: [],
 }
 
@@ -697,7 +712,8 @@ export function calcUniqueResult(
           const picked = options[Math.floor(Math.random() * 3)]
           tryApplyStatus(picked)
           res.damage = baseDmg
-          res.messages.push(`🔱 ${name}: ${baseDmg} dano + ${picked}!`)
+          const statusApplied = res.enemyStatus?.condition === picked
+          res.messages.push(`🔱 ${name}: ${baseDmg} dano${statusApplied ? ` + ${picked}!` : '!'}`)
           break
         }
 
@@ -711,7 +727,8 @@ export function calcUniqueResult(
         case 'ancient-power': {
           const buffed = Math.random() < 0.2
           res.damage = buffed ? 2 : 1
-          res.messages.push(`🗿 ${name}: ${res.damage} dano!${buffed ? ' Poder ancestral ativado!' : ''}`)
+          if (buffed) res.playerAttackBuff = 1
+          res.messages.push(`🗿 ${name}: ${res.damage} dano!${buffed ? ' Poder ancestral! +1 ATK próximo turno!' : ''}`)
           break
         }
 
@@ -739,10 +756,16 @@ export function calcUniqueResult(
 
         case 'acid-armor':
         case 'barrier':
-        case 'quiver-dance':
-          // Unique buff moves: apply +1 attack or defense for this battle turn
           res.damage = 0
-          res.messages.push(`✨ ${name} ativado!`)
+          res.playerDefenseBuff = 1
+          res.messages.push(`🛡️ ${name}: +1 DEF neste turno!`)
+          break
+
+        case 'quiver-dance':
+          res.damage = 0
+          res.playerAttackBuff = 1
+          res.playerDefenseBuff = 1
+          res.messages.push(`🦋 ${name}: +1 ATK e +1 DEF neste turno!`)
           break
 
         case 'metronome': {
@@ -892,13 +915,12 @@ export function applyEntryEffects(
     }
   }
 
-  // Reset item ticks when new pokemon enters
+  // Reset item ticks when new pokemon enters (sash NOT reset — it's one use per battle)
   if (side === 'player') {
     eff.playerLeftoversTick = 0
     eff.playerSitrusUsed = false
     eff.playerOranUsed = false
     eff.playerLumUsed = false
-    eff.playerSashUsed = false
     eff.playerWhiteHerbUsed = false
   }
 

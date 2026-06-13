@@ -47,7 +47,7 @@ export const GYM_LEADERS: GymLeader[] = [
     badge: 'Thunder Badge',
     specialtyType: 'Electric',
     aiLevel: 'weighted',
-    teamIds: [25, 100, 81, 26, 82, 101],
+    teamIds: [25, 125, 81, 26, 82, 101],  // Pikachu, Electabuzz, Magnemite, Raichu, Magneton, Electrode
     postGymDraftPool: [25, 81, 100],
     description: 'Veterano que usa ataques Elétricos fulminantes. Começa a adaptar suas escolhas ao padrão do jogador.',
   },
@@ -83,7 +83,7 @@ export const GYM_LEADERS: GymLeader[] = [
     badge: 'Marsh Badge',
     specialtyType: 'Psychic',
     aiLevel: 'adaptive',
-    teamIds: [96, 122, 63, 97, 64, 65],
+    teamIds: [96, 122, 124, 97, 64, 65],  // Drowzee, Mr. Mime, Jynx, Hypno, Kadabra, Alakazam
     postGymDraftPool: [63, 96, 122],
     description: 'Psíquica que lê a mente do adversário. Usa a adaptação para frustrar movimentos antes que aconteçam.',
   },
@@ -131,7 +131,7 @@ export const GYM_LEADERS: GymLeader[] = [
     badge: '',
     specialtyType: 'Fighting',
     aiLevel: 'predictive',
-    teamIds: [106, 107, 68, 62, 141, 142],  // Hitmonlee, Hitmonchan, Machamp, Poliwrath, Kabutops, Aerodactyl
+    teamIds: [106, 107, 68, 62, 57, 67],  // Hitmonlee, Hitmonchan, Machamp, Poliwrath, Primeape, Machoke
     postGymDraftPool: [],
     description: 'Segundo do Elite 4. Corpo forjado em batalha — punhos de aço e fósseis implacáveis.',
   },
@@ -155,7 +155,7 @@ export const GYM_LEADERS: GymLeader[] = [
     badge: '',
     specialtyType: 'Dragon',
     aiLevel: 'predictive',
-    teamIds: [147, 148, 149, 130, 116, 131],
+    teamIds: [147, 148, 149, 130, 117, 131],  // Dratini, Dragonair, Dragonite, Gyarados, Seadra, Lapras
     postGymDraftPool: [],
     description: 'O Campeão Dragão. Quem vencer Lance conquista o topo da Torre Reach the Top.',
   },

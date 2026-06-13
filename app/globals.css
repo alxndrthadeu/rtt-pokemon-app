@@ -97,6 +97,23 @@ body {
 /* Press Start 2P: tamanho mínimo 8px em qualquer uso utilitário */
 .font-game { font-family: var(--font-press-start), monospace; }
 
+/* Shake de sprite ao receber dano */
+@keyframes sprite-shake {
+  0%   { transform: translateX(0); }
+  18%  { transform: translateX(-5px); }
+  36%  { transform: translateX(5px); }
+  54%  { transform: translateX(-4px); }
+  72%  { transform: translateX(4px); }
+  86%  { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+.sprite-hit {
+  animation: sprite-shake 0.32s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sprite-hit { animation: none; }
+}
+
 /* Flash de dano de status na barra de HP */
 @keyframes hp-status-flash {
   0%   { opacity: 1; background-color: var(--flash-color); }

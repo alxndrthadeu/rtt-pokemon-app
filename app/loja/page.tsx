@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useGameStore, SHOP_FLOORS } from '@/store/gameStore'
+import { useGameStore } from '@/store/gameStore'
 import {
   HELD_ITEMS, CONSUMABLES,
   getHeldItemsForTier, getConsumablesForTier, getRewardTier,
@@ -77,10 +77,7 @@ export default function LojaPage() {
   const [feedback, setFeedback] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!SHOP_FLOORS.includes(currentFloor as (typeof SHOP_FLOORS)[number])) {
-      router.replace('/entre-andares'); return
-    }
-    setStock(buildShopStock(currentFloor - 1))
+    setStock(buildShopStock(Math.max(0, currentFloor - 1)))
     markShopVisited(currentFloor)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -124,9 +121,9 @@ export default function LojaPage() {
               <p className="font-black text-xl text-white uppercase tracking-tight leading-none">Loja</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 border-2 border-white/20 rounded-2xl px-3 py-1.5 bg-white/10">
-                <span className="text-lg">💰</span>
-                <span className="font-black text-lg text-white">{coins}₽</span>
+              <div className="flex items-center gap-1 border-2 border-white/20 rounded-2xl px-3 py-1.5 bg-white/10">
+                <span className="font-black text-lg text-white/60">₽</span>
+                <span className="font-black text-lg text-white">{coins}</span>
               </div>
               <button
                 onClick={() => router.push('/entre-andares')}
