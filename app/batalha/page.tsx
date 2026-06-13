@@ -561,7 +561,8 @@ interface ArenaProps {
   playerFighters: Fighter[]; enemyFighters: Fighter[]
   playerIdx: number; enemyIdx: number
   phase: LocalPhase
-  enemyTellType?: string | null   // cor do tipo do próximo move do inimigo (visual tell)
+  enemyTellType?: string | null
+  precomputedEnemyRPS?: RPS | null
 }
 
 function HazardChips({ hazards }: { hazards: BattleEffects['playerHazards'] }) {
@@ -583,7 +584,7 @@ function HazardChips({ hazards }: { hazards: BattleEffects['playerHazards'] }) {
   )
 }
 
-function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters, playerIdx, enemyIdx, phase, enemyTellType }: ArenaProps) {
+function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters, playerIdx, enemyIdx, phase, enemyTellType, precomputedEnemyRPS }: ArenaProps) {
   const pKO = pf.hearts <= 0
   const eKO = ef.hearts <= 0
 
@@ -1379,6 +1380,7 @@ export default function BatalhaPage() {
           enemyIdx={enemyIdx}
           phase={phase}
           enemyTellType={enemyTellColor}
+          precomputedEnemyRPS={precomputedEnemyRPS}
         />
 
         {/* ── VICTORY ── */}
