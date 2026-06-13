@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/store/gameStore'
 import { getTypeColor, getTypeTextColor, getSpriteUrl } from '@/lib/typeColors'
@@ -19,8 +19,13 @@ function getRank(deaths: number) {
 
 export default function ConclusaoPage() {
   const router = useRouter()
-  const { playerName, playerDeck, deathCount, mode, resetRun } = useGameStore()
+  const { playerName, playerDeck, deathCount, mode, resetRun, setRunEndReason, saveRunToHistory } = useGameStore()
   const cardRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setRunEndReason('won')
+    saveRunToHistory()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const rank = getRank(deathCount)
 

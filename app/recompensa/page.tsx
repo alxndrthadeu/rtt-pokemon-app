@@ -33,7 +33,7 @@ type RewardOption =
 function buildRewardOptions(floor: number): RewardOption[] {
   const tier = getRewardTier(floor)
   const heldPool  = shuffle(getHeldItemsForTier(tier))
-  const consPool  = shuffle(getConsumablesForTier(tier).filter(id => id !== 'rare-candy' && id !== 'elixir'))
+  const consPool  = shuffle(getConsumablesForTier(tier).filter(id => id !== 'rare-candy' && id !== 'elixir' && id !== 'ether'))
 
   // Option A — consumable package
   const getConsumableOption = (): RewardOption => {
@@ -201,7 +201,7 @@ export default function RecompensaPage() {
       addConsumable('rare-candy', 1)
     }
 
-    router.push('/pos-batalha')
+    router.push(prevFloor >= 8 ? '/entre-andares' : '/pos-batalha')
   }
 
   if (options.length === 0) {

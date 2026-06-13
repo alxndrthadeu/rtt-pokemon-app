@@ -671,13 +671,6 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
           <div className="absolute inset-0 pointer-events-none rounded-xl z-10 transition-all duration-500"
             style={{ boxShadow: `0 0 18px 6px ${enemyTellType}99`, borderRadius: 8 }} />
         )}
-        {/* Ícone RPS semi-transparente — complementa a aura, mais legível para novatos */}
-        {phase === 'selecting' && !eKO && precomputedEnemyRPS && (
-          <div className="absolute bottom-1 right-1 pointer-events-none z-20 text-xl leading-none"
-            style={{ opacity: 0.55, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-            {RPS_ICON[precomputedEnemyRPS]}
-          </div>
-        )}
         <img
           key={ef.pokemon.id}
           src={enemyAnimErrId === ef.pokemon.id ? getPixelSpriteUrl(ef.pokemon.id) : getAnimatedFrontUrl(ef.pokemon.id)}
@@ -786,8 +779,6 @@ export default function BatalhaPage() {
   const [entryMsg, setEntryMsg] = useState<string | null>(null)
   // Sticky Web: forces Rock on the pokemon's first turn after switching in
   const [stickyWebForcedMove, setStickyWebForcedMove] = useState<RPS | null>(null)
-  // Consecutive ties: track for chip damage from 2nd tie onward
-  const [consecutiveTies, setConsecutiveTies] = useState(0)
   // Quick Claw: reveals enemy move name when triggered (25% per turn)
   const [quickClawRevealed, setQuickClawRevealed] = useState(false)
   // Visual tell: move do inimigo pré-computado (tipo exibido como "aura" durante seleção)
@@ -1140,19 +1131,6 @@ export default function BatalhaPage() {
         eff = { ...eff, enemyForcedMove: 'rock', enemyForcedTurnsLeft: 1 }
         activations.push(`🪨 King's Rock! Inimigo atordoado — forçado ✊ no próximo turno!`)
       }
-    }
-
-    // ── Consecutive tie chip damage (0.5♥ from 2nd tie onward) ───────────────
-    if (outcome === 'tie') {
-      const newTies = consecutiveTies + 1
-      setConsecutiveTies(newTies)
-      if (newTies >= 2) {
-        newPHearts = Math.max(0, newPHearts - 0.5)
-        newEHearts = Math.max(0, newEHearts - 0.5)
-        activations.push(`💫 Impasse prolongado! Ambos sofrem 0.5 ♥!`)
-      }
-    } else {
-      setConsecutiveTies(0)
     }
 
     // Destiny Bond: se o jogador cair, o inimigo também cai
@@ -1624,7 +1602,7 @@ export default function BatalhaPage() {
                       <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
                         style={{ boxShadow: '3px 3px 0 rgba(44,24,16,0.12)' }}>
                         <span className="text-3xl leading-none">🔄</span>
-                        <p className="font-black text-[11px] text-ink text-center leading-tight">{lastResult.switchedIn}</p>
+                        <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{lastResult.switchedIn}</p>
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none bg-ink/10 text-ink/50">TROCA</span>
                         <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
@@ -1632,7 +1610,7 @@ export default function BatalhaPage() {
                       <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
                         style={{ boxShadow: '3px 3px 0 rgba(44,24,16,0.12)', opacity: 0.7 }}>
                         <span className="text-3xl leading-none">😴</span>
-                        <p className="font-black text-[11px] text-ink text-center leading-tight">{pf.pokemon.name}</p>
+                        <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{pf.pokemon.name}</p>
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#8060A8' }}>DORMINDO</span>
                         <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
@@ -1641,7 +1619,7 @@ export default function BatalhaPage() {
                       <div className="rounded-2xl border-2 px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
                         style={{ borderColor: '#2C7BB5', boxShadow: '3px 3px 0 #2C7BB5' }}>
                         <span className="text-3xl leading-none">🛡️</span>
-                        <p className="font-black text-[11px] text-ink text-center leading-tight">{playerMoveName}</p>
+                        <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{playerMoveName}</p>
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#2C7BB5' }}>BLOQUEOU!</span>
                         <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
@@ -1650,7 +1628,7 @@ export default function BatalhaPage() {
                     <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
                       style={{ boxShadow: lastResult.outcome === 'player_wins' ? '3px 3px 0 #38C838' : '3px 3px 0 rgba(44,24,16,0.12)' }}>
                       <span className="text-3xl leading-none">{playerIcon}</span>
-                      <p className="font-black text-[11px] text-ink text-center leading-tight">{playerMoveName}</p>
+                      <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{playerMoveName}</p>
                       {playerMoveType && (
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none"
                           style={{ backgroundColor: getTypeColor(playerMoveType), color: getTypeTextColor(playerMoveType) }}>
@@ -1673,7 +1651,7 @@ export default function BatalhaPage() {
                         boxShadow: lastResult.enemyProtected ? '3px 3px 0 #2C7BB5' : lastResult.outcome === 'enemy_wins' ? '3px 3px 0 #CC2200' : '3px 3px 0 rgba(44,24,16,0.12)'
                       }}>
                       <span className="text-3xl leading-none">{RPS_ICON[lastResult.enemyMove]}</span>
-                      <p className="font-black text-[11px] text-ink text-center leading-tight">{enemyMoveName}</p>
+                      <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{enemyMoveName}</p>
                       {lastResult.enemyProtected ? (
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#2C7BB5' }}>BLOQUEOU!</span>

@@ -26,6 +26,57 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.9.5',
+    date: 'Jun 2026',
+    label: 'Bugs, Balanceamento e UX',
+    labelColor: '#CC2200',
+    description: 'Header da home corrigido no mobile. Vitórias agora registradas no histórico. Éter removido dos drops. Elite 4 sem encontro selvagem. Aura de tipo mantida mas ícone RPS removido do inimigo. Dano por empate consecutivo eliminado.',
+    entries: [
+      {
+        icon: '📱',
+        title: 'Header da home corrigido no mobile',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'Os 3 botões do header (Pokédex, Histórico, Novidades) quebravam para fora da tela em celulares. Agora exibem apenas o ícone em telas pequenas e o texto completo em telas maiores.',
+      },
+      {
+        icon: '🏆',
+        title: 'Vitórias agora aparecem no Histórico',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'Concluir a Torre de Kanto não registrava o resultado no histórico de runs — apenas derrotas e abandonos eram salvos. Agora vitórias também são contabilizadas corretamente.',
+      },
+      {
+        icon: '🚫',
+        title: 'Éter retirado dos drops e da loja',
+        tag: 'FIX',
+        tagColor: '#E67E22',
+        body: 'O Éter estava disponível como recompensa e na Pokémart, mas não tinha efeito real no jogo. Foi removido do pool de drops e da loja até ser implementado de forma completa.',
+      },
+      {
+        icon: '⚔️',
+        title: 'Elite 4: sem encontro selvagem pós-batalha',
+        tag: 'UX',
+        tagColor: '#8B5CF6',
+        body: 'Nos andares 8 a 11 (Elite 4 e Campeão), o jogo já pulava o draft de captura mas ainda passava pela tela de encontro selvagem. Agora vai direto para entre-andares após pegar a recompensa, mantendo o clima de desafio final.',
+      },
+      {
+        icon: '👁️',
+        title: 'Aura de tipo mantida — ícone RPS removido',
+        tag: 'BALANÇO',
+        tagColor: '#6B7280',
+        body: 'A aura colorida ao redor do sprite inimigo (indicando o tipo do próximo golpe) continua ativa. O ícone ✊✋✌️ que mostrava explicitamente a jogada foi removido — tornava o jogo fácil demais.',
+      },
+      {
+        icon: '🤝',
+        title: 'Empate consecutivo não causa mais dano',
+        tag: 'BALANÇO',
+        tagColor: '#6B7280',
+        body: 'A penalidade de 0.5♥ por empate consecutivo foi removida. A mecânica era frustrante e desincentivava estratégias defensivas legítimas.',
+      },
+    ],
+  },
+  {
     version: '0.9.4',
     date: 'Jun 2026',
     label: 'Polimento, Balanceamento e QA',

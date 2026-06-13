@@ -133,21 +133,24 @@ export default function HomePage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => router.push('/pokedex')}
-            className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
-            📖 Pokédex
+            <span className="sm:hidden">📖</span>
+            <span className="hidden sm:inline">📖 Pokédex</span>
           </button>
           <button
             onClick={() => router.push('/historico')}
-            className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
-            Histórico
+            <span className="sm:hidden">📜</span>
+            <span className="hidden sm:inline">Histórico</span>
           </button>
           <button
             onClick={() => router.push('/patch-notes')}
-            className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
-            📋 Novidades
+            <span className="sm:hidden">📋</span>
+            <span className="hidden sm:inline">📋 Novidades</span>
           </button>
         </div>
       </header>

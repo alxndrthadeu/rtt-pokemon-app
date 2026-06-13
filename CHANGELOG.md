@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.5] - 2026-06-13
+
+### Corrigido
+
+- **Header da home no mobile** (`app/page.tsx`) — 3 botões inline quebravam em telas estreitas; agora exibem só ícone em mobile e texto completo em `sm+`
+- **Histórico não registrava vitórias** (`app/conclusao/page.tsx`) — `saveRunToHistory()` nunca era chamada ao concluir a torre; adicionado `setRunEndReason('won')` + `saveRunToHistory()` em `useEffect` no mount
+- **Éter removido do pool de drops e loja** (`app/recompensa/page.tsx`, `app/loja/page.tsx`) — item sem efeito implementado não aparece mais como recompensa nem na Pokémart
+- **Elite 4: encontro selvagem removido** (`app/recompensa/page.tsx`) — andares 8-11 pulam `pos-batalha` e vão direto para `entre-andares` após a recompensa
+- **Texto sobrepondo no resultado da batalha mobile** (`app/batalha/page.tsx`) — nomes de moves nas clash-cards sem `truncate` causavam overflow; adicionado `truncate w-full` em todos os cards
+
+### Balanceamento / Melhorias
+
+- **Ícone RPS removido do sprite inimigo** (`app/batalha/page.tsx`) — a aura de tipo permanece como dica visual; mostrar ✊✋✌️ explicitamente tornava o jogo fácil demais
+- **Dano por empate consecutivo removido** (`app/batalha/page.tsx`) — penalizar empates tornava a experiência frustrante; chip de 0.5♥ por impasse prolongado eliminado
+
 ## [0.9.4] - 2026-06-12
 
 ### Corrigido

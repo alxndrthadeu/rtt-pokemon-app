@@ -29,7 +29,7 @@ type ShopEntry =
 function buildShopStock(floor: number): ShopEntry[] {
   const tier = getRewardTier(floor)
   const heldPool = shuffle(getHeldItemsForTier(tier)).slice(0, 3)
-  const consPool = shuffle(getConsumablesForTier(tier).filter(id => id !== 'rare-candy')).slice(0, 2)
+  const consPool = shuffle(getConsumablesForTier(tier).filter(id => id !== 'rare-candy' && id !== 'ether' && id !== 'elixir')).slice(0, 2)
 
   const entries: ShopEntry[] = [
     ...heldPool.map(id => ({ kind: 'held' as const, id, def: HELD_ITEMS[id] })),
