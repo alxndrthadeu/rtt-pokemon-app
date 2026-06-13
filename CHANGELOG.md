@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.9.6] - 2026-06-13
+
+### Adicionado
+
+- **Encontros Lendários** (`lib/data/events.ts`, `app/evento/page.tsx`, `app/recrutar-lendario/page.tsx`) — após vencer ginásios específicos (35% de chance, máximo 1 por run), um Pokémon Lendário desafia o jogador. Vitória → lendário entra no time com 5♥ substituindo um Pokémon à escolha. Derrota → lendário foge e o evento não retorna na run
+  - Zapdos (Power Plant) — pós-andar 4 (Lt. Surge)
+  - Articuno (Seafoam Islands) — pós-andar 5 (Sabrina)
+  - Moltres (Mt. Ember) — pós-andar 6 (Blaine)
+  - Mewtwo (Cerulean Cave) — pós-andar 7 (Giovanni)
+  - Batalha com 10♥; derrota não encerra a run — pokémon fainted são revividos a 0.5♥
+- **Encontros Equipe Rocket** (`lib/data/events.ts`, `app/evento/page.tsx`) — nos andares 3 a 6 (25% de chance), um Rocket Grunt bloqueia o caminho
+  - Encarar → 4₽ + item se vencer; −3₽ se perder (run não encerra)
+  - Ignorar → paga 2₽ de pedágio e segue para o próximo andar
+  - 3 grunts com times progressivos: grunt-a (Zubat/Rattata/Ekans 3♥), grunt-b (Golbat/Raticate/Koffing 3.5♥), grunt-c (Golbat/Weezing/Arbok 4♥)
+- **`/evento/page.tsx`** — tela de introdução dramática para encontros especiais; reveal cinematográfico para lendários (fundo escuro, aura pulsante, lore), tela de escolha para Rocket (ver time, stakes de vitória/derrota, opção de ignorar)
+- **`/recrutar-lendario/page.tsx`** — tela de substituição pós-captura; exibe card do lendário (tipo, moveset, habilidade) e permite selecionar qual Pokémon do time sai
+- **Arquitetura de batalha especial** (`store/gameStore.ts`, `app/batalha/page.tsx`, `app/recompensa/page.tsx`):
+  - `specialBattle: SpecialBattleConfig | null` no store — bateria de batalha especial sem avançar o andar
+  - `rollForEvent()` chamado em `/recompensa` após claim — redireciona para `/evento` se houver evento
+  - `clearBattle()` em vez de `endBattle('win')` em batalhas especiais — não incrementa `currentFloor`
+  - `legendaryEventUsed: boolean` persistido no localStorage — reseta a cada `resetRun`
+
 ## [0.9.5] - 2026-06-13
 
 ### Corrigido

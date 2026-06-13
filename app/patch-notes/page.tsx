@@ -26,6 +26,45 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.9.6',
+    date: 'Jun 2026',
+    label: 'Eventos Especiais',
+    labelColor: '#5B2D8E',
+    description: 'A run ganhou dois novos eventos aleatórios que aparecem após vencer ginásios: o encontro com Pokémon Lendários (difíceis, mas recrutáveis) e os Rocket Grunts (encare ou pague pedágio). Nenhum dos dois encerra a run em caso de derrota.',
+    entries: [
+      {
+        icon: '⚡',
+        title: 'Encontros Lendários — recrute ou perca sua chance',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'Após vencer ginásios específicos há 35% de chance de um Lendário desafiar você. São 4 possíveis: Zapdos (pós-Lt. Surge), Articuno (pós-Sabrina), Moltres (pós-Blaine) e Mewtwo (pós-Giovanni). Máximo de 1 por run.',
+        detail: 'O Lendário entra com 10♥ — é uma batalha difícil. Se vencer, ele entra no seu time com 5♥ substituindo um Pokémon à sua escolha. Se perder, ele foge e o evento não volta. Mas seus Pokémon são revividos a 0.5♥ — a run continua.',
+      },
+      {
+        icon: '🚀',
+        title: 'Equipe Rocket — encare ou pague pedágio',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'Nos andares 3 a 6 há 25% de chance de um Rocket Grunt bloquear o caminho. Você escolhe: Encarar (batalha por 4₽ + item) ou Ignorar (paga 2₽ de pedágio).',
+        detail: 'Se perder, a Rocket leva 3₽ e foge — mas a run não encerra. Seus Pokémon são revividos a 0.5♥ e o jogo segue normalmente. Os grunts ficam mais fortes conforme o andar: Zubat/Rattata/Ekans → Golbat/Weezing/Arbok.',
+      },
+      {
+        icon: '🎬',
+        title: 'Tela de evento com reveal dramático',
+        tag: 'UI',
+        tagColor: '#0EA5E9',
+        body: 'Cada evento tem uma tela de introdução própria. Lendários: fundo escuro, sprite gigante com aura pulsante na cor do tipo, lore do local e 10 corações exibidos. Rocket: apresentação do grunt com silhueta do time e stakes claros (ganho vs. perda).',
+      },
+      {
+        icon: '🔄',
+        title: 'Substituição de time pós-captura',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'Após capturar um Lendário, uma tela dedicada mostra o card completo do recém-capturado (tipo, moveset, habilidade) ao lado do seu time atual. Selecione quem sai — o Lendário ocupa a vaga.',
+      },
+    ],
+  },
+  {
     version: '0.9.5',
     date: 'Jun 2026',
     label: 'Bugs, Balanceamento e UX',
