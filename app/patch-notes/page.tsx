@@ -802,7 +802,7 @@ const PATCHES: PatchVersion[] = [
 function TagBadge({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="font-game text-[6px] px-2 py-[3px] rounded-full leading-none uppercase tracking-widest shrink-0"
+      className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none uppercase tracking-widest shrink-0"
       style={{ backgroundColor: `${color}22`, color, border: `1px solid ${color}55` }}
     >
       {label}
@@ -882,7 +882,7 @@ export default function PatchNotesPage() {
             ← Voltar
           </button>
           <div className="flex-1 text-center">
-            <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mb-0.5">
+            <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest leading-none mb-0.5">
               Reach the Top
             </p>
             <p className="font-black text-sm text-ink uppercase tracking-wide leading-tight">

@@ -60,7 +60,7 @@ export default function EventoPage() {
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 55%)' }} />
           <div className="relative max-w-[640px] mx-auto">
-            <p className="font-game text-[6px] uppercase tracking-[0.45em] mb-0.5" style={{ color: `${typeText}70` }}>
+            <p className="font-game text-[8px] uppercase tracking-[0.45em] mb-0.5" style={{ color: `${typeText}70` }}>
               ⭐ {specialBattle.locationName} ⭐
             </p>
             <p className="font-black text-xl uppercase tracking-tight leading-none" style={{ color: typeText }}>
@@ -142,7 +142,7 @@ export default function EventoPage() {
             </p>
           )}
 
-          <p className="font-game text-[6px] text-ink/30 uppercase tracking-widest text-center">
+          <p className="font-game text-[8px] text-ink/30 uppercase tracking-widest text-center">
             Se perder, o lendário escapa e o evento não volta
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function EventoPage() {
       {/* Header */}
       <header className="border-b-4 border-ink px-5 py-4" style={{ backgroundColor: rocketRed }}>
         <div className="max-w-[640px] mx-auto">
-          <p className="font-game text-[6px] text-white/50 uppercase tracking-widest mb-0.5">Encontro</p>
+          <p className="font-game text-[8px] text-white/50 uppercase tracking-widest mb-0.5">Encontro</p>
           <p className="font-black text-xl text-white uppercase tracking-tight leading-none">Equipe Rocket!</p>
         </div>
       </header>
@@ -195,8 +195,8 @@ export default function EventoPage() {
                     <img src={getSpriteUrl(p.id)} alt={p.name}
                       style={{ width: 48, height: 48, objectFit: 'contain', imageRendering: 'pixelated', filter: 'brightness(0.6)' }} />
                   </div>
-                  <span className="font-game text-[6px] text-white/30 uppercase">{p.name.slice(0, 7)}</span>
-                  <span className="font-game text-[6px] text-white/40">{p.hearts}♥</span>
+                  <span className="font-game text-[8px] text-white/30 uppercase">{p.name.slice(0, 7)}</span>
+                  <span className="font-game text-[8px] text-white/40">{p.hearts}♥</span>
                 </div>
               ))}
             </div>
@@ -206,14 +206,14 @@ export default function EventoPage() {
         {/* Recompensa vs penalidade */}
         <div className="grid grid-cols-2 gap-3">
           <div className="border-2 border-ink rounded-2xl p-4 bg-white shadow-neo-sm text-center">
-            <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-1">Se vencer</p>
+            <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-1">Se vencer</p>
             <p className="font-black text-xl text-ink">+4₽</p>
-            <p className="font-game text-[6px] text-ink/50 mt-0.5">+ item</p>
+            <p className="font-game text-[8px] text-ink/50 mt-0.5">+ item</p>
           </div>
           <div className="border-2 border-ink rounded-2xl p-4 bg-white shadow-neo-sm text-center">
-            <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-1">Se perder</p>
+            <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-1">Se perder</p>
             <p className="font-black text-xl" style={{ color: rocketRed }}>−5₽</p>
-            <p className="font-game text-[6px] text-ink/50 mt-0.5">Rocket foge</p>
+            <p className="font-game text-[8px] text-ink/50 mt-0.5">Rocket foge</p>
           </div>
         </div>
 

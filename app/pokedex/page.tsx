@@ -43,7 +43,7 @@ export default function PokedexPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[8px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
             >
               ←
             </button>
@@ -133,18 +133,18 @@ export default function PokedexPage() {
                 </div>
                 {isSeen ? (
                   <>
-                    <p className="font-game text-[5px] text-ink/60 uppercase tracking-wide text-center leading-tight w-full px-1 truncate">
+                    <p className="font-game text-[8px] text-ink/60 uppercase tracking-wide text-center leading-tight w-full px-1 truncate">
                       {template.name}
                     </p>
                     <span
-                      className="font-game text-[5px] px-1.5 py-0.5 rounded-full border border-ink/10"
+                      className="font-game text-[8px] px-1.5 py-0.5 rounded-full border border-ink/10"
                       style={{ backgroundColor: tc, color: getTypeTextColor(template.type1) }}
                     >
                       {template.type1}
                     </span>
                   </>
                 ) : (
-                  <p className="font-game text-[5px] text-ink/20 uppercase tracking-wide">
+                  <p className="font-game text-[8px] text-ink/20 uppercase tracking-wide">
                     {SPECIAL_IDS.has(template.id) ? '???' : formatPokemonNumber(template.id)}
                   </p>
                 )}

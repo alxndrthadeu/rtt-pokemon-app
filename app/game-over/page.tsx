@@ -74,7 +74,7 @@ export default function GameOverPage() {
             {/* Treinador + stats */}
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-0.5">Treinador</p>
+                <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-0.5">Treinador</p>
                 <p className="font-black text-lg text-ink leading-tight">{playerName || 'Sem nome'}</p>
                 <p className="font-game text-[7px] text-ink/40 uppercase tracking-wide mt-0.5">
                   Modo {mode === 'normal' ? 'Normal' : 'Hard'}
@@ -82,17 +82,17 @@ export default function GameOverPage() {
               </div>
               <div className="flex gap-5 text-center">
                 <div>
-                  <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-1">Andar</p>
+                  <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-1">Andar</p>
                   <p className="font-black text-2xl text-ink leading-none">{currentFloor}</p>
-                  <p className="font-game text-[6px] text-ink/30">/12</p>
+                  <p className="font-game text-[8px] text-ink/30">/12</p>
                 </div>
                 <div>
-                  <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-1">Insígnias</p>
+                  <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-1">Insígnias</p>
                   <p className="font-black text-2xl text-ink leading-none">{totalBadges}</p>
-                  <p className="font-game text-[6px] text-ink/30">/8</p>
+                  <p className="font-game text-[8px] text-ink/30">/8</p>
                 </div>
                 <div>
-                  <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-1">Mortes</p>
+                  <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-1">Mortes</p>
                   <p className="font-black text-2xl leading-none" style={{ color: deathCount === 0 ? '#78C850' : '#CC2200' }}>
                     {deathCount}
                   </p>
@@ -103,8 +103,8 @@ export default function GameOverPage() {
             {/* Barra de progresso da torre */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest">Progresso na torre</p>
-                <p className="font-game text-[6px] text-ink/40">{floorLabel}</p>
+                <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">Progresso na torre</p>
+                <p className="font-game text-[8px] text-ink/40">{floorLabel}</p>
               </div>
               <div className="h-3 bg-ink/8 rounded-full overflow-hidden border border-ink/10">
                 <div
@@ -149,10 +149,10 @@ export default function GameOverPage() {
                     }}
                   >
                     <span className="text-2xl">{FLOOR_BADGE[i]}</span>
-                    <p className="font-game text-[5px] text-ink/60 text-center leading-tight">{gym.name}</p>
+                    <p className="font-game text-[8px] text-ink/60 text-center leading-tight">{gym.name}</p>
                     {earned && gym.badge && (
                       <span
-                        className="font-game text-[5px] px-1.5 py-[2px] rounded-full leading-none"
+                        className="font-game text-[8px] px-1.5 py-[2px] rounded-full leading-none"
                         style={{ backgroundColor: getTypeColor(gym.specialtyType), color: getTypeTextColor(gym.specialtyType) }}
                       >
                         {gym.badge.replace(' Badge', '')}
@@ -200,13 +200,13 @@ export default function GameOverPage() {
                         />
                         {isKO && (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="font-game text-[6px] bg-black/60 text-white px-1 py-0.5 rounded uppercase">KO</span>
+                            <span className="font-game text-[8px] bg-black/60 text-white px-1 py-0.5 rounded uppercase">KO</span>
                           </div>
                         )}
                       </div>
                       <p className="font-black text-[9px] text-ink uppercase text-center leading-tight">{p.name}</p>
                       <span
-                        className="font-game text-[6px] px-2 py-0.5 rounded-full border border-ink/15 leading-none"
+                        className="font-game text-[8px] px-2 py-0.5 rounded-full border border-ink/15 leading-none"
                         style={{ backgroundColor: tc, color: getTypeTextColor(p.type1) }}
                       >
                         {p.type1}

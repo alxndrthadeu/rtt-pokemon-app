@@ -98,7 +98,7 @@ export default function PosBatalhaPage() {
       <header className="sticky top-0 z-20 border-b-4 border-ink px-5 py-3" style={{ backgroundColor: gymColor }}>
         <div className="max-w-[680px] mx-auto flex items-center justify-between gap-3">
           <div>
-            <p className="font-game text-[6px] uppercase tracking-widest" style={{ color: `${gymTextColor}80` }}>
+            <p className="font-game text-[8px] uppercase tracking-widest" style={{ color: `${gymTextColor}80` }}>
               {gym ? `${gym.name} derrotado!` : 'Ginásio vencido!'}
             </p>
             <p className="font-black text-base uppercase tracking-wide" style={{ color: gymTextColor }}>
@@ -223,7 +223,7 @@ export default function PosBatalhaPage() {
                     <div className="border-2 border-ink rounded-xl overflow-hidden bg-white" style={{ width: 48, height: 48, boxShadow: '2px 2px 0 #2C1810' }}>
                       <img src={getSpriteUrl(p.id)} alt={p.name} className="w-full h-full object-contain" />
                     </div>
-                    <span className="font-game text-[6px] text-ink-soft opacity-50 uppercase">{p.name.slice(0, 6)}</span>
+                    <span className="font-game text-[8px] text-ink-soft opacity-50 uppercase">{p.name.slice(0, 6)}</span>
                   </div>
                 ))}
               </div>
@@ -252,7 +252,7 @@ export default function PosBatalhaPage() {
             <div className="border-2 border-ink rounded-2xl p-3 flex items-center gap-3" style={{ backgroundColor: `${gymColor}15`, borderColor: gymColor }}>
               <img src={getSpriteUrl(picked.id)} alt={picked.name} style={{ width: 56, height: 56, objectFit: 'contain' }} />
               <div>
-                <span className="font-game text-[6px] uppercase tracking-widest" style={{ color: gymColor }}>Entrando</span>
+                <span className="font-game text-[8px] uppercase tracking-widest" style={{ color: gymColor }}>Entrando</span>
                 <p className="font-black text-base text-ink uppercase tracking-tight">{picked.name}</p>
               </div>
             </div>
@@ -278,7 +278,7 @@ export default function PosBatalhaPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-black text-[10px] text-ink uppercase tracking-tight truncate">{p.name}</p>
                         <div className="flex items-center gap-1 mt-0.5">
-                          <span className="font-game text-[6px] text-ink/50 tracking-widest">HP</span>
+                          <span className="font-game text-[8px] text-ink/50 tracking-widest">HP</span>
                           <span className="font-game text-[7px] font-black"
                             style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
                             {p.hearts}/5
@@ -288,7 +288,7 @@ export default function PosBatalhaPage() {
                     </div>
                     {isDiscard && (
                       <div className="px-2 pb-2">
-                        <span className="font-game text-[6px] uppercase tracking-widest" style={{ color: '#CC2200' }}>← Sai</span>
+                        <span className="font-game text-[8px] uppercase tracking-widest" style={{ color: '#CC2200' }}>← Sai</span>
                       </div>
                     )}
                   </button>

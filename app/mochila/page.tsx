@@ -39,7 +39,7 @@ function PokemonSelector({
         <div className="flex items-center justify-between">
           <p className="font-black text-base text-ink uppercase tracking-tight">{title}</p>
           <button onClick={onCancel}
-            className="border-2 border-ink/20 rounded-full px-3 py-1 font-game text-[6px] text-ink/50 cursor-pointer">
+            className="border-2 border-ink/20 rounded-full px-3 py-1 font-game text-[8px] text-ink/50 cursor-pointer">
             Cancelar
           </button>
         </div>
@@ -75,7 +75,7 @@ function PokemonSelector({
                     )
                   }
                   {p.heldItem && (
-                    <p className="font-game text-[5px] text-ink/40 truncate w-full mt-0.5">{p.heldItem.name}</p>
+                    <p className="font-game text-[8px] text-ink/40 truncate w-full mt-0.5">{p.heldItem.name}</p>
                   )}
                 </div>
               </button>
@@ -145,7 +145,7 @@ export default function MochilaPage() {
       <header className="border-b-4 border-ink px-5 py-4 bg-ink">
         <div className="max-w-[640px] mx-auto flex items-center justify-between gap-3">
           <div>
-            <p className="font-game text-[6px] text-white/40 uppercase tracking-widest mb-0.5">Inventário</p>
+            <p className="font-game text-[8px] text-white/40 uppercase tracking-widest mb-0.5">Inventário</p>
             <p className="font-black text-xl text-white uppercase tracking-tight leading-none">Mochila</p>
           </div>
           <div className="flex items-center gap-2">
@@ -274,7 +274,7 @@ export default function MochilaPage() {
                         {equipped ? (
                           <button
                             onClick={() => handleUnequip(p.id)}
-                            className="flex-1 py-1.5 font-game text-[6px] uppercase tracking-widest text-red-600/60 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                            className="flex-1 py-1.5 font-game text-[8px] uppercase tracking-widest text-red-600/60 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
                           >
                             Retirar item
                           </button>
@@ -286,7 +286,7 @@ export default function MochilaPage() {
                               // Pre-select this Pokémon: set equipping to first item, will show overlay
                               setEquippingItem('__CHOOSE_FOR__' + p.id as HeldItemId)
                             }}
-                            className="flex-1 py-1.5 font-game text-[6px] uppercase tracking-widest text-ink/40 hover:text-ink/70 hover:bg-parchment-light transition-colors cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed"
+                            className="flex-1 py-1.5 font-game text-[8px] uppercase tracking-widest text-ink/40 hover:text-ink/70 hover:bg-parchment-light transition-colors cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed"
                           >
                             + Equipar item
                           </button>
@@ -326,7 +326,7 @@ export default function MochilaPage() {
                         </div>
                         <button
                           onClick={() => setEquippingItem(item.id)}
-                          className="shrink-0 px-3 py-1.5 font-game text-[6px] uppercase tracking-widest border-2 border-ink rounded-full text-ink bg-parchment-light hover:bg-ink hover:text-parchment-light transition-all cursor-pointer"
+                          className="shrink-0 px-3 py-1.5 font-game text-[8px] uppercase tracking-widest border-2 border-ink rounded-full text-ink bg-parchment-light hover:bg-ink hover:text-parchment-light transition-all cursor-pointer"
                           style={{ boxShadow: '2px 2px 0 #2C1810' }}
                         >
                           Equipar
@@ -375,7 +375,7 @@ export default function MochilaPage() {
                   Equipar em {targetPokemon?.name ?? '?'}
                 </p>
                 <button onClick={() => setEquippingItem(null)}
-                  className="border-2 border-ink/20 rounded-full px-3 py-1 font-game text-[6px] text-ink/50 cursor-pointer">
+                  className="border-2 border-ink/20 rounded-full px-3 py-1 font-game text-[8px] text-ink/50 cursor-pointer">
                   Cancelar
                 </button>
               </div>

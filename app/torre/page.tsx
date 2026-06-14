@@ -123,12 +123,12 @@ export default function TorrePage() {
         <div className="max-w-[640px] mx-auto flex items-center gap-3">
           <button
             onClick={() => setShowAbandon(true)}
-            className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+            className="border-2 border-ink rounded-full px-3 py-1 font-game text-[8px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
           >
             ←
           </button>
           <div className="flex-1 min-w-0">
-            <p className="font-game text-[6px] text-ink/40 uppercase tracking-wide leading-none truncate">
+            <p className="font-game text-[8px] text-ink/40 uppercase tracking-wide leading-none truncate">
               {playerName} · {mode === 'normal' ? 'Normal' : 'Hard'}
             </p>
             <p className="font-black text-sm text-ink uppercase leading-tight truncate">
@@ -419,7 +419,7 @@ export default function TorrePage() {
                       )}
                       {/* KO badge */}
                       {isFainted && (
-                        <span className="absolute top-1.5 right-1.5 z-10 font-game text-[6px] bg-red-500 text-white px-1.5 py-0.5 rounded-full uppercase leading-none">
+                        <span className="absolute top-1.5 right-1.5 z-10 font-game text-[8px] bg-red-500 text-white px-1.5 py-0.5 rounded-full uppercase leading-none">
                           KO
                         </span>
                       )}
@@ -440,7 +440,7 @@ export default function TorrePage() {
                       <div className="px-2 py-1.5 bg-parchment-light">
                         <p className="font-black text-[9px] text-ink uppercase truncate">{card.name}</p>
                         {isFainted ? (
-                          <p className="font-game text-[6px] text-red-400 mt-0.5 uppercase">Desmaiado</p>
+                          <p className="font-game text-[8px] text-red-400 mt-0.5 uppercase">Desmaiado</p>
                         ) : (
                           <div className="flex items-center gap-1 mt-0.5">
                             <div className="flex-1 h-1.5 bg-ink/10 rounded-full overflow-hidden">
@@ -452,7 +452,7 @@ export default function TorrePage() {
                                 }}
                               />
                             </div>
-                            <span className="font-game text-[6px] text-ink/50 shrink-0">{card.hearts}/5</span>
+                            <span className="font-game text-[8px] text-ink/50 shrink-0">{card.hearts}/5</span>
                           </div>
                         )}
                       </div>

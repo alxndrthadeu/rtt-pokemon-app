@@ -52,15 +52,15 @@ export function AbandonConfirmModal({
           {/* Floor + badge count */}
           <div className="flex items-center justify-between">
             <div className="text-center">
-              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-0.5">Andar</p>
+              <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-0.5">Andar</p>
               <p className="font-black text-xl text-ink">{currentFloor}<span className="text-sm text-ink/30">/12</span></p>
             </div>
             <div className="text-center">
-              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-0.5">Insígnias</p>
+              <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-0.5">Insígnias</p>
               <p className="font-black text-xl text-ink">{badgesEarned.length}</p>
             </div>
             <div className="text-center">
-              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-0.5">Pokémon</p>
+              <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-0.5">Pokémon</p>
               <p className="font-black text-xl text-ink">{playerDeck.length}</p>
             </div>
           </div>
@@ -68,7 +68,7 @@ export function AbandonConfirmModal({
           {/* Badges row */}
           {badgesEarned.length > 0 && (
             <div>
-              <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest mb-1.5">Insígnias conquistadas</p>
+              <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest mb-1.5">Insígnias conquistadas</p>
               <div className="flex gap-2 flex-wrap">
                 {badgesEarned.map(gymId => {
                   const gym = GYM_LEADERS[gymId]
@@ -76,7 +76,7 @@ export function AbandonConfirmModal({
                     <div key={gymId} className="flex flex-col items-center gap-0.5">
                       <span className="text-xl">{FLOOR_BADGE[gymId]}</span>
                       {gym?.badge && (
-                        <span className="font-game text-[5px] text-ink/30 leading-none">{gym.badge.replace(' Badge', '')}</span>
+                        <span className="font-game text-[8px] text-ink/30 leading-none">{gym.badge.replace(' Badge', '')}</span>
                       )}
                     </div>
                   )
@@ -88,7 +88,7 @@ export function AbandonConfirmModal({
           {/* Pokemon row */}
           {playerDeck.length > 0 && (
             <div>
-              <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest mb-1.5">Seus Pokémon</p>
+              <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest mb-1.5">Seus Pokémon</p>
               <div className="flex gap-1.5 flex-wrap">
                 {playerDeck.map(p => (
                   <img

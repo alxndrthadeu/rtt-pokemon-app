@@ -222,7 +222,7 @@ function AbilityStrip({ pokemon, typeColor }: { pokemon: PokemonCard; typeColor:
       {/* Linha principal */}
       <div className="flex items-center gap-2 px-3 py-2">
         <span
-          className="font-game text-[6px] px-2 py-[3px] rounded-full border leading-none shrink-0 tracking-widest"
+          className="font-game text-[8px] px-2 py-[3px] rounded-full border leading-none shrink-0 tracking-widest"
           style={{ borderColor: typeColor, color: typeColor, backgroundColor: `${typeColor}18` }}
         >HAB.</span>
         <span className="font-bold text-[11px] text-ink shrink-0 leading-none">{pokemon.ability.name}</span>
@@ -330,10 +330,10 @@ function MoveGrid({
                     <span className="text-[24px] leading-none">{RPS_ICON[rps]}</span>
                     <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate">{move.name}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
+                      <span className="font-game text-[8px] px-1.5 py-[3px] rounded-full leading-none"
                         style={{ backgroundColor: tc, color: getTypeTextColor(move.type) }}>{move.type}</span>
-                      <span className="font-game text-[6px] text-ink/45 leading-none">{effect}</span>
-                      {onCooldown && <span className="font-game text-[6px] px-1 py-[2px] rounded border border-ink/25 text-ink/35 leading-none ml-auto">CD</span>}
+                      <span className="font-game text-[8px] text-ink/45 leading-none">{effect}</span>
+                      {onCooldown && <span className="font-game text-[8px] px-1 py-[2px] rounded border border-ink/25 text-ink/35 leading-none ml-auto">CD</span>}
                     </div>
                   </div>
                 </button>
@@ -351,9 +351,9 @@ function MoveGrid({
                 style={{ backgroundColor: '#2C1810' }}
               >
                 <div className="flex items-center gap-1.5">
-                  <span className="font-game text-[6px] px-1.5 py-[2px] rounded-full leading-none"
+                  <span className="font-game text-[8px] px-1.5 py-[2px] rounded-full leading-none"
                     style={{ backgroundColor: `${tc}30`, color: tc }}>{move.type}</span>
-                  <span className="font-game text-[6px] text-white/45 leading-none">{getCategoryLabel(move)}</span>
+                  <span className="font-game text-[8px] text-white/45 leading-none">{getCategoryLabel(move)}</span>
                 </div>
                 <p className="font-black text-[10px] leading-tight" style={{ color: '#FBF5E6' }}>{move.name}</p>
                 <p className="text-[9px] leading-relaxed flex-1" style={{ color: 'rgba(251,245,230,0.6)' }}>
@@ -414,10 +414,10 @@ function MoveGrid({
                     <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate">{unique.name}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {!disabled && (
-                        <span className="font-game text-[6px] px-1.5 py-[3px] rounded-full leading-none"
+                        <span className="font-game text-[8px] px-1.5 py-[3px] rounded-full leading-none"
                           style={{ backgroundColor: tc, color: getTypeTextColor(unique.type) }}>{unique.type}</span>
                       )}
-                      <span className="font-game text-[6px] text-ink/45 leading-none">
+                      <span className="font-game text-[8px] text-ink/45 leading-none">
                         {uniqueUsed ? '✓ Usado' : effects.uniqueCooldown ? '⟳ Recarg.' : '⚡ 1× bat.'}
                       </span>
                     </div>
@@ -438,9 +438,9 @@ function MoveGrid({
                 style={{ backgroundColor: '#2C1810' }}
               >
                 <div className="flex items-center gap-1.5">
-                  <span className="font-game text-[6px] px-1.5 py-[2px] rounded-full leading-none"
+                  <span className="font-game text-[8px] px-1.5 py-[2px] rounded-full leading-none"
                     style={{ backgroundColor: `${tc}30`, color: tc }}>{unique.type}</span>
-                  <span className="font-game text-[6px] text-white/45 leading-none">⚡ 1× por batalha</span>
+                  <span className="font-game text-[8px] text-white/45 leading-none">⚡ 1× por batalha</span>
                 </div>
                 <p className="font-black text-[10px] leading-tight" style={{ color: '#FBF5E6' }}>{unique.name}</p>
                 <p className="text-[9px] leading-relaxed flex-1" style={{ color: 'rgba(251,245,230,0.6)' }}>
@@ -507,7 +507,7 @@ function StatusPill({ status }: { status: StatusState | null }) {
         onClick={(e) => { e.stopPropagation(); setOpen(v => !v) }}
       >
         {STATUS_LABEL[status.condition]}
-        <span className="text-[6px] opacity-70">{open ? '▴' : '▾'}</span>
+        <span className="text-[8px] opacity-70">{open ? '▴' : '▾'}</span>
       </button>
       {open && (
         <div
@@ -1392,7 +1392,7 @@ export default function BatalhaPage() {
             ← Fugir
           </button>
           <div className="flex-1 text-center min-w-0">
-            <p className="font-game text-[6px] text-white/60 uppercase tracking-widest leading-none mb-0.5">
+            <p className="font-game text-[8px] text-white/60 uppercase tracking-widest leading-none mb-0.5">
               Andar {currentFloor + 1}/12
             </p>
             <p className="font-black text-sm text-white uppercase tracking-wide leading-tight truncate">
@@ -1400,7 +1400,7 @@ export default function BatalhaPage() {
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className="font-game text-[6px] text-white/60 uppercase tracking-widest leading-none mb-0.5">Turno</p>
+            <p className="font-game text-[8px] text-white/60 uppercase tracking-widest leading-none mb-0.5">Turno</p>
             <p className="font-black text-xl text-white leading-none">{turn}</p>
           </div>
         </div>
@@ -1518,9 +1518,9 @@ export default function BatalhaPage() {
                     {hardSurvivors.map(p => (
                       <div key={p.id} className="flex flex-col items-center gap-1">
                         <img src={getSpriteUrl(p.id)} alt={p.name} style={{ width: 56, height: 56, objectFit: 'contain' }} />
-                        <p className="font-game text-[6px] text-white/80 uppercase">{p.name}</p>
+                        <p className="font-game text-[8px] text-white/80 uppercase">{p.name}</p>
                         <div className="flex items-center gap-1">
-                          <span className="font-game text-[6px] text-white/50 tracking-widest">HP</span>
+                          <span className="font-game text-[8px] text-white/50 tracking-widest">HP</span>
                           <span className="font-game text-[7px] font-black text-white/90">{Math.ceil(p.hearts)}/5</span>
                         </div>
                       </div>
@@ -1715,7 +1715,7 @@ export default function BatalhaPage() {
                         <span className="text-3xl leading-none">🔄</span>
                         <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{lastResult.switchedIn}</p>
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none bg-ink/10 text-ink/50">TROCA</span>
-                        <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                        <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
                     ) : lastResult.playerSkippedTurn ? (
                       <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
@@ -1724,7 +1724,7 @@ export default function BatalhaPage() {
                         <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{pf.pokemon.name}</p>
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#8060A8' }}>DORMINDO</span>
-                        <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                        <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
                     ) : lastResult.playerProtected ? (
                       <div className="rounded-2xl border-2 px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
@@ -1733,7 +1733,7 @@ export default function BatalhaPage() {
                         <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{playerMoveName}</p>
                         <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#2C7BB5' }}>BLOQUEOU!</span>
-                        <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                        <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
                     ) : (
                     <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
@@ -1746,7 +1746,7 @@ export default function BatalhaPage() {
                           {playerMoveType}
                         </span>
                       )}
-                      <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                      <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       {lastResult.enemyDmg > 0 && (
                         <p className="font-black text-sm leading-none" style={{ color: '#2AAA2A' }}>
                           −{lastResult.enemyDmg} ♥
@@ -1772,7 +1772,7 @@ export default function BatalhaPage() {
                           {enemyMoveType}
                         </span>
                       ) : null}
-                      <p className="font-game text-[6px] text-ink/35 uppercase tracking-widest leading-none">{gym.name}</p>
+                      <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">{gym.name}</p>
                       {lastResult.playerDmg > 0 && (
                         <p className="font-black text-sm leading-none" style={{ color: '#CC2200' }}>
                           −{lastResult.playerDmg} ♥
@@ -1823,9 +1823,9 @@ export default function BatalhaPage() {
           <div className="w-full max-w-[640px] rounded-t-3xl border-t-4 border-x-4 border-ink overflow-hidden"
             style={{ backgroundColor: '#FBF5E6' }}
             onClick={e => e.stopPropagation()}>
-            <div className="max-h-[80svh] overflow-y-auto p-5"
+            <div className="w-10 h-1 rounded-full bg-ink/20 mx-auto mt-5" />
+            <div className="max-h-[80svh] overflow-y-auto px-5 pt-4"
               style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}>
-            <div className="w-10 h-1 rounded-full bg-ink/20 mx-auto mb-5" />
             <p className="font-black text-lg text-ink uppercase tracking-tight text-center mb-1">
               {switchRequired ? 'Próximo Pokémon!' : 'Trocar Pokémon'}
             </p>
@@ -1859,19 +1859,19 @@ export default function BatalhaPage() {
                         {fighter.pokemon.name}
                       </p>
                       <div className="flex justify-center items-center gap-1 mt-1">
-                        <span className="font-game text-[6px] text-ink/50 tracking-widest">HP</span>
+                        <span className="font-game text-[8px] text-ink/50 tracking-widest">HP</span>
                         <span className="font-game text-[7px] font-black"
                           style={{ color: fighter.hearts <= 0 ? '#E82020' : fighter.hearts <= 1 ? '#F0C000' : '#2C1810' }}>
                           {Math.ceil(fighter.hearts)}/{fighter.pokemon.hearts}
                         </span>
                       </div>
                       {isCurrent && (
-                        <span className="font-game text-[6px] uppercase tracking-widest mt-1 block" style={{ color: tc }}>
+                        <span className="font-game text-[8px] uppercase tracking-widest mt-1 block" style={{ color: tc }}>
                           Em campo
                         </span>
                       )}
                       {isKO && (
-                        <span className="font-game text-[6px] uppercase tracking-widest mt-1 block text-ink/40">
+                        <span className="font-game text-[8px] uppercase tracking-widest mt-1 block text-ink/40">
                           Nocauteado
                         </span>
                       )}

@@ -117,7 +117,7 @@ export default function DraftPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/personagem')}
-              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[6px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+              className="border-2 border-ink rounded-full px-3 py-1 font-game text-[8px] text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
             >
               ←
             </button>

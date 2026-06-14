@@ -14,7 +14,7 @@ function TypeChip({ type }: { type: string }) {
   const color = getTypeTextColor(type as any)
   return (
     <span
-      className="inline-block font-game text-[6px] px-2 py-0.5 rounded-full border border-ink/20 tracking-wide"
+      className="inline-block font-game text-[8px] px-2 py-0.5 rounded-full border border-ink/20 tracking-wide"
       style={{ backgroundColor: bg, color }}
     >
       {type}
@@ -121,7 +121,7 @@ export function PokemonCard({ pokemon, selectable, selected, hideHp, onClick }: 
             if (window.matchMedia('(hover: none)').matches) setShowInfo(v => !v)
           }}
         >
-          <span className="font-game text-[6px] text-ink-soft uppercase tracking-wide opacity-50 shrink-0">Hab.</span>
+          <span className="font-game text-[8px] text-ink-soft uppercase tracking-wide opacity-50 shrink-0">Hab.</span>
           <span className="font-bold text-[10px] text-ink flex-1 truncate">{pokemon.ability.name}</span>
           <span className="text-[9px] text-ink/30 shrink-0">ℹ</span>
         </div>
@@ -137,7 +137,7 @@ export function PokemonCard({ pokemon, selectable, selected, hideHp, onClick }: 
                 <span className="text-[11px] shrink-0 w-5 text-center leading-none">{RPS_ICON[rps]}</span>
                 <span className="text-[10px] text-ink-soft flex-1 truncate">{move.name}</span>
                 <span
-                  className="font-game text-[6px] px-1.5 py-0.5 rounded-full border border-ink/20 shrink-0"
+                  className="font-game text-[8px] px-1.5 py-0.5 rounded-full border border-ink/20 shrink-0"
                   style={{ backgroundColor: moveTypeColor, color: moveTextColor }}
                 >
                   {move.type}
@@ -215,7 +215,7 @@ export function PokemonCard({ pokemon, selectable, selected, hideHp, onClick }: 
             </span>
             {selectable && (
               <button
-                className="ml-auto font-game text-[6px] uppercase tracking-wide px-2 py-0.5 rounded-full cursor-pointer"
+                className="ml-auto font-game text-[8px] uppercase tracking-wide px-2 py-0.5 rounded-full cursor-pointer"
                 style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white' }}
                 onClick={(e) => { e.stopPropagation(); onClick?.() }}
               >
@@ -231,7 +231,7 @@ export function PokemonCard({ pokemon, selectable, selected, hideHp, onClick }: 
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span
-                  className="font-game text-[6px] uppercase tracking-widest px-2 py-0.5 rounded-full"
+                  className="font-game text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: `${type1Color}40`, color: type1Color }}
                 >
                   Habilidade
@@ -248,7 +248,7 @@ export function PokemonCard({ pokemon, selectable, selected, hideHp, onClick }: 
               <div className="pt-3" style={{ borderTop: '1px solid rgba(251,245,230,0.1)' }}>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <span
-                    className="font-game text-[6px] uppercase tracking-widest px-2 py-0.5 rounded-full"
+                    className="font-game text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: 'rgba(255,222,0,0.15)', color: '#F8D030' }}
                   >
                     Atq. Único

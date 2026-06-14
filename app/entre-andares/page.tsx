@@ -123,7 +123,7 @@ function PokemonSlot({
       </div>
 
       {/* Nome */}
-      <p className="font-game text-[6px] uppercase tracking-wide text-center leading-tight w-full px-0.5 truncate"
+      <p className="font-game text-[8px] uppercase tracking-wide text-center leading-tight w-full px-0.5 truncate"
         style={{ color: fainted ? '#aaa' : '#2C1810' }}>
         {pokemon.name}
       </p>
@@ -131,7 +131,7 @@ function PokemonSlot({
       {/* HP */}
       <div className="flex items-center gap-0.5">
         {fainted ? (
-          <span className="font-game text-[6px] text-red-400">Desmaiado</span>
+          <span className="font-game text-[8px] text-red-400">Desmaiado</span>
         ) : (
           <>
             {Array.from({ length: 5 }).map((_, i) => (
@@ -197,7 +197,7 @@ function BadgesSheetContent({ badgesEarned }: { badgesEarned: number[] }) {
               <BadgeIcon gymIdx={i} earned={earned} />
               <div className="text-center">
                 <p className="font-black text-[9px] text-ink uppercase leading-tight">{gym.badge}</p>
-                <p className="font-game text-[6px] text-ink/40 uppercase tracking-wide mt-0.5">{gym.name}</p>
+                <p className="font-game text-[8px] text-ink/40 uppercase tracking-wide mt-0.5">{gym.name}</p>
               </div>
             </div>
           )
@@ -245,14 +245,14 @@ function NextGymSheetContent({ nextGym, nextGymIdx }: { nextGym: typeof GYM_LEAD
             <p className="font-black text-xl text-ink uppercase tracking-tight">{nextGym.name}</p>
             <p className="text-sm text-ink/55 leading-tight">{nextGym.title}</p>
             <div className="flex gap-1.5 mt-2 flex-wrap">
-              <span className="font-game text-[6px] px-2 py-0.5 rounded-full border border-ink/15"
+              <span className="font-game text-[8px] px-2 py-0.5 rounded-full border border-ink/15"
                 style={{ backgroundColor: tc, color: getTypeTextColor(nextGym.specialtyType) }}>
                 {nextGym.specialtyType}
               </span>
-              <span className="font-game text-[6px] px-2 py-0.5 rounded-full border border-ink/15 bg-parchment-light text-ink/50">
+              <span className="font-game text-[8px] px-2 py-0.5 rounded-full border border-ink/15 bg-parchment-light text-ink/50">
                 {AI_LABEL[nextGym.aiLevel]}
               </span>
-              <span className="font-game text-[6px] px-2 py-0.5 rounded-full border border-ink/15 bg-parchment-light text-ink/50">
+              <span className="font-game text-[8px] px-2 py-0.5 rounded-full border border-ink/15 bg-parchment-light text-ink/50">
                 Andar {nextGymIdx + 1}/12
               </span>
             </div>
@@ -267,14 +267,14 @@ function NextGymSheetContent({ nextGym, nextGymIdx }: { nextGym: typeof GYM_LEAD
       <div className="flex items-center gap-3 border border-ink/10 rounded-2xl px-4 py-3 bg-white/50">
         <BadgeIcon gymIdx={nextGymIdx} earned={false} />
         <div>
-          <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest">Recompensa</p>
+          <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">Recompensa</p>
           <p className="font-black text-sm text-ink">{nextGym.badge}</p>
         </div>
       </div>
 
       {/* Team preview */}
       <div>
-        <p className="font-game text-[6px] text-ink/30 uppercase tracking-widest mb-2">Time do adversário</p>
+        <p className="font-game text-[8px] text-ink/30 uppercase tracking-widest mb-2">Time do adversário</p>
         <div className="flex gap-2 flex-wrap">
           {nextGym.teamIds.slice(0, 6).map(id => (
             <div key={id} className="w-12 h-12 rounded-xl border border-ink/15 bg-parchment-light flex items-center justify-center">
@@ -494,7 +494,7 @@ export default function EntreAndaresPage() {
                 <BadgeIcon gymIdx={prevFloor} earned={true} />
               )}
               <div>
-                <p className="font-game text-[6px] text-white/60 uppercase tracking-widest leading-none mb-0.5">
+                <p className="font-game text-[8px] text-white/60 uppercase tracking-widest leading-none mb-0.5">
                   Andar {(prevFloor ?? 0) + 1}/12 concluído
                 </p>
                 <p className="font-black text-lg text-white uppercase tracking-tight leading-none">
@@ -527,7 +527,7 @@ export default function EntreAndaresPage() {
                 )
               })}
             </div>
-            <span className="font-game text-[6px] text-white/50 uppercase tracking-widest ml-auto shrink-0">
+            <span className="font-game text-[8px] text-white/50 uppercase tracking-widest ml-auto shrink-0">
               {badgesEarned.length}/8 ↗
             </span>
           </button>
@@ -590,7 +590,7 @@ export default function EntreAndaresPage() {
 
           {/* Pokémon team display */}
           <div className="px-4 py-4">
-            <p className="font-game text-[6px] text-ink/30 uppercase tracking-widest mb-3">
+            <p className="font-game text-[8px] text-ink/30 uppercase tracking-widest mb-3">
               Seu time — {playerDeck.length} Pokémon
             </p>
             <div className="grid grid-cols-3 gap-2">
@@ -638,7 +638,7 @@ export default function EntreAndaresPage() {
                   : `💊 Curar todos — ₽${HEAL_COST} (sem saldo)`}
               </button>
               {!allHealthy && (
-                <p className="text-center font-game text-[6px] text-ink/30 uppercase tracking-widest mt-1.5">
+                <p className="text-center font-game text-[8px] text-ink/30 uppercase tracking-widest mt-1.5">
                   Saldo: ₽{coins}
                 </p>
               )}
@@ -665,7 +665,7 @@ export default function EntreAndaresPage() {
               <span className="text-2xl">🛒</span>
               <div className="flex-1 min-w-0">
                 <p className="font-black text-sm text-ink uppercase tracking-tight leading-tight">Pokémart</p>
-                <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mt-0.5">
+                <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest leading-none mt-0.5">
                   {shopAvailable
                     ? 'Itens, hold items e consumíveis'
                     : shopVisited
@@ -676,7 +676,7 @@ export default function EntreAndaresPage() {
                 </p>
               </div>
               {shopAvailable && (
-                <span className="font-game text-[6px] px-2 py-1 rounded-full text-white"
+                <span className="font-game text-[8px] px-2 py-1 rounded-full text-white"
                   style={{ backgroundColor: '#2C7BB5' }}>
                   NOVO
                 </span>
@@ -714,7 +714,7 @@ export default function EntreAndaresPage() {
             <span className="text-2xl">🎒</span>
             <div className="flex-1 min-w-0">
               <p className="font-black text-sm text-ink uppercase tracking-tight leading-tight">Mochila</p>
-              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mt-0.5">
+              <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest leading-none mt-0.5">
                 Use consumíveis e gerencie equipamentos
               </p>
             </div>
@@ -749,18 +749,18 @@ export default function EntreAndaresPage() {
                 <BadgeIcon gymIdx={currentFloor} earned={false} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none">
+                <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest leading-none">
                   Próximo desafio · Andar {currentFloor + 1}/12
                 </p>
                 <p className="font-black text-sm text-ink uppercase leading-tight truncate mt-0.5">
                   {nextGym.name}
                 </p>
                 <div className="flex gap-1.5 mt-1">
-                  <span className="font-game text-[6px] px-1.5 py-[2px] rounded-full leading-none"
+                  <span className="font-game text-[8px] px-1.5 py-[2px] rounded-full leading-none"
                     style={{ backgroundColor: nextGymColor, color: getTypeTextColor(nextGym.specialtyType) }}>
                     {nextGym.specialtyType}
                   </span>
-                  <span className="font-game text-[6px] px-1.5 py-[2px] rounded-full bg-ink/8 text-ink/40 leading-none">
+                  <span className="font-game text-[8px] px-1.5 py-[2px] rounded-full bg-ink/8 text-ink/40 leading-none">
                     {AI_LABEL[nextGym.aiLevel]}
                   </span>
                 </div>

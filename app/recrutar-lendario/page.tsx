@@ -35,7 +35,7 @@ export default function RecrutarLendarioPage() {
       {/* Header */}
       <header className="border-b-4 border-ink px-5 py-4" style={{ backgroundColor: lColor }}>
         <div className="max-w-[640px] mx-auto">
-          <p className="font-game text-[6px] uppercase tracking-widest mb-0.5" style={{ color: `${lText}80` }}>
+          <p className="font-game text-[8px] uppercase tracking-widest mb-0.5" style={{ color: `${lText}80` }}>
             Lendário Capturado!
           </p>
           <p className="font-black text-xl uppercase tracking-tight leading-none" style={{ color: lText }}>
@@ -63,12 +63,12 @@ export default function RecrutarLendarioPage() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <p className="font-black text-xl text-ink uppercase tracking-tight">{pendingLegendaryCard.name}</p>
-                <span className="font-game text-[6px] px-2 py-1 rounded-full"
+                <span className="font-game text-[8px] px-2 py-1 rounded-full"
                   style={{ backgroundColor: lColor, color: lText }}>
                   {pendingLegendaryCard.type1}
                 </span>
                 {pendingLegendaryCard.type2 && (
-                  <span className="font-game text-[6px] px-2 py-1 rounded-full"
+                  <span className="font-game text-[8px] px-2 py-1 rounded-full"
                     style={{ backgroundColor: getTypeColor(pendingLegendaryCard.type2), color: getTypeTextColor(pendingLegendaryCard.type2) }}>
                     {pendingLegendaryCard.type2}
                   </span>
@@ -90,7 +90,7 @@ export default function RecrutarLendarioPage() {
               const mc = getTypeColor(m.type)
               return (
                 <div key={slot} className="text-center">
-                  <span className="font-game text-[6px] px-1.5 py-0.5 rounded-full text-white block mb-0.5"
+                  <span className="font-game text-[8px] px-1.5 py-0.5 rounded-full text-white block mb-0.5"
                     style={{ backgroundColor: mc }}>{m.type}</span>
                   <p className="font-black text-[9px] text-ink leading-tight">{m.name}</p>
                 </div>
@@ -131,7 +131,7 @@ export default function RecrutarLendarioPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-black text-[10px] text-ink uppercase tracking-tight truncate">{p.name}</p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <span className="font-game text-[6px] text-ink/50">HP</span>
+                      <span className="font-game text-[8px] text-ink/50">HP</span>
                       <span className="font-game text-[7px] font-black"
                         style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
                         {p.hearts}/5
@@ -141,7 +141,7 @@ export default function RecrutarLendarioPage() {
                 </div>
                 {isSelected && (
                   <div className="px-2 pb-2">
-                    <span className="font-game text-[6px] uppercase tracking-widest" style={{ color: '#CC2200' }}>← Sai</span>
+                    <span className="font-game text-[8px] uppercase tracking-widest" style={{ color: '#CC2200' }}>← Sai</span>
                   </div>
                 )}
               </button>

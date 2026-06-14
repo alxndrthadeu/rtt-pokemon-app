@@ -61,13 +61,13 @@ function RunCard({ run }: { run: RunSummary }) {
                 {run.playerName}
               </p>
               <span
-                className="font-game text-[6px] px-2 py-0.5 rounded-full leading-none shrink-0 text-white"
+                className="font-game text-[8px] px-2 py-0.5 rounded-full leading-none shrink-0 text-white"
                 style={{ backgroundColor: meta.color }}
               >
                 {meta.icon} {meta.label}
               </span>
             </div>
-            <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none">
+            <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest leading-none">
               {run.mode === 'hard' ? 'Modo Hard' : 'Modo Normal'} · {formatDate(run.date)}
             </p>
           </div>
@@ -77,11 +77,11 @@ function RunCard({ run }: { run: RunSummary }) {
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-xl border border-ink/10 bg-parchment/60 px-3 py-2 text-center">
             <p className="font-black text-lg text-ink leading-none">{run.floorsCompleted}</p>
-            <p className="font-game text-[5px] text-ink/35 uppercase tracking-widest mt-0.5">andares</p>
+            <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest mt-0.5">andares</p>
           </div>
           <div className="rounded-xl border border-ink/10 bg-parchment/60 px-3 py-2 text-center">
             <p className="font-black text-lg text-ink leading-none">{run.badgesEarned.length}</p>
-            <p className="font-game text-[5px] text-ink/35 uppercase tracking-widest mt-0.5">insígnias</p>
+            <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest mt-0.5">insígnias</p>
           </div>
           <div className="rounded-xl border border-ink/10 bg-parchment/60 px-3 py-2 text-center">
             <p
@@ -90,7 +90,7 @@ function RunCard({ run }: { run: RunSummary }) {
             >
               {run.deathCount}
             </p>
-            <p className="font-game text-[5px] text-ink/35 uppercase tracking-widest mt-0.5">mortes</p>
+            <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest mt-0.5">mortes</p>
           </div>
         </div>
 
@@ -116,7 +116,7 @@ function RunCard({ run }: { run: RunSummary }) {
         {/* Team sprites */}
         {run.teamSnapshot.length > 0 && (
           <div className="border-t border-ink/8 pt-3">
-            <p className="font-game text-[5px] text-ink/30 uppercase tracking-widest mb-2">Time</p>
+            <p className="font-game text-[8px] text-ink/30 uppercase tracking-widest mb-2">Time</p>
             <div className="flex gap-1.5 flex-wrap">
               {run.teamSnapshot.map((p, i) => {
                 const tc = getTypeColor(p.type1)

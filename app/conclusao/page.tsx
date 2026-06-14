@@ -115,15 +115,15 @@ export default function ConclusaoPage() {
           </div>
           <div className="border-t-2 border-ink/10 px-6 py-4 flex items-center justify-between bg-parchment-light">
             <div className="text-left">
-              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest">Treinador</p>
+              <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">Treinador</p>
               <p className="font-black text-base text-ink">{playerName || 'Sem nome'}</p>
             </div>
             <div className="text-center">
-              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest">Modo</p>
+              <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">Modo</p>
               <p className="font-black text-sm text-ink">{mode === 'normal' ? 'Normal' : 'Hard'}</p>
             </div>
             <div className="text-right">
-              <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest">Mortes</p>
+              <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">Mortes</p>
               <p className="font-black text-2xl" style={{ color: deathCount === 0 ? rank.color : '#CC2200' }}>
                 {deathCount}
               </p>
@@ -148,13 +148,13 @@ export default function ConclusaoPage() {
                     <img src={getSpriteUrl(p.id)} alt={p.name} style={{ width: 56, height: 56, objectFit: 'contain' }} />
                     <p className="font-black text-[9px] text-ink uppercase text-center leading-tight">{p.name}</p>
                     <span
-                      className="font-game text-[6px] px-2 py-0.5 rounded-full border border-ink/15"
+                      className="font-game text-[8px] px-2 py-0.5 rounded-full border border-ink/15"
                       style={{ backgroundColor: tc, color: getTypeTextColor(p.type1) }}
                     >
                       {p.type1}
                     </span>
                     <div className="flex items-center gap-1">
-                      <span className="font-game text-[6px] text-ink/50 tracking-widest">HP</span>
+                      <span className="font-game text-[8px] text-ink/50 tracking-widest">HP</span>
                       <span className="font-game text-[7px] font-black"
                         style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
                         {p.hearts}/{p.hearts}
@@ -192,7 +192,7 @@ export default function ConclusaoPage() {
                 </span>
                 <div className="flex-1">
                   <p className="font-bold text-sm text-ink">{r.title}</p>
-                  <p className="font-game text-[6px] text-ink/40 uppercase tracking-wide">
+                  <p className="font-game text-[8px] text-ink/40 uppercase tracking-wide">
                     {r.maxDeaths === 0 ? '0 mortes' : r.maxDeaths === Infinity ? '10+ mortes' : `até ${r.maxDeaths} morte${r.maxDeaths > 1 ? 's' : ''}`}
                   </p>
                 </div>

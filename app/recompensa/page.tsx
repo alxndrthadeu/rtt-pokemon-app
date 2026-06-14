@@ -231,7 +231,7 @@ export default function RecompensaPage() {
         <div className="max-w-[640px] mx-auto">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="font-game text-[6px] uppercase tracking-widest mb-0.5" style={{ color: `${gymTextColor}80` }}>
+              <p className="font-game text-[8px] uppercase tracking-widest mb-0.5" style={{ color: `${gymTextColor}80` }}>
                 {gym ? `${gym.name} derrotado!` : 'Vitória!'}
               </p>
               <p className="font-black text-xl uppercase tracking-tight leading-none" style={{ color: gymTextColor }}>
@@ -248,7 +248,7 @@ export default function RecompensaPage() {
                 <span className="font-black text-sm leading-none" style={{ color: `${gymTextColor}80` }}>₽</span>
                 <span className="font-black text-sm leading-none" style={{ color: gymTextColor }}>+{coinsEarned}</span>
               </div>
-              <p className="font-game text-[6px] uppercase tracking-wide text-right leading-none" style={{ color: `${gymTextColor}60` }}>
+              <p className="font-game text-[8px] uppercase tracking-wide text-right leading-none" style={{ color: `${gymTextColor}60` }}>
                 por vencer · saldo: ₽{coins}
               </p>
             </div>

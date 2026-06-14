@@ -117,7 +117,7 @@ export default function LojaPage() {
         <div className="max-w-[640px] mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-game text-[6px] text-white/50 uppercase tracking-widest mb-0.5">Pokémon Mart</p>
+              <p className="font-game text-[8px] text-white/50 uppercase tracking-widest mb-0.5">Pokémon Mart</p>
               <p className="font-black text-xl text-white uppercase tracking-tight leading-none">Loja</p>
             </div>
             <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ export default function LojaPage() {
                     <button
                       disabled={wasBought || !canAfford}
                       onClick={() => !wasBought && handleBuy(entry, key, price)}
-                      className="px-3 py-1.5 font-game text-[6px] uppercase tracking-widest border-2 border-ink rounded-xl transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 font-game text-[8px] uppercase tracking-widest border-2 border-ink rounded-xl transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                       style={{
                         backgroundColor: wasBought ? '#E8E0CC' : canAfford ? '#2C7BB5' : '#E8E0CC',
                         color: wasBought || !canAfford ? '#2C181060' : 'white',
@@ -226,7 +226,7 @@ export default function LojaPage() {
                     <button
                       disabled={wasBought || !canAfford}
                       onClick={() => !wasBought && handleBuy(entry, key, price)}
-                      className="px-3 py-1.5 font-game text-[6px] uppercase tracking-widest border-2 border-ink rounded-xl transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 font-game text-[8px] uppercase tracking-widest border-2 border-ink rounded-xl transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                       style={{
                         backgroundColor: wasBought ? '#E8E0CC' : canAfford ? '#2C7BB5' : '#E8E0CC',
                         color: wasBought || !canAfford ? '#2C181060' : 'white',
