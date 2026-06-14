@@ -25,7 +25,7 @@ export const MOVES: Record<string, MoveDefinition> = {
   'counter':         { name: 'Counter',           type: 'Fighting', kind: 'offensive' },
   'horn-attack':     { name: 'Horn Attack',       type: 'Normal',   kind: 'offensive' },
   'rage':            { name: 'Rage',              type: 'Normal',   kind: 'offensive' },
-  'rapid-spin':      { name: 'Rapid Spin',        type: 'Normal',   kind: 'offensive' },
+  'rapid-spin':      { name: 'Rapid Spin',        type: 'Normal',   kind: 'offensive', special: 'rapid-spin' },
   'last-resort':     { name: 'Last Resort',       type: 'Normal',   kind: 'offensive' },
   'take-down':       { name: 'Take Down',         type: 'Normal',   kind: 'offensive' },
   'mirror-move':     { name: 'Mirror Move',       type: 'Flying',   kind: 'offensive' },

@@ -765,6 +765,21 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
   )
 }
 
+// ─── Switch reset helper — shared by handleSwitchTurn and confirmSwitch ──────
+function applyPlayerSwitchReset(eff: BattleEffects): BattleEffects {
+  return {
+    ...eff,
+    playerStatus: null,
+    playerTiredTurns: 0,
+    playerSturdyUsed: false,
+    playerDestinyBond: false,
+    playerAquaRingActive: false,
+    playerAquaRingHealIn: 2,
+    playerShellSmashTurns: 0,
+    uniqueCooldown: false,
+  }
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BatalhaPage() {
@@ -1058,6 +1073,12 @@ export default function BatalhaPage() {
               eff = newEff
               if (thawed) activations.push(`🔥 ${ef.pokemon.name} descongelou!`)
             }
+
+            if (chosenMove.special === 'rapid-spin') {
+              const spinResult = applySlotMoveEffect(chosenMove, 'player', eff, ef.pokemon)
+              eff = spinResult.effects
+              if (spinResult.message) activations.push(spinResult.message)
+            }
           } else {
             const sideEff = applySlotMoveEffect(chosenMove, 'player', eff, ef.pokemon)
             eff = sideEff.effects
@@ -1239,7 +1260,7 @@ export default function BatalhaPage() {
     const activations: string[] = [`🔄 ${incoming.pokemon.name} entrou em campo!`]
 
     const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg, forcedFirstMove: switchStickyForced } = applyEntryEffects(incoming.pokemon, 'player', effects)
-    let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false, playerDestinyBond: false, playerAquaRingActive: false, playerAquaRingHealIn: 2, playerShellSmashTurns: 0, uniqueCooldown: false }
+    let eff: BattleEffects = applyPlayerSwitchReset(entryEffects)
     if (entryMessage) activations.push(entryMessage)
     if (switchStickyForced) setStickyWebForcedMove(switchStickyForced)
 
@@ -1326,7 +1347,7 @@ export default function BatalhaPage() {
     setSwitchRequired(false)
     setPlayerIdx(targetIdx)
     const { newEffects, message, hazardDamage, forcedFirstMove: faintStickyForced } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
-    setEffects({ ...newEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false, playerDestinyBond: false, playerAquaRingActive: false, playerAquaRingHealIn: 2, playerShellSmashTurns: 0, uniqueCooldown: false })
+    setEffects(applyPlayerSwitchReset(newEffects))
     if (message) setEntryMsg(message)
     const newHearts = hazardDamage > 0 ? Math.max(0, playerFighters[targetIdx].hearts - hazardDamage) : playerFighters[targetIdx].hearts
     if (hazardDamage > 0) setPlayerFighters(fs => fs.map((f, i) => i === targetIdx ? { ...f, hearts: newHearts } : f))
