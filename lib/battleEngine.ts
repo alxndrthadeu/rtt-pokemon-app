@@ -325,9 +325,9 @@ export function applySlotMoveEffect(
       const { stealthRock, toxicSpikes, stickyWeb } = eff.playerHazards
       const removed = [stealthRock && 'Stealth Rock', toxicSpikes && 'Toxic Spikes', stickyWeb && 'Sticky Web'].filter(Boolean) as string[]
       eff.playerHazards = { stealthRock: false, toxicSpikes: false, stickyWeb: false }
-      if (removed.length > 0) {
-        message = `🌀 Rapid Spin! ${removed.join(' + ')} removido${removed.length > 1 ? 's' : ''}!`
-      }
+      message = removed.length > 0
+        ? `🌀 Rapid Spin! ${removed.join(' + ')} — campo limpo!`
+        : `🌀 Rapid Spin! Nenhuma armadilha no campo.`
     }
     // enemy Rapid Spin: no effect by design — no enemy pokemon has this move
     return { effects: eff, message, isProtect }
