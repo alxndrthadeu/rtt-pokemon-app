@@ -1406,6 +1406,16 @@ export default function BatalhaPage() {
         </div>
       </header>
 
+      {gym.aiLevel === 'predictive' && (
+        <div className="sticky top-[61px] z-10 px-4 py-1.5 flex items-center justify-center gap-2"
+          style={{ backgroundColor: '#1A1040', boxShadow: '0 2px 0 #0D0820' }}>
+          <span className="animate-pulse text-[10px]">🤖</span>
+          <p className="font-game text-[8px] text-purple-200 uppercase tracking-widest leading-none">
+            IA Expert — analisa seus padrões
+          </p>
+        </div>
+      )}
+
       <div className="max-w-[640px] mx-auto px-4 pt-4 flex flex-col gap-3"
         style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}>
 
@@ -1594,9 +1604,10 @@ export default function BatalhaPage() {
                       🐾 Garra Rápida! {ef.pokemon.name} vai usar {RPS_ICON[precomputedEnemyRPS]} {ef.pokemon.moves[precomputedEnemyRPS].name}
                     </p>
                   )}
-                  {gym.aiLevel === 'predictive' && (
-                    <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest leading-none">
-                      🤖 IA preditiva — analisa seus padrões de ataque
+                  {gym.aiLevel === 'predictive' && moveHistory.length >= 2 && (
+                    <p className="font-game text-[8px] uppercase tracking-widest leading-none"
+                      style={{ color: '#7038F8' }}>
+                      🧠 IA analisou {moveHistory.length} turnos — varie seus moves!
                     </p>
                   )}
                 </div>
