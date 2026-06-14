@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.9.7] - 2026-06-14
+
+### Corrigido
+
+- **Rapid Spin unificado** (`lib/data/moves.ts`, `lib/battleEngine.ts`, `app/batalha/page.tsx`) — `special: 'rapid-spin'` adicionado ao move ofensivo; Electrode e Staryu agora limpam hazards ao vencer o turno com Rapid Spin, igual ao Wartortle. Handler centralizado em `applySlotMoveEffect`. Função `applyRapidSpin` morta removida
+- **Switch reset DRY** (`app/batalha/page.tsx`) — spread de reset duplicado em `handleSwitchTurn` e `confirmSwitch` extraído para helper `applyPlayerSwitchReset()`; campos incluídos: `playerStatus`, `playerTiredTurns`, `playerSturdyUsed`, `playerDestinyBond`, `playerAquaRingActive`, `playerAquaRingHealIn`, `playerShellSmashTurns`, `uniqueCooldown`
+- **Layout da batalha em 375px** (`app/batalha/page.tsx`) — arena responsiva `clamp(180px, 40svh, 256px)`, move cells 90→76px, `paddingBottom` 7rem→2.5rem + `env(safe-area-inset-bottom)`
+- **Switch picker safe-area** (`app/batalha/page.tsx`) — `pb-10` hardcoded substituído por `paddingBottom: calc(2.5rem + env(safe-area-inset-bottom))`; wrapper externo `rounded-t-3xl + overflow-hidden` + div interno `max-h-[80svh] overflow-y-auto` resolve clipping de border-radius no Safari; drag handle movido para fora da área de scroll
+- **Legibilidade do font-game** (`app/` e `components/`, 17 arquivos) — `text-[5px]` e `text-[6px]` substituídos por `text-[8px]`; Press Start 2P requer mínimo 8px para renderizar sem blur
+- **OG image URL relativa** (`app/layout.tsx`) — adicionado `metadataBase: new URL('https://pokemon-rtt.vercel.app')`; sem isso crawlers de redes sociais não resolviam `/api/og` como URL absoluta
+
+### Adicionado
+
+- **Tela `/como-jogar`** (`app/como-jogar/page.tsx`, `app/page.tsx`) — tutorial completo com: triângulo RPS interativo, multiplicadores de tipo (2×/1×/0.5×/STAB), tabela de vantagens por tipo, fluxo de turno em 4 passos, regras de troca (free vs custo), status effects (6 condições), armadilhas de campo (Stealth Rock, Toxic Spikes, Sticky Web) e progressão da IA por andar. Botão "❓ Como Jogar" adicionado ao header da home
+- **Warning de IA Expert** (`app/batalha/page.tsx`) — banner sticky `#1A1040` com emoji pulsante abaixo do header quando `aiLevel === 'predictive'`; no dialog, após 2+ turnos de histórico, exibe contador "🧠 IA analisou N turnos — varie seus moves!" em roxo
+
+### UI / UX
+
+- **Skip no draft** (`app/draft/page.tsx`) — botão "Pular rodada" com borda dashed e `text-[7px]` substituído por `border-2` sólida, `text-[8px]` e hover com shadow; label atualizado para "⤵ Pular rodada · 1× por run (usa o reroll)"
+
 ## [0.9.6] - 2026-06-13
 
 ### Adicionado

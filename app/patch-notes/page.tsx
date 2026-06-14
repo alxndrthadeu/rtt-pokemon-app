@@ -26,6 +26,55 @@ interface PatchVersion {
 
 const PATCHES: PatchVersion[] = [
   {
+    version: '0.9.7',
+    date: 'Jun 2026',
+    label: 'Mobile, Legibilidade & QoL',
+    labelColor: '#3B4CCA',
+    description: 'Foco total em polimento: layout da batalha corrigido em telas 375px, legibilidade do texto do jogo melhorada em todo o app, tela de tutorial "Como Jogar" adicionada, warning de IA Expert na batalha e correções de bugs no Rapid Spin e switch reset.',
+    entries: [
+      {
+        icon: '📱',
+        title: 'Batalha cabe em 375px — iPhone SE sem scroll',
+        tag: 'MOBILE',
+        tagColor: '#0EA5E9',
+        body: 'Arena responsiva com clamp(180px, 40svh, 256px), células de move reduzidas e paddingBottom ajustado com safe-area real. O grid de escolha de moves agora aparece acima do fold em qualquer iPhone.',
+        detail: 'Switch picker também corrigido: max-h de 80svh com scroll interno, border-radius preservado no Safari e drag handle fixo ao topo do sheet. Todos os valores de safe-area agora usam env(safe-area-inset-bottom).',
+      },
+      {
+        icon: '🔤',
+        title: 'Texto legível em todo o app',
+        tag: 'UI',
+        tagColor: '#0EA5E9',
+        body: 'Press Start 2P (a fonte pixel do jogo) exige no mínimo 8px para renderizar sem blur. Todos os labels de 5px e 6px foram aumentados para 8px em 17 arquivos.',
+        detail: 'HP, tipos, labels de habilidade, badges de status, nomes nos cards — tudo agora legível sem precisar de tela Retina para entender o que está escrito.',
+      },
+      {
+        icon: '❓',
+        title: 'Tela Como Jogar',
+        tag: 'NOVO',
+        tagColor: '#CC2200',
+        body: 'Nova página /como-jogar com tutorial completo da mecânica: triângulo RPS, multiplicadores de tipo (2×/STAB/resistência), tabela de vantagens, fluxo de turno, status effects e armadilhas de campo.',
+        detail: 'Também explica a progressão da IA: aleatória (andares 1–4), reativa (5–8) e preditiva Expert (9–12). Acessível pelo botão "❓ Como Jogar" no header da home.',
+      },
+      {
+        icon: '🤖',
+        title: 'Warning de IA Expert na batalha',
+        tag: 'UX',
+        tagColor: '#7038F8',
+        body: 'Nos andares 9–12 (IA Expert), um banner roxo escuro aparece abaixo do header da batalha com emoji pulsante. Após 2 turnos, o dialog mostra quantos turnos a IA já analisou.',
+        detail: 'O objetivo é alertar o jogador para variar seus moves — a IA preditiva aprende sequências e tenta antecipar sua jogada.',
+      },
+      {
+        icon: '🌀',
+        title: 'Rapid Spin funciona em todos os Pokémon',
+        tag: 'BUG',
+        tagColor: '#78C850',
+        body: 'Electrode e Staryu também limpam hazards ao vencer o turno com Rapid Spin, como Wartortle. Antes, apenas o Wartortle tinha esse efeito.',
+        detail: 'O card flip de Electrode e Staryu agora mostra corretamente "🌀 Hazard Clear" na categoria e a descrição de remoção de armadilhas.',
+      },
+    ],
+  },
+  {
     version: '0.9.6',
     date: 'Jun 2026',
     label: 'Eventos Especiais',
