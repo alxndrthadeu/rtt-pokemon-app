@@ -12,6 +12,7 @@ const pressStart = Press_Start_2P({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://pokemon-rtt.vercel.app'),
   title: 'Pokémon: Reach the Top',
   description: 'RPG tático de cartas — escale a torre dos ginásios de Kanto',
   openGraph: {
