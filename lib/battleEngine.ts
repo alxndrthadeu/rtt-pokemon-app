@@ -322,9 +322,14 @@ export function applySlotMoveEffect(
   // ── Rapid Spin: clears player-side hazards when player wins ─────────────────
   if (move.special === 'rapid-spin') {
     if (side === 'player') {
+      const { stealthRock, toxicSpikes, stickyWeb } = eff.playerHazards
+      const removed = [stealthRock && 'Stealth Rock', toxicSpikes && 'Toxic Spikes', stickyWeb && 'Sticky Web'].filter(Boolean) as string[]
       eff.playerHazards = { stealthRock: false, toxicSpikes: false, stickyWeb: false }
-      message = `🌀 Rapid Spin! Armadilhas removidas do seu campo!`
+      if (removed.length > 0) {
+        message = `🌀 Rapid Spin! ${removed.join(' + ')} removido${removed.length > 1 ? 's' : ''}!`
+      }
     }
+    // enemy Rapid Spin: no effect by design — no enemy pokemon has this move
     return { effects: eff, message, isProtect }
   }
 
@@ -990,8 +995,3 @@ export function getShellBellHeal(attackerPokemon: PokemonCard, damageDealt: numb
   return attackerPokemon.heldItem?.id === 'shell-bell' && damageDealt > 0 ? 0.5 : 0
 }
 
-// ─── Rapid Spin hazard clear ─────────────────────────────────────────────────
-// Call when player uses Rapid Spin. Clears player-side hazards.
-export function applyRapidSpin(effects: BattleEffects): BattleEffects {
-  return { ...effects, playerHazards: { stealthRock: false, toxicSpikes: false, stickyWeb: false } }
-}

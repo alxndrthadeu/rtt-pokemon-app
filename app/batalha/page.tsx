@@ -191,7 +191,8 @@ function HPBar({ current, max, flashColor }: { current: number; max: number; fla
 
 // ─── Move effect label ────────────────────────────────────────────────────────
 function getMoveEffectLabel(move: Move): string {
-  if (move.special === 'protect')   return '🛡️ Protect'
+  if (move.special === 'protect')    return '🛡️ Protect'
+  if (move.special === 'rapid-spin') return '🌀 Hazard Clear'
   if (move.kind === 'offensive' && move.drain) return '🍃 Absorção'
   if (move.kind === 'offensive')    return '⚔️ Ataque'
   if (move.kind === 'status') {
@@ -243,6 +244,7 @@ function AbilityStrip({ pokemon, typeColor }: { pokemon: PokemonCard; typeColor:
 // ─── Move description helper (usada no verso do card flip) ───────────────────
 function getMoveDescription(move: Move): string {
   if (move.special === 'protect') return 'Bloqueia o próximo ataque inimigo por 1 turno. Entra em cooldown após o uso.'
+  if (move.special === 'rapid-spin') return 'Remove todas as armadilhas do seu campo (Stealth Rock, Toxic Spikes, Sticky Web). Só ativa quando vence o turno.'
   if (move.kind === 'offensive' && move.drain) return `Golpe ${move.type}. Causa dano e restaura metade como HP.`
   if (move.kind === 'offensive') return `Golpe ${move.type}. Causa dano com base na efetividade de tipos.`
   if (move.kind === 'status' && move.statusEffect) {
@@ -263,7 +265,8 @@ function getMoveDescription(move: Move): string {
 }
 
 function getCategoryLabel(move: Move): string {
-  if (move.special === 'protect') return '🛡️ Proteção'
+  if (move.special === 'protect')    return '🛡️ Proteção'
+  if (move.special === 'rapid-spin') return '🌀 Suporte'
   if (move.kind === 'offensive' && move.drain) return '🍃 Ofensivo · Absorção'
   if (move.kind === 'offensive') return '⚔️ Ofensivo'
   if (move.kind === 'status') return '☠️ Status'
@@ -1236,7 +1239,7 @@ export default function BatalhaPage() {
     const activations: string[] = [`🔄 ${incoming.pokemon.name} entrou em campo!`]
 
     const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg, forcedFirstMove: switchStickyForced } = applyEntryEffects(incoming.pokemon, 'player', effects)
-    let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false, playerDestinyBond: false, playerAquaRingActive: false, playerAquaRingHealIn: 2 }
+    let eff: BattleEffects = { ...entryEffects, playerStatus: null, playerTiredTurns: 0, playerSturdyUsed: false, playerDestinyBond: false, playerAquaRingActive: false, playerAquaRingHealIn: 2, playerShellSmashTurns: 0, uniqueCooldown: false }
     if (entryMessage) activations.push(entryMessage)
     if (switchStickyForced) setStickyWebForcedMove(switchStickyForced)
 
