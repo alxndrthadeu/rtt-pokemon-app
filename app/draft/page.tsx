@@ -265,13 +265,13 @@ export default function DraftPage() {
                 <button
                   onClick={handleSkip}
                   disabled={rerollUsed}
-                  className={`w-full py-2.5 font-game text-[7px] tracking-widest uppercase border border-dashed rounded-2xl transition-all duration-100 ${
+                  className={`w-full py-3 font-game text-[8px] tracking-widest uppercase border-2 rounded-2xl transition-all duration-100 ${
                     !rerollUsed
-                      ? 'border-ink/40 text-ink/50 hover:border-ink/70 hover:text-ink/70 cursor-pointer'
-                      : 'border-ink/15 text-ink/20 cursor-not-allowed'
+                      ? 'border-ink/50 text-ink/60 bg-parchment-light hover:border-ink hover:text-ink hover:shadow-neo-sm cursor-pointer'
+                      : 'border-ink/15 text-ink/20 bg-parchment-light cursor-not-allowed'
                   }`}
                 >
-                  {rerollUsed ? '⤵ Pular indisponível' : '⤵ Pular rodada (usa o reroll)'}
+                  {rerollUsed ? '⤵ Skip já utilizado' : '⤵ Pular rodada · 1× por run (usa o reroll)'}
                 </button>
               )}
             </div>
