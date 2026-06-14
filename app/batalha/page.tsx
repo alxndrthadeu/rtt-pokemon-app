@@ -499,11 +499,12 @@ function StatusPill({ status }: { status: StatusState | null }) {
   return (
     <div className="relative shrink-0">
       <button
-        className="font-game text-[8px] px-1.5 py-[2px] rounded font-bold leading-none cursor-pointer"
+        className="font-game text-[8px] px-1.5 py-[2px] rounded font-bold leading-none cursor-pointer flex items-center gap-0.5"
         style={{ backgroundColor: bg, color: fg }}
         onClick={(e) => { e.stopPropagation(); setOpen(v => !v) }}
       >
         {STATUS_LABEL[status.condition]}
+        <span className="text-[6px] opacity-70">{open ? '▴' : '▾'}</span>
       </button>
       {open && (
         <div

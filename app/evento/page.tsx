@@ -49,12 +49,19 @@ export default function EventoPage() {
   if (specialBattle.type === 'legendary') {
     const legendary = specialBattle.fighters[0]
     return (
-      <main className="min-h-screen bg-parchment dots">
+      <main className="min-h-screen bg-parchment dots relative overflow-hidden">
+        {/* Atmospheric typeColor tint over the page */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at 50% 28%, ${typeColor}22 0%, transparent 58%)` }} />
+
         {/* Header */}
-        <header className="border-b-4 border-ink px-5 py-4" style={{ backgroundColor: typeColor }}>
-          <div className="max-w-[640px] mx-auto">
-            <p className="font-game text-[6px] uppercase tracking-widest mb-0.5" style={{ color: `${typeText}70` }}>
-              {specialBattle.locationName}
+        <header className="relative border-b-4 border-ink px-5 py-4" style={{ backgroundColor: typeColor }}>
+          {/* Shine overlay */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 55%)' }} />
+          <div className="relative max-w-[640px] mx-auto">
+            <p className="font-game text-[6px] uppercase tracking-[0.45em] mb-0.5" style={{ color: `${typeText}70` }}>
+              ⭐ {specialBattle.locationName} ⭐
             </p>
             <p className="font-black text-xl uppercase tracking-tight leading-none" style={{ color: typeText }}>
               Pokémon Lendário Apareceu!
@@ -62,15 +69,20 @@ export default function EventoPage() {
           </div>
         </header>
 
-        <div className="max-w-[480px] mx-auto px-5 py-8 flex flex-col gap-6">
+        <div className="relative z-10 max-w-[480px] mx-auto px-5 py-8 flex flex-col gap-6">
 
-          {/* Card principal do lendário */}
-          <div className="border-4 border-ink rounded-3xl overflow-hidden bg-parchment-light shadow-neo-lg">
+          {/* Card principal do lendário — sombra typeColor para drama */}
+          <div className="border-4 border-ink rounded-3xl overflow-hidden bg-parchment-light"
+            style={{ boxShadow: `6px 6px 0 ${typeColor}` }}>
             <div className="h-2" style={{ backgroundColor: typeColor }} />
-            <div className="flex flex-col items-center gap-4 p-6" style={{ backgroundColor: `${typeColor}12` }}>
-              <div className="relative flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 p-6" style={{ backgroundColor: `${typeColor}15` }}>
+              <div className="relative flex items-center justify-center py-2">
+                {/* Anel pulsante externo */}
+                <div className="absolute rounded-full animate-ping"
+                  style={{ width: 176, height: 176, backgroundColor: `${typeColor}18`, animationDuration: '2.5s' }} />
+                {/* Aura estática */}
                 <div className="absolute rounded-full"
-                  style={{ width: 200, height: 200, background: `radial-gradient(circle, ${typeColor}30 0%, transparent 70%)` }} />
+                  style={{ width: 200, height: 200, background: `radial-gradient(circle, ${typeColor}38 0%, transparent 70%)` }} />
                 <img
                   src={getSpriteUrl(legendary.id)}
                   alt={legendary.name}
@@ -102,9 +114,10 @@ export default function EventoPage() {
             </div>
           </div>
 
-          {/* Aviso */}
-          <div className="border-2 border-ink/15 rounded-2xl px-4 py-3 text-center">
-            <p className="font-game text-[7px] text-ink/50 uppercase tracking-widest">
+          {/* Aviso especial */}
+          <div className="border-2 rounded-2xl px-4 py-3 text-center"
+            style={{ borderColor: `${typeColor}50`, backgroundColor: `${typeColor}08` }}>
+            <p className="font-game text-[7px] uppercase tracking-widest" style={{ color: typeColor }}>
               ⚠️ Apenas 1 lendário por run — batalha arriscada
             </p>
           </div>
@@ -113,8 +126,12 @@ export default function EventoPage() {
           <button
             disabled={!hasHealthyPokemon}
             onClick={startSpecialFight}
-            className="w-full py-5 font-black text-lg tracking-[0.2em] uppercase border-2 border-ink rounded-2xl shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-neo"
-            style={{ backgroundColor: typeColor, color: typeText }}
+            className="w-full py-5 font-black text-lg tracking-[0.2em] uppercase border-2 border-ink rounded-2xl transition-all cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0"
+            style={{
+              backgroundColor: typeColor,
+              color: typeText,
+              boxShadow: !hasHealthyPokemon ? 'none' : `4px 4px 0 ${typeColor}88, 6px 6px 0 #2C1810`,
+            }}
           >
             ⚡ Batalhar!
           </button>
