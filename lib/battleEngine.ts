@@ -319,6 +319,15 @@ export function applySlotMoveEffect(
   let message: string | null = null
   let isProtect = false
 
+  // ── Rapid Spin: clears player-side hazards when player wins ─────────────────
+  if (move.special === 'rapid-spin') {
+    if (side === 'player') {
+      eff.playerHazards = { stealthRock: false, toxicSpikes: false, stickyWeb: false }
+      message = `🌀 Rapid Spin! Armadilhas removidas do seu campo!`
+    }
+    return { effects: eff, message, isProtect }
+  }
+
   // ── Hazard-setting moves ─────────────────────────────────────────────────────
   if (move.special === 'stealth-rock' || move.special === 'toxic-spikes' || move.special === 'sticky-web') {
     if (side === 'player') {
