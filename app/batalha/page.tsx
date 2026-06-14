@@ -337,7 +337,7 @@ function MoveGrid({
                 {/* Botão info — não dispara ataque */}
                 <button
                   onClick={(e) => { e.stopPropagation(); setFlipped(rps) }}
-                  className="absolute top-1 right-1 w-[32px] h-[32px] rounded-full border border-ink/20 bg-white/80 flex items-center justify-center cursor-pointer hover:border-ink/50 z-10"
+                  className="absolute top-1 right-1 w-[44px] h-[44px] rounded-full border border-ink/20 bg-white/80 flex items-center justify-center cursor-pointer hover:border-ink/50 z-10"
                   style={{ fontSize: 11, color: 'rgba(44,24,16,0.4)', fontWeight: 900, lineHeight: 1 }}
                 >?</button>
               </div>
@@ -487,6 +487,12 @@ const STATUS_NAME: Record<StatusCondition, string> = {
 
 function StatusPill({ status }: { status: StatusState | null }) {
   const [open, setOpen] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    function closeOnOutside() { setOpen(false) }
+    document.addEventListener('click', closeOnOutside)
+    return () => document.removeEventListener('click', closeOnOutside)
+  }, [open])
   if (!status) return null
   const bg = STATUS_BG[status.condition]
   const fg = STATUS_FG[status.condition]
@@ -496,8 +502,6 @@ function StatusPill({ status }: { status: StatusState | null }) {
         className="font-game text-[8px] px-1.5 py-[2px] rounded font-bold leading-none cursor-pointer"
         style={{ backgroundColor: bg, color: fg }}
         onClick={(e) => { e.stopPropagation(); setOpen(v => !v) }}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
       >
         {STATUS_LABEL[status.condition]}
       </button>
@@ -505,8 +509,6 @@ function StatusPill({ status }: { status: StatusState | null }) {
         <div
           className="absolute bottom-full left-0 mb-1.5 z-50 rounded-xl px-3 py-2 border-2 border-ink/10 w-48 shadow-neo-sm"
           style={{ backgroundColor: '#2C1810' }}
-          onMouseEnter={() => setOpen(true)}
-          onMouseLeave={() => setOpen(false)}
           onClick={(e) => e.stopPropagation()}
         >
           <p className="font-game text-[7px] uppercase tracking-widest mb-1" style={{ color: bg }}>
@@ -1644,7 +1646,7 @@ export default function BatalhaPage() {
                     </button>
                     <button
                       onClick={() => setShowAbandon(true)}
-                      className="px-5 py-3 font-game text-[8px] uppercase border-2 border-ink/25 rounded-2xl text-ink/45 hover:text-ink/70 hover:border-ink/50 hover:bg-white/60 transition-all cursor-pointer">
+                      className="px-5 py-3 font-game text-[8px] uppercase border-2 border-ink/40 rounded-2xl text-ink/70 hover:text-ink hover:border-ink/70 hover:bg-white/60 transition-all cursor-pointer">
                       🏳️ Fugir
                     </button>
                   </div>

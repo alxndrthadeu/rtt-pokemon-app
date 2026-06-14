@@ -14,6 +14,7 @@ const config: Config = {
         // Palette principal — Sugimori watercolor warmth
         parchment: '#F5EDD8',      // fundo papel aquarela
         'parchment-light': '#FBF5E6', // cards
+        'parchment-dark': '#E8E0CC',  // elementos rebaixados / estado inativo
         ink: '#2C1810',            // tinta quente (não preto frio)
         'ink-soft': '#5C3D2E',     // texto secundário
 

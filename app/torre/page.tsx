@@ -312,11 +312,11 @@ export default function TorrePage() {
                   ) : (
                     <span className={`text-base ${locked ? 'grayscale' : ''}`}>{ELITE4_BADGE[i]}</span>
                   )}
-                  <p className="font-game text-[5px] text-ink/60 text-center leading-tight w-full truncate px-0.5">
+                  <p className="font-game text-[7px] text-ink/60 text-center leading-tight w-full truncate px-0.5">
                     {g.name.split(' ')[0]}
                   </p>
                   {done   && <span className="font-game text-[7px]" style={{ color: '#78C850' }}>✓</span>}
-                  {active && <span className="font-game text-[5px] font-black uppercase" style={{ color: tc }}>NOW</span>}
+                  {active && <span className="font-game text-[7px] font-black uppercase" style={{ color: tc }}>NOW</span>}
                   {locked && <span className="text-[8px] opacity-25">🔒</span>}
                 </div>
               )

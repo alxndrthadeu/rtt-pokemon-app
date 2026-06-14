@@ -164,8 +164,7 @@ export default function HomePage() {
           {/* Pokéball em card interno estilo visor Game Boy */}
           <div className="relative">
             <div
-              className="w-44 h-44 flex items-center justify-center border-2 border-ink rounded-2xl shadow-neo"
-              style={{ backgroundColor: '#E8E0CC' }}
+              className="w-44 h-44 flex items-center justify-center border-2 border-ink rounded-2xl shadow-neo bg-parchment-dark"
             >
               {/* Detalhe de canto estilo hardware anos 90 */}
               <span className="absolute top-2 left-2 w-2 h-2 rounded-full bg-ink opacity-20" />
@@ -216,8 +215,7 @@ export default function HomePage() {
             ].map((r) => (
               <div
                 key={r.n}
-                className="border-2 border-ink rounded-xl p-2.5 text-center shadow-neo-sm"
-                style={{ backgroundColor: '#E8E0CC' }}
+                className="border-2 border-ink rounded-xl p-2.5 text-center shadow-neo-sm bg-parchment-dark"
               >
                 <p className="font-game text-[18px] leading-none" style={{ color: '#CC2200' }}>{r.n}</p>
                 <p className="text-[9px] text-ink-soft mt-1 leading-tight whitespace-pre-line uppercase tracking-wide opacity-70">

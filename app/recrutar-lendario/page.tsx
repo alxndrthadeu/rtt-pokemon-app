@@ -44,7 +44,7 @@ export default function RecrutarLendarioPage() {
         </div>
       </header>
 
-      <div className="max-w-[480px] mx-auto px-5 py-6 flex flex-col gap-6 pb-32">
+      <div className="max-w-[480px] mx-auto px-5 py-6 flex flex-col gap-6" style={{ paddingBottom: 'calc(8rem + env(safe-area-inset-bottom))' }}>
 
         {/* Card do lendário */}
         <div className="border-4 border-ink rounded-3xl overflow-hidden shadow-neo-lg"

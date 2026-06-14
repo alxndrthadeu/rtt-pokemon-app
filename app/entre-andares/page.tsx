@@ -170,7 +170,7 @@ function BottomSheet({
         <div className="px-5 pb-2 pt-1 border-b border-ink/10">
           <p className="font-black text-base text-ink uppercase tracking-tight">{title}</p>
         </div>
-        <div className="px-5 py-4 pb-10">{children}</div>
+        <div className="px-5 py-4" style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}>{children}</div>
       </div>
     </div>
   )
