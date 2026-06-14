@@ -1820,9 +1820,11 @@ export default function BatalhaPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center"
           style={{ backgroundColor: 'rgba(44,24,16,0.75)', backdropFilter: 'blur(4px)' }}
           onClick={() => { if (!switchRequired) setShowSwitchPicker(false) }}>
-          <div className="w-full max-w-[640px] rounded-t-3xl border-t-4 border-x-4 border-ink p-5 max-h-[80svh] overflow-y-auto"
-            style={{ backgroundColor: '#FBF5E6', paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}
+          <div className="w-full max-w-[640px] rounded-t-3xl border-t-4 border-x-4 border-ink overflow-hidden"
+            style={{ backgroundColor: '#FBF5E6' }}
             onClick={e => e.stopPropagation()}>
+            <div className="max-h-[80svh] overflow-y-auto p-5"
+              style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}>
             <div className="w-10 h-1 rounded-full bg-ink/20 mx-auto mb-5" />
             <p className="font-black text-lg text-ink uppercase tracking-tight text-center mb-1">
               {switchRequired ? 'Próximo Pokémon!' : 'Trocar Pokémon'}
@@ -1877,6 +1879,7 @@ export default function BatalhaPage() {
                   </button>
                 )
               })}
+            </div>
             </div>
           </div>
         </div>
