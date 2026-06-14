@@ -423,7 +423,7 @@ function MoveGrid({
                 {!disabled && (
                   <button
                     onClick={(e) => { e.stopPropagation(); setFlipped('unique') }}
-                    className="absolute top-1 right-1 w-[32px] h-[32px] rounded-full border flex items-center justify-center cursor-pointer hover:border-opacity-70 z-10"
+                    className="absolute top-1 right-1 w-[44px] h-[44px] rounded-full border flex items-center justify-center cursor-pointer hover:border-opacity-70 z-10"
                     style={{ borderColor: tc, backgroundColor: `${tc}18`, fontSize: 11, color: tc, fontWeight: 900, lineHeight: 1 }}
                   >?</button>
                 )}
