@@ -993,7 +993,7 @@ export const ZONE_POOLS: readonly ZonePool[] = [
     floors: [8, 9, 10, 11],
     common: [66, 75, 147],
     rare:   [67, 76, 111, 148],
-    ultra:  [144, 145, 146, 149, 150, 151],
+    ultra:  [149, 151],
   },
 ] as const
 

@@ -15,7 +15,7 @@ function generateSessionId(): string {
 
 // Floors where shop is available (currentFloor value after winning that gym)
 export const SHOP_FLOORS = [3, 6, 9] as const
-export const HEAL_COST = 7
+export const HEAL_COST = 5
 
 interface GameStore {
   // Sessão anônima (UUID persistido no localStorage)
@@ -43,6 +43,7 @@ interface GameStore {
   specialBattle: SpecialBattleConfig | null
   legendaryEventUsed: boolean
   pendingLegendaryCard: PokemonCard | null
+  guaranteedLegendaryFloor: number | null
 
   // Pokédex persistente (cross-run)
   pokedexSeen: number[]
@@ -142,6 +143,7 @@ export const useGameStore = create<GameStore>()(
       specialBattle: null,
       legendaryEventUsed: false,
       pendingLegendaryCard: null,
+      guaranteedLegendaryFloor: null,
       pokedexSeen: [],
       apiError: null,
       coins: 0,
@@ -153,7 +155,7 @@ export const useGameStore = create<GameStore>()(
       runSaved: false,
       runHistory: [],
 
-      setMode: (mode) => set({ mode }),
+      setMode: (mode) => set({ mode, guaranteedLegendaryFloor: Math.floor(Math.random() * 4) + 4 }),
       setGender: (gender) => set({ gender }),
       setPlayerName: (name) => set({ playerName: name.trim().slice(0, 20) }),
       clearApiError: () => set({ apiError: null }),
@@ -586,6 +588,7 @@ export const useGameStore = create<GameStore>()(
           specialBattle: null,
           legendaryEventUsed: false,
           pendingLegendaryCard: null,
+          guaranteedLegendaryFloor: null,
           pokedexSeen: s.pokedexSeen,
           runHistory: s.runHistory,
         })),
@@ -612,6 +615,7 @@ export const useGameStore = create<GameStore>()(
         legendaryEventUsed: s.legendaryEventUsed,
         specialBattle: s.specialBattle,
         pendingLegendaryCard: s.pendingLegendaryCard,
+        guaranteedLegendaryFloor: s.guaranteedLegendaryFloor,
         runHistory: s.runHistory,
         runSaved: s.runSaved,
       }),

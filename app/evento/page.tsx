@@ -212,7 +212,7 @@ export default function EventoPage() {
           </div>
           <div className="border-2 border-ink rounded-2xl p-4 bg-white shadow-neo-sm text-center">
             <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest mb-1">Se perder</p>
-            <p className="font-black text-xl" style={{ color: rocketRed }}>−3₽</p>
+            <p className="font-black text-xl" style={{ color: rocketRed }}>−5₽</p>
             <p className="font-game text-[6px] text-ink/50 mt-0.5">Rocket foge</p>
           </div>
         </div>

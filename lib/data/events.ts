@@ -163,15 +163,14 @@ export function buildRocketConfig(gruntId: RocketGruntId): SpecialBattleConfig |
 export function rollForEvent(
   prevFloor: number,
   legendaryEventUsed: boolean,
+  guaranteedLegendaryFloor: number | null,
 ): SpecialBattleConfig | null {
-  // Legendary check — floors 4-7, 35% each, max 1 per run
-  if (!legendaryEventUsed) {
+  // Legendary — 100% garantido no andar pré-sorteado (1 por run)
+  if (!legendaryEventUsed && guaranteedLegendaryFloor !== null && prevFloor === guaranteedLegendaryFloor) {
     const def = LEGENDARY_EVENT_DEFS.find(e => e.triggerFloor === prevFloor)
-    if (def && Math.random() < def.chance) {
-      return buildLegendaryConfig(def.key)
-    }
+    if (def) return buildLegendaryConfig(def.key)
   }
-  // Rocket check — floors 3-6, 25% chance (if legendary didn't fire)
+  // Rocket check — floors 3-6, 25% chance (se lendário não disparou)
   if (prevFloor >= 3 && prevFloor <= 6 && Math.random() < 0.25) {
     const gruntId: RocketGruntId =
       prevFloor <= 4 ? 'grunt-a' : prevFloor <= 5 ? 'grunt-b' : 'grunt-c'

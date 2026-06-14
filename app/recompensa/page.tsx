@@ -173,7 +173,7 @@ function RewardCard({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function RecompensaPage() {
   const router = useRouter()
-  const { currentFloor, mode, coins, addConsumable, addHeldItemToBag, addCoins, legendaryEventUsed, setSpecialBattle } = useGameStore()
+  const { currentFloor, mode, coins, addConsumable, addHeldItemToBag, addCoins, legendaryEventUsed, guaranteedLegendaryFloor, setSpecialBattle } = useGameStore()
   const [options, setOptions] = useState<RewardOption[]>([])
   const [selected, setSelected] = useState<number | null>(null)
   const [claiming, setClaiming] = useState(false)
@@ -204,7 +204,7 @@ export default function RecompensaPage() {
       addConsumable('rare-candy', 1)
     }
 
-    const event = rollForEvent(prevFloor, legendaryEventUsed)
+    const event = rollForEvent(prevFloor, legendaryEventUsed, guaranteedLegendaryFloor)
     if (event) {
       setSpecialBattle(event)
       router.push('/evento')

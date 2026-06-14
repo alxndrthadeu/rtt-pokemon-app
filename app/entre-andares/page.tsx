@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useGameStore, HEAL_COST } from '@/store/gameStore'
+import { useGameStore, HEAL_COST, SHOP_FLOORS } from '@/store/gameStore'
 import { EVOLUTION_MAP, ASH_PIKACHU_ID, getStarterLine } from '@/lib/data/pokemon'
 import { GYM_LEADERS } from '@/lib/data/gyms'
 import { AbandonConfirmModal } from '@/components/AbandonConfirmModal'
@@ -435,7 +435,9 @@ export default function EntreAndaresPage() {
   const nextGymColor = nextGym ? getTypeColor(nextGym.specialtyType) : '#CC2200'
 
   const shopVisited   = shopVisitedFloors.includes(currentFloor)
-  const shopAvailable = !isEliteFour && !shopVisited
+  const shopOnThisFloor = (SHOP_FLOORS as readonly number[]).includes(currentFloor)
+  const shopAvailable = shopOnThisFloor && !shopVisited
+  const nextShopFloor = (SHOP_FLOORS as readonly number[]).find(f => f > currentFloor) ?? null
 
   const allHealthy = playerDeck.every(p => !p.isFainted && p.hearts >= 5)
   const canHeal    = !isEliteFour && coins >= HEAL_COST && !allHealthy
@@ -646,12 +648,17 @@ export default function EntreAndaresPage() {
 
         {/* ── POKÉMART ── */}
         {!isEliteFour && (
-          <div className="rounded-2xl border-2 border-ink overflow-hidden"
-            style={{ backgroundColor: 'white', boxShadow: '4px 4px 0 #2C1810' }}>
+          <div className="rounded-2xl border-2 overflow-hidden"
+            style={{
+              borderColor: shopAvailable ? '#2C1810' : '#2C181030',
+              backgroundColor: shopAvailable ? 'white' : '#F5EDD8',
+              boxShadow: shopAvailable ? '4px 4px 0 #2C1810' : 'none',
+              opacity: shopAvailable ? 1 : 0.65,
+            }}>
             <div className="h-2 flex">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="flex-1"
-                  style={{ backgroundColor: i % 2 === 0 ? '#2C7BB5' : '#3A8FD0' }} />
+                  style={{ backgroundColor: shopAvailable ? (i % 2 === 0 ? '#2C7BB5' : '#3A8FD0') : (i % 2 === 0 ? '#A8A878' : '#909060') }} />
               ))}
             </div>
             <div className="px-4 py-3 flex items-center gap-3">
@@ -659,7 +666,13 @@ export default function EntreAndaresPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-black text-sm text-ink uppercase tracking-tight leading-tight">Pokémart</p>
                 <p className="font-game text-[6px] text-ink/40 uppercase tracking-widest leading-none mt-0.5">
-                  Itens, hold items e consumíveis
+                  {shopAvailable
+                    ? 'Itens, hold items e consumíveis'
+                    : shopVisited
+                      ? 'Já visitada neste andar'
+                      : nextShopFloor
+                        ? `Disponível no andar ${nextShopFloor}`
+                        : 'Fechada'}
                 </p>
               </div>
               {shopAvailable && (
@@ -669,20 +682,22 @@ export default function EntreAndaresPage() {
                 </span>
               )}
             </div>
-            <div className="border-t border-ink/8 px-4 pb-3 pt-2">
-              <button
-                onClick={() => router.push('/loja')}
-                className="w-full py-2.5 rounded-xl border-2 font-black text-sm uppercase tracking-[0.1em] transition-all cursor-pointer"
-                style={{
-                  borderColor: '#2C7BB5',
-                  backgroundColor: '#2C7BB5',
-                  color: 'white',
-                  boxShadow: '3px 3px 0 #2C1810',
-                }}
-              >
-                Entrar na Loja →
-              </button>
-            </div>
+            {shopAvailable && (
+              <div className="border-t border-ink/8 px-4 pb-3 pt-2">
+                <button
+                  onClick={() => router.push('/loja')}
+                  className="w-full py-2.5 rounded-xl border-2 font-black text-sm uppercase tracking-[0.1em] transition-all cursor-pointer"
+                  style={{
+                    borderColor: '#2C7BB5',
+                    backgroundColor: '#2C7BB5',
+                    color: 'white',
+                    boxShadow: '3px 3px 0 #2C1810',
+                  }}
+                >
+                  Entrar na Loja →
+                </button>
+              </div>
+            )}
           </div>
         )}
 

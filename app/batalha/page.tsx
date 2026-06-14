@@ -854,8 +854,8 @@ export default function BatalhaPage() {
     if (sb.type === 'legendary') {
       markLegendaryEventUsed()
     } else {
-      // Confisco parcial: perde até 3₽; se saldo insuficiente perde tudo
-      if (!spendCoins(3) && coins > 0) spendCoins(coins)
+      // Confisco parcial: perde até 5₽; se saldo insuficiente perde tudo
+      if (!spendCoins(5) && coins > 0) spendCoins(coins)
     }
     syncDeckAfterBattle(
       playerFighters.map(f => ({
