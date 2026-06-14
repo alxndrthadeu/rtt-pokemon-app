@@ -19,12 +19,12 @@ function getRank(deaths: number) {
 
 export default function ConclusaoPage() {
   const router = useRouter()
-  const { playerName, playerDeck, deathCount, mode, resetRun, setRunEndReason, saveRunToHistory } = useGameStore()
+  const { playerName, playerDeck, deathCount, mode, resetRun, finalizeRun } = useGameStore()
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setRunEndReason('won')
-    saveRunToHistory()
+    if (!mode) { router.replace('/'); return }
+    finalizeRun('won')
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const rank = getRank(deathCount)

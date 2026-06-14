@@ -117,6 +117,7 @@ interface GameStore {
   runHistory: RunSummary[]
   setRunEndReason: (reason: RunEndReason) => void
   saveRunToHistory: () => void
+  finalizeRun: (reason: RunEndReason) => void
 
   // Actions — Persistência
   createRun: () => Promise<void>
@@ -427,7 +428,7 @@ export const useGameStore = create<GameStore>()(
 
       healAtCenter: () =>
         set((s) => {
-          if (s.coins < HEAL_COST) return s
+          if (s.coins < HEAL_COST) return {}
           return {
             coins: s.coins - HEAL_COST,
             playerDeck: s.playerDeck.map((p) => ({
@@ -490,6 +491,36 @@ export const useGameStore = create<GameStore>()(
           })),
         }
         set((state) => ({
+          runHistory: [summary, ...state.runHistory].slice(0, 50),
+          runSaved: true,
+        }))
+      },
+
+      // Atômico: define o motivo e salva em uma única operação set()
+      finalizeRun: (reason) => {
+        const s = get()
+        if (s.runSaved || !s.mode || !s.gender) return
+        const summary: RunSummary = {
+          id: crypto.randomUUID(),
+          date: new Date().toISOString(),
+          playerName: s.playerName,
+          mode: s.mode,
+          gender: s.gender,
+          result: reason,
+          floorsCompleted: s.currentFloor,
+          badgesEarned: [...s.badgesEarned],
+          deathCount: s.deathCount,
+          coins: s.coins,
+          teamSnapshot: s.playerDeck.map((p) => ({
+            id: p.id,
+            name: p.name,
+            type1: p.type1,
+            hearts: p.hearts,
+            isFainted: p.isFainted,
+          })),
+        }
+        set((state) => ({
+          runEndReason: reason,
           runHistory: [summary, ...state.runHistory].slice(0, 50),
           runSaved: true,
         }))
@@ -566,6 +597,7 @@ export const useGameStore = create<GameStore>()(
         runId: s.runId,
         mode: s.mode,
         gender: s.gender,
+        playerName: s.playerName,
         currentFloor: s.currentFloor,
         badgesEarned: s.badgesEarned,
         deathCount: s.deathCount,
@@ -578,6 +610,8 @@ export const useGameStore = create<GameStore>()(
         shopVisitedFloors: s.shopVisitedFloors,
         starterId: s.starterId,
         legendaryEventUsed: s.legendaryEventUsed,
+        specialBattle: s.specialBattle,
+        pendingLegendaryCard: s.pendingLegendaryCard,
         runHistory: s.runHistory,
         runSaved: s.runSaved,
       }),
