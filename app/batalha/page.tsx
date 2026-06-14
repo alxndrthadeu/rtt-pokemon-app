@@ -310,8 +310,8 @@ function MoveGrid({
         const isFlipped   = flipped === rps
 
         return (
-          <div key={rps} className={`move-cell-flip ${borders[idx]}`} style={{ minHeight: 90 }}>
-            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 90 }}>
+          <div key={rps} className={`move-cell-flip ${borders[idx]}`} style={{ minHeight: 76 }}>
+            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 76 }}>
 
               {/* ── FRENTE ── */}
               <div
@@ -378,7 +378,7 @@ function MoveGrid({
 
         if (!unique) {
           return (
-            <div className={`move-cell-flip ${borders[3]}`} style={{ minHeight: 90 }}>
+            <div className={`move-cell-flip ${borders[3]}`} style={{ minHeight: 76 }}>
               <div className="flex flex-col gap-1 p-3 opacity-20 select-none h-full" style={{ backgroundColor: '#F5EDD8' }}>
                 <div className="pl-2.5 flex flex-col gap-1">
                   <span className="text-[24px] leading-none">⚡</span>
@@ -392,8 +392,8 @@ function MoveGrid({
         const tc = getTypeColor(unique.type)
         return (
           <div className={`move-cell-flip ${borders[3]}`}
-            style={{ minHeight: 90, boxShadow: !disabled ? '0 0 8px 3px #F8D03066' : undefined, outline: !disabled ? '1px solid #F8D03055' : undefined }}>
-            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 90 }}>
+            style={{ minHeight: 76, boxShadow: !disabled ? '0 0 8px 3px #F8D03066' : undefined, outline: !disabled ? '1px solid #F8D03055' : undefined }}>
+            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 76 }}>
 
               {/* ── FRENTE único ── */}
               <div
@@ -620,7 +620,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
   return (
     <div className="relative overflow-hidden rounded-3xl border-2 border-ink select-none"
       style={{
-        height: 256,
+        height: 'clamp(180px, 40svh, 256px)',
         background: `linear-gradient(180deg,
           ${typeColor}55 0%,
           ${typeColor}18 36%,
@@ -1407,7 +1407,7 @@ export default function BatalhaPage() {
       </header>
 
       <div className="max-w-[640px] mx-auto px-4 pt-4 flex flex-col gap-3"
-        style={{ paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))' }}>
+        style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
 
         {/* ── ARENA ── */}
         <BattleArena
