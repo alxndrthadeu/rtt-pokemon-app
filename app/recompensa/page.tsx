@@ -176,6 +176,7 @@ export default function RecompensaPage() {
   const { currentFloor, mode, coins, addConsumable, addHeldItemToBag, addCoins, legendaryEventUsed, setSpecialBattle } = useGameStore()
   const [options, setOptions] = useState<RewardOption[]>([])
   const [selected, setSelected] = useState<number | null>(null)
+  const [claiming, setClaiming] = useState(false)
 
   const prevFloor = currentFloor - 1
   const gym = GYM_LEADERS[prevFloor]
@@ -189,7 +190,8 @@ export default function RecompensaPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleClaim() {
-    if (selected === null) return
+    if (selected === null || claiming) return
+    setClaiming(true)
     const option = options[selected]
 
     if (option.kind === 'consumables') {
@@ -268,15 +270,15 @@ export default function RecompensaPage() {
 
         <button
           onClick={handleClaim}
-          disabled={selected === null}
+          disabled={selected === null || claiming}
           className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl text-parchment-light transition-all duration-100 disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer mt-2"
           style={{
             backgroundColor: selected !== null ? gymColor : '#E8E0CC',
             color: selected !== null ? gymTextColor : '#2C1810',
-            boxShadow: selected !== null ? '4px 4px 0 #2C1810' : 'none',
+            boxShadow: selected !== null && !claiming ? '4px 4px 0 #2C1810' : 'none',
           }}
         >
-          {selected !== null ? 'Pegar recompensa →' : 'Selecione uma opção'}
+          {claiming ? 'Aguarde…' : selected !== null ? 'Pegar recompensa →' : 'Selecione uma opção'}
         </button>
 
       </div>

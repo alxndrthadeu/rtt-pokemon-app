@@ -601,12 +601,14 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
       setPlayerFlash(STATUS_BG[effects.playerStatus.condition])
     }
     prevPH.current = pf.hearts
+    // effects é lido na mesma fase de render que pf.hearts — não precisa ser dep
   }, [pf.hearts]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (ef.hearts < prevEH.current && effects.enemyStatus) {
       setEnemyFlash(STATUS_BG[effects.enemyStatus.condition])
     }
     prevEH.current = ef.hearts
+    // effects é lido na mesma fase de render que ef.hearts — não precisa ser dep
   }, [ef.hearts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -762,12 +764,13 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
 export default function BatalhaPage() {
   const router = useRouter()
   const {
-    battle, currentFloor, mode, playerDeck, badgesEarned,
+    battle, currentFloor, mode, playerDeck, badgesEarned, coins,
     endBattle, clearBattle, syncDeckAfterBattle, incrementDeathCount, setRunEndReason,
     specialBattle, setSpecialBattle, markLegendaryEventUsed, setPendingLegendaryCard,
     addCoins, spendCoins, addConsumable,
   } = useGameStore()
   const [showAbandon, setShowAbandon] = useState(false)
+  const [victorySubmitted, setVictorySubmitted] = useState(false)
 
   const [playerFighters, setPlayerFighters] = useState<Fighter[]>([])
   const [enemyFighters, setEnemyFighters] = useState<Fighter[]>([])
@@ -801,6 +804,7 @@ export default function BatalhaPage() {
     setEffects(newEffects)
     if (message) setEntryMsg(message)
     if (forcedFirstMove) setStickyWebForcedMove(forcedFirstMove)
+    // battle é lido uma vez no mount para inicializar estado local; deps causariam re-init mid-battle
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Intercepta botão voltar do browser durante a batalha
@@ -812,6 +816,7 @@ export default function BatalhaPage() {
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
+    // listener registrado uma vez; battle não muda durante a batalha
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pré-computa o RPS do inimigo ao entrar em fase de seleção (visual tell + Quick Claw)
@@ -826,6 +831,7 @@ export default function BatalhaPage() {
     const currentPf = playerFighters[playerIdx]
     if (currentPf) setQuickClawRevealed(checkQuickClaw(currentPf.pokemon))
     else setQuickClawRevealed(false)
+    // battle/specialBattle/currentFloor são imutáveis durante o combate; só phase e idx sinalizam recompute
   }, [phase, enemyIdx, playerIdx]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const gymLeader = GYM_LEADERS[currentFloor]
@@ -845,7 +851,8 @@ export default function BatalhaPage() {
     if (sb.type === 'legendary') {
       markLegendaryEventUsed()
     } else {
-      spendCoins(3)
+      // Confisco parcial: perde até 3₽; se saldo insuficiente perde tudo
+      if (!spendCoins(3) && coins > 0) spendCoins(coins)
     }
     syncDeckAfterBattle(
       playerFighters.map(f => ({
@@ -1399,7 +1406,10 @@ export default function BatalhaPage() {
               {gym.badge ? `${gym.badge} conquistada!` : `${gym.name} foi derrotado!`}
             </p>
             <button
+              disabled={victorySubmitted}
               onClick={() => {
+                if (victorySubmitted) return
+                setVictorySubmitted(true)
                 syncDeckAfterBattle(playerFighters.map(f => ({ id: f.pokemon.id, hearts: f.hearts, isFainted: f.hearts <= 0 })))
                 if (specialBattle) {
                   if (specialBattle.type === 'legendary') {
@@ -1422,7 +1432,7 @@ export default function BatalhaPage() {
                   router.push(currentFloor >= 11 ? '/entre-andares' : '/recompensa')
                 }
               }}
-              className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer">
+              className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl bg-white text-ink shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-neo">
               {specialBattle?.type === 'legendary' ? '⚡ Recrutar Lendário →'
                 : specialBattle?.type === 'rocket' ? 'Coletar recompensa →'
                 : currentFloor >= 11 ? '🏆 Ver resultado final →'

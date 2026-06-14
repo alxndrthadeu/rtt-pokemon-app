@@ -28,6 +28,8 @@ export default function EventoPage() {
   const typeColor = getTypeColor(specialBattle.specialtyType)
   const typeText  = getTypeTextColor(specialBattle.specialtyType)
 
+  const hasHealthyPokemon = playerDeck.some(p => !p.isFainted && p.hearts > 0)
+
   function startSpecialFight() {
     const nonFainted = playerDeck.filter(p => !p.isFainted && p.hearts > 0)
     if (nonFainted.length === 0) return
@@ -37,7 +39,8 @@ export default function EventoPage() {
   }
 
   function handleIgnore() {
-    spendCoins(2)
+    // Pedágio de 2₽ — botão desabilitado quando saldo insuficiente, guard por segurança
+    if (!spendCoins(2)) return
     setSpecialBattle(null)
     router.push(nextRoute)
   }
@@ -135,12 +138,19 @@ export default function EventoPage() {
 
           {/* CTA */}
           <button
+            disabled={!hasHealthyPokemon}
             onClick={startSpecialFight}
-            className="w-full py-5 font-black text-lg tracking-[0.2em] uppercase border-2 border-white/20 rounded-2xl text-white transition-all cursor-pointer hover:border-white/50 hover:scale-[1.02]"
+            className="w-full py-5 font-black text-lg tracking-[0.2em] uppercase border-2 border-white/20 rounded-2xl text-white transition-all cursor-pointer hover:border-white/50 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
             style={{ background: `linear-gradient(135deg, ${typeColor}CC 0%, ${typeColor}88 100%)`, boxShadow: `0 0 30px ${typeColor}60` }}
           >
             ⚡ Batalhar!
           </button>
+
+          {!hasHealthyPokemon && (
+            <p className="font-game text-[7px] text-red-400 uppercase tracking-widest text-center">
+              ⚠️ Todos os seus Pokémon estão desmaiados
+            </p>
+          )}
 
           <p className="font-game text-[6px] text-white/25 uppercase tracking-widest text-center">
             Se perder, o lendário escapa e o evento não volta
@@ -225,23 +235,30 @@ export default function EventoPage() {
         {/* Botões */}
         <div className="flex flex-col gap-3">
           <button
+            disabled={!hasHealthyPokemon}
             onClick={startSpecialFight}
-            className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl text-white transition-all cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+            className="w-full py-4 font-black text-base tracking-[0.2em] uppercase border-2 border-ink rounded-2xl text-white transition-all cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0"
             style={{ backgroundColor: rocketRed, boxShadow: '4px 4px 0 #2C1810' }}
           >
             ⚔️ Encarar o Grunt
           </button>
           <button
+            disabled={coins < 2}
             onClick={handleIgnore}
-            className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/20 rounded-2xl text-ink/50 hover:text-ink/70 transition-all cursor-pointer"
+            className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/20 rounded-2xl text-ink/50 hover:text-ink/70 transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
           >
             🏃 Ignorar — pagar 2₽ de pedágio
           </button>
         </div>
 
-        {coins < 2 && (
+        {!hasHealthyPokemon && (
           <p className="font-game text-[7px] text-center uppercase tracking-widest" style={{ color: rocketRed }}>
-            ⚠️ Saldo insuficiente — a Rocket toma o que puder
+            ⚠️ Todos os seus Pokémon estão desmaiados
+          </p>
+        )}
+        {hasHealthyPokemon && coins < 2 && (
+          <p className="font-game text-[7px] text-center uppercase tracking-widest" style={{ color: rocketRed }}>
+            ⚠️ Sem moedas para pagar pedágio — encare o Grunt ou perca a chance
           </p>
         )}
       </div>
