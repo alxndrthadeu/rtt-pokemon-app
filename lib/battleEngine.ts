@@ -319,7 +319,7 @@ export function applySlotMoveEffect(
   let message: string | null = null
   let isProtect = false
 
-  // ── Rapid Spin: clears player-side hazards when player wins ─────────────────
+  // ── Rapid Spin: clears the spinner's side hazards ───────────────────────────
   if (move.special === 'rapid-spin') {
     if (side === 'player') {
       const { stealthRock, toxicSpikes, stickyWeb } = eff.playerHazards
@@ -328,8 +328,14 @@ export function applySlotMoveEffect(
       message = removed.length > 0
         ? `🌀 Rapid Spin! ${removed.join(' + ')} — campo limpo!`
         : `🌀 Rapid Spin! Nenhuma armadilha no campo.`
+    } else {
+      const { stealthRock, toxicSpikes, stickyWeb } = eff.enemyHazards
+      const removed = [stealthRock && 'Stealth Rock', toxicSpikes && 'Toxic Spikes', stickyWeb && 'Sticky Web'].filter(Boolean) as string[]
+      eff.enemyHazards = { stealthRock: false, toxicSpikes: false, stickyWeb: false }
+      message = removed.length > 0
+        ? `🌀 Rapid Spin inimigo! ${removed.join(' + ')} removidos do campo inimigo!`
+        : null
     }
-    // enemy Rapid Spin: no effect by design — no enemy pokemon has this move
     return { effects: eff, message, isProtect }
   }
 
