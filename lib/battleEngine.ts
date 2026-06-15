@@ -795,9 +795,9 @@ export function applyEntryEffects(
   // Clear protect cooldown on switch
   eff.sides[enteringSide].protectCooldown = false
 
-  // ── Hold item orbs: apply status on entry (player-side only for now) ──────────
-  if (enteringSide === 0 && pokemon.heldItem) {
-    const slot = eff.slots[0]
+  // ── Hold item orbs: apply status on entry ────────────────────────────────────
+  if (pokemon.heldItem) {
+    const slot = eff.slots[enteringSide]
     if (pokemon.heldItem.id === 'toxic-orb' && !slot.status &&
         !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
       slot.status = { condition: 'poison', turnsLeft: -1 }
@@ -842,14 +842,12 @@ export function applyEntryEffects(
   }
 
   // Reset per-pokemon item ticks when new pokemon enters (sash NOT reset — one use per battle)
-  if (enteringSide === 0) {
-    const p = eff.slots[0]
-    p.leftoversTick = 0
-    p.sitrusUsed = false
-    p.oranUsed = false
-    p.lumUsed = false
-    p.whiteHerbUsed = false
-  }
+  const entrySlot = eff.slots[enteringSide]
+  entrySlot.leftoversTick = 0
+  entrySlot.sitrusUsed = false
+  entrySlot.oranUsed = false
+  entrySlot.lumUsed = false
+  entrySlot.whiteHerbUsed = false
 
   return {
     newEffects: eff,

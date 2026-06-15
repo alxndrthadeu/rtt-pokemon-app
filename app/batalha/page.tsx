@@ -25,7 +25,7 @@ function patchSlot(e: BattleEffects, idx: 0 | 1, p: Partial<SlotState>): BattleE
 }
 function patchSide(e: BattleEffects, idx: 0 | 1, p: Partial<SideState>): BattleEffects {
   const s: [SideState, SideState] = [{ ...e.sides[0] }, { ...e.sides[1] }]
-  s[idx] = { ...s[idx], ...p }
+  s[idx] = { ...s[idx], hazards: { ...s[idx].hazards }, ...p }
   return { ...e, sides: s }
 }
 
@@ -783,7 +783,10 @@ function applyPlayerSwitchReset(eff: BattleEffects): BattleEffects {
   return patchSlot(eff, 0, {
     status: null,
     tiredTurns: 0,
+    attackMod: 0,
+    defenseMod: 0,
     sturdyUsed: false,
+    flashFireActive: false,
     destinyBond: false,
     aquaRingActive: false,
     aquaRingHealIn: 2,
@@ -1055,7 +1058,7 @@ export default function BatalhaPage() {
           newEHearts = Math.min(ef.pokemon.hearts, newEHearts + 1)
           activations.push(`💧 WaterAbsorb! ${ef.pokemon.name} absorveu e recuperou 1 ♥!`)
         } else if (eAbility === 'FlashFire' && attackType === 'Fire') {
-          immune = true; multiplier = 0
+          immune = true; multiplier = 0; eff = patchSlot(eff, 1, { flashFireActive: true })
           activations.push(`🔥 FlashFire! ${ef.pokemon.name} é imune ao Fogo!`)
         } else if (eAbility === 'Levitate' && attackType === 'Ground') {
           immune = true; multiplier = 0
@@ -1146,7 +1149,7 @@ export default function BatalhaPage() {
 
         if (!immune && !isProtect) {
           const slotRes = calcSlotDamage(
-            attackType, ef.pokemon, newEHearts, pf.pokemon, false,
+            attackType, ef.pokemon, newEHearts, pf.pokemon, eff.slots[1].flashFireActive,
             eff.slots[1].attackMod, eff.slots[0].defenseMod,
           )
           playerDmg = slotRes.damage
@@ -1214,8 +1217,9 @@ export default function BatalhaPage() {
     }
 
     const playerSkippedTurn = turnStart.playerSkipsTurn
+    const wasFrozenPreTurn = effects.slots[0].status?.condition === 'freeze'
     const lostTurn = playerForcedThisTurn && outcome === 'enemy_wins' && (
-      eff.slots[0].status?.condition === 'freeze' ||
+      wasFrozenPreTurn ||
       effects.slots[0].tiredTurns > 0
     )
     const enemyLostTurn = turnStart.enemyAutoLose && outcome === 'player_wins'
@@ -1306,7 +1310,7 @@ export default function BatalhaPage() {
 
     if (!immune) {
       const slotRes = calcSlotDamage(
-        attackType, ef.pokemon, ef.hearts, incoming.pokemon, false,
+        attackType, ef.pokemon, ef.hearts, incoming.pokemon, eff.slots[1].flashFireActive,
         eff.slots[1].attackMod, eff.slots[0].defenseMod,
       )
       playerDmg = slotRes.damage
