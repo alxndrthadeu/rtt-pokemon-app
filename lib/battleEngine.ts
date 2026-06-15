@@ -1,89 +1,42 @@
-import type { PokemonCard, PokemonType, RPS, StatusCondition, UniqueMove, Move } from '@/types'
+import type { PokemonCard, PokemonType, RPS, StatusCondition, UniqueMove, Move, SideIndex, BattleEffects, SlotState, SideState, StatusState } from '@/types'
 import { getCombinedMultiplier, damageFromMultiplier } from '@/lib/data/typeChart'
 import { HELD_ITEMS } from '@/lib/data/items'
 
-// ─── Status state ─────────────────────────────────────────────────────────────
+// ─── Re-exports for callers that import from battleEngine ────────────────────
+export type { BattleEffects, SlotState, SideState, StatusState, SideIndex } from '@/types'
 
-export interface StatusState {
-  condition: StatusCondition
-  turnsLeft: number   // -1 = indefinite (poison/burn); ≥0 = turns remaining
+// ─── Battle effects defaults ──────────────────────────────────────────────────
+
+const DEFAULT_SLOT: SlotState = {
+  status: null,
+  tiredTurns: 0,
+  attackMod: 0,
+  defenseMod: 0,
+  sturdyUsed: false,
+  flashFireActive: false,
+  shellSmashTurns: 0,
+  aquaRingActive: false,
+  aquaRingHealIn: 2,
+  destinyBond: false,
+  forcedMove: null,
+  forcedTurnsLeft: 0,
+  sitrusUsed: false,
+  oranUsed: false,
+  lumUsed: false,
+  sashUsed: false,
+  whiteHerbUsed: false,
+  leftoversTick: 0,
+  uniqueCooldown: false,
 }
 
-// ─── Battle effects ───────────────────────────────────────────────────────────
-
-export interface BattleEffects {
-  flashFireActive: boolean
-  playerSturdyUsed: boolean
-  enemySturdyUsed: boolean
-  // Forced move state
-  enemyForcedMove: RPS | null
-  enemyForcedTurnsLeft: number
-  // Status conditions
-  playerStatus: StatusState | null
-  enemyStatus: StatusState | null
-  // "Tired" — forced rock for N turns (OHKO, Hyper Beam recharge, etc.)
-  playerTiredTurns: number
-  enemyTiredTurns: number
-  // One-shot attack/defense modifiers (consumed when first applied, then reset to 0)
-  playerAttackMod: number   // ±1 applied to next player attack
-  enemyAttackMod: number    // ±1 applied to next enemy attack
-  playerDefenseMod: number  // ±1 applied when player receives next hit
-  enemyDefenseMod: number   // ±1 applied when enemy receives next hit
-  // Protect: blocks incoming damage for one turn
-  playerProtectCooldown: boolean  // protect unavailable next turn
-  enemyProtectCooldown: boolean
-  // Unique state
-  uniqueCooldown: boolean         // unique unavailable next turn (Hydro Cannon)
-  // Shell Smash: +1 atk / -1 def por N turnos
-  playerShellSmashTurns: number
-  // Aqua Ring: cura passiva +1♥ a cada 2 turnos
-  playerAquaRingActive: boolean
-  playerAquaRingHealIn: number    // countdown: quando chega a 0 cura e reseta para 2
-  // Destiny Bond: se player for KO no próximo turno, inimigo também cai
-  playerDestinyBond: boolean
-
-  // ── Hazards de campo ─────────────────────────────────────────────────────────
-  playerHazards: { stealthRock: boolean; toxicSpikes: boolean; stickyWeb: boolean }
-  enemyHazards:  { stealthRock: boolean; toxicSpikes: boolean; stickyWeb: boolean }
-
-  // ── Hold item tracking (one-use items per battle) ────────────────────────────
-  playerSitrusUsed: boolean    // Sitrus Berry
-  playerOranUsed: boolean      // Oran Berry
-  playerLumUsed: boolean       // Lum Berry
-  playerSashUsed: boolean      // Focus Sash
-  playerWhiteHerbUsed: boolean // White Herb
-  playerLeftoversTick: number  // counts up to 3; resets and heals
+const DEFAULT_SIDE: SideState = {
+  hazards: { stealthRock: false, toxicSpikes: false, stickyWeb: false },
+  protectCooldown: false,
 }
 
 export const DEFAULT_EFFECTS: BattleEffects = {
-  flashFireActive: false,
-  playerSturdyUsed: false,
-  enemySturdyUsed: false,
-  enemyForcedMove: null,
-  enemyForcedTurnsLeft: 0,
-  playerStatus: null,
-  enemyStatus: null,
-  playerTiredTurns: 0,
-  enemyTiredTurns: 0,
-  playerAttackMod: 0,
-  enemyAttackMod: 0,
-  playerDefenseMod: 0,
-  enemyDefenseMod: 0,
-  playerProtectCooldown: false,
-  enemyProtectCooldown: false,
-  uniqueCooldown: false,
-  playerShellSmashTurns: 0,
-  playerAquaRingActive: false,
-  playerAquaRingHealIn: 2,
-  playerDestinyBond: false,
-  playerHazards: { stealthRock: false, toxicSpikes: false, stickyWeb: false },
-  enemyHazards:  { stealthRock: false, toxicSpikes: false, stickyWeb: false },
-  playerSitrusUsed: false,
-  playerOranUsed: false,
-  playerLumUsed: false,
-  playerSashUsed: false,
-  playerWhiteHerbUsed: false,
-  playerLeftoversTick: 0,
+  sides: [{ ...DEFAULT_SIDE, hazards: { ...DEFAULT_SIDE.hazards } }, { ...DEFAULT_SIDE, hazards: { ...DEFAULT_SIDE.hazards } }],
+  slots: [{ ...DEFAULT_SLOT }, { ...DEFAULT_SLOT }],
 }
 
 export interface Fighter {
@@ -109,6 +62,18 @@ export function isImmuneToStatus(
   return immune.includes(type1) || (type2 !== null && immune.includes(type2))
 }
 
+// ─── Deep-clone effects (prevents mutation of nested objects) ─────────────────
+
+function cloneEffects(effects: BattleEffects): BattleEffects {
+  return {
+    sides: [
+      { ...effects.sides[0], hazards: { ...effects.sides[0].hazards } },
+      { ...effects.sides[1], hazards: { ...effects.sides[1].hazards } },
+    ],
+    slots: [{ ...effects.slots[0] }, { ...effects.slots[1] }],
+  }
+}
+
 // ─── Start-of-turn processing ─────────────────────────────────────────────────
 
 export interface TurnStartResult {
@@ -128,7 +93,7 @@ export function processTurnStart(
   pf: Fighter,
   ef: Fighter,
 ): TurnStartResult {
-  const eff = { ...effects }
+  const eff = cloneEffects(effects)
   const messages: string[] = []
   let playerForcedRps: RPS | null = null
   let enemyForcedRps: RPS | null = null
@@ -138,31 +103,34 @@ export function processTurnStart(
   let enemyHeartsLost = 0
   let playerHeartsGained = 0
 
+  const p = eff.slots[0]   // player slot
+  const e = eff.slots[1]   // enemy slot
+
   // ── Shell Smash: reaplica buff/debuff a cada turno ativo ───────────────────
-  if (eff.playerShellSmashTurns > 0) {
-    eff.playerShellSmashTurns--
-    eff.playerAttackMod = clampMod(eff.playerAttackMod + 1)
-    eff.playerDefenseMod = clampMod(eff.playerDefenseMod - 1)
-    if (eff.playerShellSmashTurns > 0) {
-      messages.push(`🔱 Shell Smash! +1 ATK / −1 DEF (${eff.playerShellSmashTurns} turno${eff.playerShellSmashTurns !== 1 ? 's' : ''} restante${eff.playerShellSmashTurns !== 1 ? 's' : ''})`)
+  if (p.shellSmashTurns > 0) {
+    p.shellSmashTurns--
+    p.attackMod = clampMod(p.attackMod + 1)
+    p.defenseMod = clampMod(p.defenseMod - 1)
+    if (p.shellSmashTurns > 0) {
+      messages.push(`🔱 Shell Smash! +1 ATK / −1 DEF (${p.shellSmashTurns} turno${p.shellSmashTurns !== 1 ? 's' : ''} restante${p.shellSmashTurns !== 1 ? 's' : ''})`)
     } else {
       messages.push(`🔱 Shell Smash expirou.`)
     }
   }
 
   // ── Aqua Ring: cura passiva a cada 2 turnos ────────────────────────────────
-  if (eff.playerAquaRingActive) {
-    eff.playerAquaRingHealIn--
-    if (eff.playerAquaRingHealIn <= 0) {
+  if (p.aquaRingActive) {
+    p.aquaRingHealIn--
+    if (p.aquaRingHealIn <= 0) {
       playerHeartsGained = 1
-      eff.playerAquaRingHealIn = 2
+      p.aquaRingHealIn = 2
       messages.push(`💧 Aqua Ring! +1 ♥`)
     }
   }
 
   // ── Player status ──────────────────────────────────────────────────────────
-  if (eff.playerStatus) {
-    const { condition, turnsLeft } = eff.playerStatus
+  if (p.status) {
+    const { condition, turnsLeft } = p.status
     if (condition === 'poison' || condition === 'burn') {
       playerHeartsLost = 0.5
       messages.push(condition === 'burn'
@@ -170,25 +138,23 @@ export function processTurnStart(
         : `☠️ ${pf.pokemon.name} está envenenado — −0.5 ♥`)
     } else if (condition === 'sleep') {
       if (turnsLeft > 0) {
-        // 45% de acordar cedo (só verificado quando há mais de 1 turno restante)
         if (turnsLeft > 1 && Math.random() < 0.45) {
-          eff.playerStatus = null
+          p.status = null
           messages.push(`😴 ${pf.pokemon.name} acordou cedo! Pode agir no próximo turno.`)
         } else {
           const newTurns = turnsLeft - 1
-          eff.playerStatus = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
-          if (eff.playerStatus === null) messages.push(`😴 ${pf.pokemon.name} acordou!`)
+          p.status = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
+          if (p.status === null) messages.push(`😴 ${pf.pokemon.name} acordou!`)
           else messages.push(`😴 ${pf.pokemon.name} está dormindo — turno nulo!`)
         }
-        playerSkipsTurn = true   // sempre perde este turno, mesmo se acordar agora
+        playerSkipsTurn = true
       } else {
-        // turnsLeft === 0 (legado -1 ou expirado): acorda
-        eff.playerStatus = null
+        p.status = null
         messages.push(`😴 ${pf.pokemon.name} acordou!`)
       }
     } else if (condition === 'freeze') {
       if (Math.random() < 0.20) {
-        eff.playerStatus = null
+        p.status = null
         messages.push(`🧊 ${pf.pokemon.name} descongelou espontaneamente!`)
       } else {
         playerForcedRps = 'rock'
@@ -203,37 +169,37 @@ export function processTurnStart(
   }
 
   // ── Player tired (OHKO/recharge) ──────────────────────────────────────────
-  if (eff.playerTiredTurns > 0) {
-    eff.playerTiredTurns--
+  if (p.tiredTurns > 0) {
+    p.tiredTurns--
     playerForcedRps = 'rock'
-    messages.push(eff.playerTiredTurns > 0
-      ? `💤 ${pf.pokemon.name} está exausto — perdeu o turno! (${eff.playerTiredTurns} turno${eff.playerTiredTurns !== 1 ? 's' : ''} restante${eff.playerTiredTurns !== 1 ? 's' : ''})`
+    messages.push(p.tiredTurns > 0
+      ? `💤 ${pf.pokemon.name} está exausto — perdeu o turno! (${p.tiredTurns} turno${p.tiredTurns !== 1 ? 's' : ''} restante${p.tiredTurns !== 1 ? 's' : ''})`
       : `💤 ${pf.pokemon.name} está exausto — perdeu o turno!`)
   }
 
   // ── Enemy status ───────────────────────────────────────────────────────────
-  if (eff.enemyStatus) {
-    const { condition, turnsLeft } = eff.enemyStatus
+  if (e.status) {
+    const { condition, turnsLeft } = e.status
     if (condition === 'poison' || condition === 'burn') {
       enemyHeartsLost = 0.5
     } else if (condition === 'sleep') {
       if (turnsLeft > 0) {
         if (turnsLeft > 1 && Math.random() < 0.45) {
-          eff.enemyStatus = null
-          enemyAutoLose = true  // ainda perde este turno mas acorda
+          e.status = null
+          enemyAutoLose = true
           messages.push(`😴 ${ef.pokemon.name} acordou cedo!`)
         } else {
           const newTurns = turnsLeft - 1
-          eff.enemyStatus = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
+          e.status = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
           enemyAutoLose = true
         }
       } else {
-        eff.enemyStatus = null
+        e.status = null
         messages.push(`😴 ${ef.pokemon.name} acordou!`)
       }
     } else if (condition === 'freeze') {
       if (Math.random() < 0.20) {
-        eff.enemyStatus = null
+        e.status = null
         messages.push(`🧊 ${ef.pokemon.name} descongelou espontaneamente!`)
       } else {
         enemyAutoLose = true
@@ -244,16 +210,16 @@ export function processTurnStart(
   }
 
   // ── Enemy tired ────────────────────────────────────────────────────────────
-  if (eff.enemyTiredTurns > 0) {
-    eff.enemyTiredTurns--
+  if (e.tiredTurns > 0) {
+    e.tiredTurns--
     enemyForcedRps = 'rock'
   }
 
   // ── Enemy forced (Hurricane / Glare) ──────────────────────────────────────
-  if (!enemyForcedRps && eff.enemyForcedMove && eff.enemyForcedTurnsLeft > 0) {
-    enemyForcedRps = eff.enemyForcedMove
-    eff.enemyForcedTurnsLeft--
-    if (eff.enemyForcedTurnsLeft === 0) eff.enemyForcedMove = null
+  if (!enemyForcedRps && e.forcedMove && e.forcedTurnsLeft > 0) {
+    enemyForcedRps = e.forcedMove
+    e.forcedTurnsLeft--
+    if (e.forcedTurnsLeft === 0) e.forcedMove = null
   }
 
   // ── Hold item passives ───────────────────────────────────────────────────────
@@ -263,38 +229,38 @@ export function processTurnStart(
 
     // Leftovers: +0.5♥ every 3 turns
     if (item.id === 'leftovers') {
-      eff.playerLeftoversTick++
-      if (eff.playerLeftoversTick >= 3) {
-        eff.playerLeftoversTick = 0
+      p.leftoversTick++
+      if (p.leftoversTick >= 3) {
+        p.leftoversTick = 0
         playerHeartsGained = Math.max(playerHeartsGained, 0.5)
         messages.push(`🍃 ${item.name}! +0.5 ♥`)
       }
     }
 
     // Sitrus Berry: ≤2♥ → +1♥ (once)
-    if (item.id === 'sitrus-berry' && !eff.playerSitrusUsed && pf.hearts <= 2) {
-      eff.playerSitrusUsed = true
+    if (item.id === 'sitrus-berry' && !p.sitrusUsed && pf.hearts <= 2) {
+      p.sitrusUsed = true
       playerHeartsGained = Math.max(playerHeartsGained, 1)
       messages.push(`🍓 ${item.name}! +1 ♥`)
     }
 
     // Oran Berry: ≤1♥ → +0.5♥ (once)
-    if (item.id === 'oran-berry' && !eff.playerOranUsed && pf.hearts <= 1) {
-      eff.playerOranUsed = true
+    if (item.id === 'oran-berry' && !p.oranUsed && pf.hearts <= 1) {
+      p.oranUsed = true
       playerHeartsGained = Math.max(playerHeartsGained, 0.5)
       messages.push(`🫐 ${item.name}! +0.5 ♥`)
     }
 
-    // Lum Berry: auto-cure first status (once) — checked here if already afflicted at turn start
-    if (item.id === 'lum-berry' && !eff.playerLumUsed && eff.playerStatus) {
-      eff.playerLumUsed = true
-      eff.playerStatus = null
-      playerForcedRps = null   // remove any forced move from status
-      playerSkipsTurn = false  // berry cures before the turn is lost
+    // Lum Berry: auto-cure first status (once)
+    if (item.id === 'lum-berry' && !p.lumUsed && p.status) {
+      p.lumUsed = true
+      p.status = null
+      playerForcedRps = null
+      playerSkipsTurn = false
       messages.push(`🍋 ${item.name}! Status curado!`)
     }
 
-    void def  // suppress unused warning — def used implicitly via item.id checks
+    void def
   }
 
   return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, playerHeartsGained, enemyHeartsLost, messages, enemyAutoLose, playerSkipsTurn }
@@ -310,144 +276,100 @@ export interface SlotSideEffect {
 
 export function applySlotMoveEffect(
   move: Move,
-  side: 'player' | 'enemy',
+  attackerSide: SideIndex,
   effects: BattleEffects,
-  opponentPokemon: PokemonCard,
-  selfPokemon?: PokemonCard,
+  defenderPokemon: PokemonCard,
+  attackerPokemon?: PokemonCard,
 ): SlotSideEffect {
-  const eff = { ...effects }
+  const eff = cloneEffects(effects)
+  const defenderSide = (1 - attackerSide) as SideIndex
   let message: string | null = null
   let isProtect = false
 
-  // ── Rapid Spin: clears the spinner's side hazards ───────────────────────────
+  // ── Rapid Spin: clears the spinner's own side hazards ────────────────────────
   if (move.special === 'rapid-spin') {
-    if (side === 'player') {
-      const { stealthRock, toxicSpikes, stickyWeb } = eff.playerHazards
-      const removed = [stealthRock && 'Stealth Rock', toxicSpikes && 'Toxic Spikes', stickyWeb && 'Sticky Web'].filter(Boolean) as string[]
-      eff.playerHazards = { stealthRock: false, toxicSpikes: false, stickyWeb: false }
-      message = removed.length > 0
-        ? `🌀 Rapid Spin! ${removed.join(' + ')} — campo limpo!`
-        : `🌀 Rapid Spin! Nenhuma armadilha no campo.`
-    } else {
-      const { stealthRock, toxicSpikes, stickyWeb } = eff.enemyHazards
-      const removed = [stealthRock && 'Stealth Rock', toxicSpikes && 'Toxic Spikes', stickyWeb && 'Sticky Web'].filter(Boolean) as string[]
-      eff.enemyHazards = { stealthRock: false, toxicSpikes: false, stickyWeb: false }
-      message = removed.length > 0
-        ? `🌀 Rapid Spin inimigo! ${removed.join(' + ')} removidos do campo inimigo!`
-        : null
-    }
+    const h = eff.sides[attackerSide].hazards
+    const removed = [h.stealthRock && 'Stealth Rock', h.toxicSpikes && 'Toxic Spikes', h.stickyWeb && 'Sticky Web'].filter(Boolean) as string[]
+    eff.sides[attackerSide].hazards = { stealthRock: false, toxicSpikes: false, stickyWeb: false }
+    message = removed.length > 0
+      ? `🌀 Rapid Spin! ${removed.join(' + ')} — campo limpo!`
+      : `🌀 Rapid Spin! Nenhuma armadilha no campo.`
     return { effects: eff, message, isProtect }
   }
 
-  // ── Hazard-setting moves ─────────────────────────────────────────────────────
+  // ── Hazard-setting moves: placed on opponent's side ──────────────────────────
   if (move.special === 'stealth-rock' || move.special === 'toxic-spikes' || move.special === 'sticky-web') {
-    if (side === 'player') {
-      // Player sets hazard on enemy side
-      eff.enemyHazards = {
-        ...eff.enemyHazards,
-        stealthRock: move.special === 'stealth-rock' ? true : eff.enemyHazards.stealthRock,
-        toxicSpikes: move.special === 'toxic-spikes' ? true : eff.enemyHazards.toxicSpikes,
-        stickyWeb:   move.special === 'sticky-web'   ? true : eff.enemyHazards.stickyWeb,
-      }
-      const labels: Record<string, string> = {
-        'stealth-rock': '🪨 Stealth Rock no campo inimigo!',
-        'toxic-spikes': '☠️ Toxic Spikes no campo inimigo!',
-        'sticky-web':   '🕸️ Sticky Web no campo inimigo!',
-      }
-      message = labels[move.special]
-    } else {
-      // Enemy sets hazard on player side
-      eff.playerHazards = {
-        ...eff.playerHazards,
-        stealthRock: move.special === 'stealth-rock' ? true : eff.playerHazards.stealthRock,
-        toxicSpikes: move.special === 'toxic-spikes' ? true : eff.playerHazards.toxicSpikes,
-        stickyWeb:   move.special === 'sticky-web'   ? true : eff.playerHazards.stickyWeb,
-      }
-      const labels: Record<string, string> = {
-        'stealth-rock': '🪨 Stealth Rock no seu campo!',
-        'toxic-spikes': '☠️ Toxic Spikes no seu campo!',
-        'sticky-web':   '🕸️ Sticky Web no seu campo!',
-      }
-      message = labels[move.special]
+    const h = eff.sides[defenderSide].hazards
+    eff.sides[defenderSide].hazards = {
+      stealthRock: move.special === 'stealth-rock' ? true : h.stealthRock,
+      toxicSpikes: move.special === 'toxic-spikes' ? true : h.toxicSpikes,
+      stickyWeb:   move.special === 'sticky-web'   ? true : h.stickyWeb,
     }
+    const isPlayerAttacking = attackerSide === 0
+    const labels: Record<string, [string, string]> = {
+      'stealth-rock': ['🪨 Stealth Rock no campo inimigo!', '🪨 Stealth Rock no seu campo!'],
+      'toxic-spikes': ['☠️ Toxic Spikes no campo inimigo!', '☠️ Toxic Spikes no seu campo!'],
+      'sticky-web':   ['🕸️ Sticky Web no campo inimigo!',  '🕸️ Sticky Web no seu campo!'],
+    }
+    message = labels[move.special][isPlayerAttacking ? 0 : 1]
     return { effects: eff, message, isProtect }
   }
 
-  // ── White Herb: cancel first defense debuff ──────────────────────────────────
+  // ── White Herb: cancel first defense debuff to the defender ──────────────────
   if (
     move.kind === 'buff' && move.buffEffect &&
-    move.buffEffect.stat === 'defense' && move.buffEffect.delta < 0
+    move.buffEffect.stat === 'defense' && move.buffEffect.delta < 0 &&
+    move.buffEffect.target === 'opponent' &&
+    defenderPokemon?.heldItem?.id === 'white-herb' && !eff.slots[defenderSide].whiteHerbUsed
   ) {
-    const affectedPokemon = move.buffEffect.target === 'opponent' ? (side === 'player' ? undefined : selfPokemon) : undefined
-    // If player's pokemon has White Herb and hasn't used it, cancel the debuff
-    if (
-      side === 'enemy' && move.buffEffect.target === 'opponent' &&
-      selfPokemon?.heldItem?.id === 'white-herb' && !eff.playerWhiteHerbUsed
-    ) {
-      eff.playerWhiteHerbUsed = true
-      message = `🌿 Erva Branca! Debuff de defesa cancelado!`
-      return { effects: eff, message, isProtect }
-    }
-    void affectedPokemon
+    eff.slots[defenderSide].whiteHerbUsed = true
+    message = `🌿 Erva Branca! Debuff de defesa cancelado!`
+    return { effects: eff, message, isProtect }
   }
+  void attackerPokemon
 
+  // ── Protect ──────────────────────────────────────────────────────────────────
   if (move.special === 'protect') {
     isProtect = true
-    if (side === 'player') eff.playerProtectCooldown = true
-    message = `🛡️ ${move.name}: ${side === 'player' ? 'Você está protegido' : 'Inimigo se protegeu'} este turno!`
+    eff.sides[attackerSide].protectCooldown = true
+    message = `🛡️ ${move.name}: ${attackerSide === 0 ? 'Você está protegido' : 'Inimigo se protegeu'} este turno!`
     return { effects: eff, message, isProtect }
   }
 
+  // ── Status moves ──────────────────────────────────────────────────────────────
   if (move.kind === 'status' && move.statusEffect) {
     const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
-    if (side === 'player' && opponentPokemon) {
-      if (isImmuneToStatus(move.statusEffect, opponentPokemon.type1, opponentPokemon.type2)) {
-        message = `${move.name}: inimigo é imune a ${move.statusEffect}!`
-      } else if (eff.enemyStatus) {
-        message = `${move.name}: inimigo já tem um status!`
-      } else {
-        const turns = move.statusEffect === 'sleep' ? 2 : -1
-        eff.enemyStatus = { condition: move.statusEffect, turnsLeft: turns }
-        message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ao inimigo!`
-      }
-    } else if (side === 'enemy' && opponentPokemon) {
-      if (isImmuneToStatus(move.statusEffect, opponentPokemon.type1, opponentPokemon.type2)) {
-        message = `${move.name}: seu Pokémon é imune a ${move.statusEffect}!`
-      } else if (eff.playerStatus) {
-        message = `${move.name}: seu Pokémon já tem um status!`
-      } else {
-        const turns = move.statusEffect === 'sleep' ? 2 : -1
-        eff.playerStatus = { condition: move.statusEffect, turnsLeft: turns }
-        message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ao seu Pokémon!`
-      }
+    const defSlot = eff.slots[defenderSide]
+    if (isImmuneToStatus(move.statusEffect, defenderPokemon.type1, defenderPokemon.type2)) {
+      message = `${move.name}: ${attackerSide === 0 ? 'inimigo é imune' : 'seu Pokémon é imune'} a ${move.statusEffect}!`
+    } else if (defSlot.status) {
+      message = `${move.name}: ${attackerSide === 0 ? 'inimigo' : 'seu Pokémon'} já tem um status!`
+    } else {
+      const turns = move.statusEffect === 'sleep' ? 2 : -1
+      defSlot.status = { condition: move.statusEffect, turnsLeft: turns }
+      message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ${attackerSide === 0 ? 'ao inimigo' : 'ao seu Pokémon'}!`
     }
     return { effects: eff, message, isProtect }
   }
 
+  // ── Buff / debuff moves ───────────────────────────────────────────────────────
   if (move.kind === 'buff' && move.buffEffect) {
     const { stat, delta, target } = move.buffEffect
-    const affectsSelf = target === 'self'
+    const targetSide = target === 'self' ? attackerSide : defenderSide
     const icons: Record<string, string> = {
       'attack+1': '⬆️ Ataque', 'attack-1': '⬇️ Ataque', 'defense+1': '⬆️ Defesa', 'defense-1': '⬇️ Defesa',
     }
     const label = icons[`${stat}${delta > 0 ? '+1' : '-1'}`] ?? `${stat} ${delta > 0 ? '+1' : '-1'}`
 
     if (stat === 'attack') {
-      if (side === 'player') {
-        if (affectsSelf) { eff.playerAttackMod = clampMod(eff.playerAttackMod + delta); message = `${label}! Seu próximo ataque +${delta}.` }
-        else             { eff.enemyAttackMod  = clampMod(eff.enemyAttackMod  + delta); message = `${move.name}: ${label} inimigo!` }
-      } else {
-        if (affectsSelf) { eff.enemyAttackMod  = clampMod(eff.enemyAttackMod  + delta) }
-        else             { eff.playerAttackMod = clampMod(eff.playerAttackMod + delta); message = `${move.name}: ${label} do jogador!` }
-      }
+      eff.slots[targetSide].attackMod = clampMod(eff.slots[targetSide].attackMod + delta)
+      if (target === 'self' && attackerSide === 0) message = `${label}! Seu próximo ataque +${delta}.`
+      else if (target === 'opponent' && attackerSide === 0) message = `${move.name}: ${label} inimigo!`
+      else if (target === 'opponent' && attackerSide === 1) message = `${move.name}: ${label} do jogador!`
     } else {
-      if (side === 'player') {
-        if (affectsSelf) { eff.playerDefenseMod = clampMod(eff.playerDefenseMod + delta); message = `${move.name}: ${label}! Sua próxima defesa +${delta}.` }
-        else             { eff.enemyDefenseMod  = clampMod(eff.enemyDefenseMod  + delta); message = `${move.name}: ${label} inimigo!` }
-      } else {
-        if (affectsSelf) { eff.enemyDefenseMod  = clampMod(eff.enemyDefenseMod  + delta) }
-        else             { eff.playerDefenseMod = clampMod(eff.playerDefenseMod + delta) }
-      }
+      eff.slots[targetSide].defenseMod = clampMod(eff.slots[targetSide].defenseMod + delta)
+      if (target === 'self' && attackerSide === 0) message = `${move.name}: ${label}! Sua próxima defesa +${delta}.`
+      else if (target === 'opponent' && attackerSide === 0) message = `${move.name}: ${label} inimigo!`
     }
     return { effects: eff, message, isProtect }
   }
@@ -461,16 +383,14 @@ function clampMod(v: number): number { return Math.max(-1, Math.min(1, v)) }
 
 export function applyThaw(
   effects: BattleEffects,
-  side: 'player' | 'enemy',
+  defenderSide: SideIndex,
   attackType: PokemonType,
 ): { effects: BattleEffects; thawed: boolean } {
   if (attackType !== 'Fire') return { effects, thawed: false }
-  const eff = { ...effects }
-  if (side === 'player' && eff.playerStatus?.condition === 'freeze') {
-    eff.playerStatus = null; return { effects: eff, thawed: true }
-  }
-  if (side === 'enemy' && eff.enemyStatus?.condition === 'freeze') {
-    eff.enemyStatus = null; return { effects: eff, thawed: true }
+  const eff = cloneEffects(effects)
+  if (eff.slots[defenderSide].status?.condition === 'freeze') {
+    eff.slots[defenderSide].status = null
+    return { effects: eff, thawed: true }
   }
   return { effects: eff, thawed: false }
 }
@@ -592,8 +512,8 @@ export interface UniqueResult {
   activateShellSmash: boolean // ativa Shell Smash 3-turn buff/debuff
   activateAquaRing: boolean   // ativa Aqua Ring regen passiva
   activateDestinyBond: boolean // ativa Destiny Bond
-  playerAttackBuff: number    // +N temporário a playerAttackMod (0 = nenhum)
-  playerDefenseBuff: number   // +N temporário a playerDefenseMod (0 = nenhum)
+  playerAttackBuff: number    // +N temporário a attackMod (0 = nenhum)
+  playerDefenseBuff: number   // +N temporário a defenseMod (0 = nenhum)
   messages: string[]
 }
 
@@ -619,9 +539,11 @@ export function calcUniqueResult(
   const defType2 = defender.pokemon.type2
   const name = unique.name
 
-  // Shared helper: apply status to enemy (turns: 2 = padrão probabilístico; 1 = 1 turno garantido)
+  // Unique moves are always player-initiated (attackerSide=0, defenderSide=1)
+  const enemySlot = effects.slots[1]
+
   function tryApplyStatus(cond: StatusCondition, turns = 2) {
-    if (isImmuneToStatus(cond, defType1, defType2) || effects.enemyStatus) return
+    if (isImmuneToStatus(cond, defType1, defType2) || enemySlot.status) return
     res.enemyStatus = { condition: cond, turnsLeft: turns }
   }
 
@@ -629,7 +551,7 @@ export function calcUniqueResult(
     // ── Heal ───────────────────────────────────────────────────────────────────
     case 'heal': {
       if (unique.special === 'dream-eater') {
-        if (effects.enemyStatus?.condition === 'sleep') {
+        if (enemySlot.status?.condition === 'sleep') {
           res.damage = 2; res.healPlayer = 2
           res.messages.push(`💤 ${name}: ${defender.pokemon.name} está dormindo! 2 dano + 2 ♥ recuperados!`)
         } else {
@@ -642,7 +564,7 @@ export function calcUniqueResult(
         const amount = unique.healAmount ?? 3
         res.healPlayer = amount
         if (unique.selfStatus) {
-          const turns = 1  // Rest / moves com selfStatus: exatamente 1 turno garantido
+          const turns = 1
           res.playerStatus = { condition: unique.selfStatus, turnsLeft: turns }
           res.messages.push(`😴 ${name}: recupera ${amount} ♥ e dorme por 1 turno.`)
         } else {
@@ -655,7 +577,6 @@ export function calcUniqueResult(
     // ── OHKO ───────────────────────────────────────────────────────────────────
     case 'ohko': {
       if (unique.special === 'no-tire') {
-        // Glitch Beam: KO without tiredness
         res.damage = defender.hearts
         res.messages.push(`⚠️ ${name}: KO instantâneo!`)
       } else if (unique.special === 'sheer-cold') {
@@ -700,8 +621,7 @@ export function calcUniqueResult(
     default: {
       const baseDmg = unique.damage ?? 2
 
-      // Status on hit (Spore: 1 turno garantido; demais: 2 turnos probabilísticos)
-      if (unique.applyEnemyStatus && !effects.enemyStatus) {
+      if (unique.applyEnemyStatus && !enemySlot.status) {
         const sleepTurns = name === 'Spore' ? 1 : 2
         tryApplyStatus(unique.applyEnemyStatus, unique.applyEnemyStatus === 'sleep' ? sleepTurns : 2)
       }
@@ -815,7 +735,6 @@ export function calcUniqueResult(
           break
 
         default: {
-          // Generic super: baseDmg with optional crit, drain, recoil
           let dmg = baseDmg
           const scopeBoost = attacker.pokemon.heldItem?.id === 'scope-lens' ? 0.25 : 0
           const effectiveCrit = (unique.critChance ?? 0) + scopeBoost
@@ -823,7 +742,6 @@ export function calcUniqueResult(
             dmg = 2
             res.messages.push(`⚔️ ${name}: crítico! 2 dano!`)
           } else {
-            // type-effective if no fixed damage
             if (unique.damage === undefined) {
               const mult = getCombinedMultiplier(unique.type, defType1, defType2)
               dmg = damageFromMultiplier(baseDmg, mult)
@@ -842,7 +760,6 @@ export function calcUniqueResult(
       if (['Hyper Beam', 'Rock Wrecker', 'Giga Impact', 'Outrage'].includes(name)) {
         res.playerTiredTurns = 1
       }
-      // Apply cooldown and recoil/drain for non-default cases
       if (unique.cooldown && !res.cooldown) res.cooldown = true
       if (unique.recoil && !res.recoil) res.recoil = unique.recoil
       if (unique.drain && res.damage > 0 && !res.drainHearts) res.drainHearts = Math.floor(res.damage / 2)
@@ -858,43 +775,44 @@ export function calcUniqueResult(
 
 export function applyEntryEffects(
   pokemon: PokemonCard,
-  side: 'player' | 'enemy',
+  enteringSide: SideIndex,
   effects: BattleEffects,
 ): { newEffects: BattleEffects; message: string | null; hazardDamage: number; forcedFirstMove: RPS | null } {
-  const eff = { ...effects }
+  const eff = cloneEffects(effects)
+  const opposingSide = (1 - enteringSide) as SideIndex
   const messages: string[] = []
   let hazardDamage = 0
   let forcedFirstMove: RPS | null = null
 
+  // Intimidate: lower opponent's attack mod
   if (pokemon.ability.name === 'Intimidate') {
-    if (side === 'player') {
-      eff.enemyAttackMod = clampMod(eff.enemyAttackMod - 1)
-      messages.push(`😤 Intimidate! ${pokemon.name} entrou e reduziu o próximo ataque inimigo!`)
-    } else {
-      eff.playerAttackMod = clampMod(eff.playerAttackMod - 1)
-      messages.push(`😤 Intimidate! ${pokemon.name} entrou e reduziu seu próximo ataque!`)
-    }
+    eff.slots[opposingSide].attackMod = clampMod(eff.slots[opposingSide].attackMod - 1)
+    messages.push(enteringSide === 0
+      ? `😤 Intimidate! ${pokemon.name} entrou e reduziu o próximo ataque inimigo!`
+      : `😤 Intimidate! ${pokemon.name} entrou e reduziu seu próximo ataque!`)
   }
 
-  // Clear tired/protect cooldown on switch
-  if (side === 'player') eff.playerProtectCooldown = false
+  // Clear protect cooldown on switch
+  eff.sides[enteringSide].protectCooldown = false
 
-  // ── Hold item orbs (apply status on entry) ───────────────────────────────────
-  if (side === 'player' && pokemon.heldItem) {
-    if (pokemon.heldItem.id === 'toxic-orb' && !eff.playerStatus &&
+  // ── Hold item orbs: apply status on entry (player-side only for now) ──────────
+  if (enteringSide === 0 && pokemon.heldItem) {
+    const slot = eff.slots[0]
+    if (pokemon.heldItem.id === 'toxic-orb' && !slot.status &&
         !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
-      eff.playerStatus = { condition: 'poison', turnsLeft: -1 }
+      slot.status = { condition: 'poison', turnsLeft: -1 }
       messages.push(`☠️ ${pokemon.heldItem.name}! ${pokemon.name} foi envenenado!`)
     }
-    if (pokemon.heldItem.id === 'flame-orb' && !eff.playerStatus &&
+    if (pokemon.heldItem.id === 'flame-orb' && !slot.status &&
         !isImmuneToStatus('burn', pokemon.type1, pokemon.type2)) {
-      eff.playerStatus = { condition: 'burn', turnsLeft: -1 }
+      slot.status = { condition: 'burn', turnsLeft: -1 }
       messages.push(`🔥 ${pokemon.heldItem.name}! ${pokemon.name} foi queimado!`)
     }
   }
 
-  // ── Hazards trigger on entry ─────────────────────────────────────────────────
-  const hazards = side === 'player' ? eff.playerHazards : eff.enemyHazards
+  // ── Hazards trigger on entry ──────────────────────────────────────────────────
+  const hazards = eff.sides[enteringSide].hazards
+  const slot = eff.slots[enteringSide]
 
   // Sticky Web: forces Rock on first turn
   if (hazards.stickyWeb) {
@@ -902,12 +820,10 @@ export function applyEntryEffects(
     messages.push(`🕸️ Sticky Web! ${pokemon.name} está preso — ✊ forçado no 1º turno!`)
   }
 
-  // Stealth Rock: damage on entry (type multiplier based on Rock effectiveness)
+  // Stealth Rock: damage on entry
   if (hazards.stealthRock) {
     const mult = getCombinedMultiplier('Rock', pokemon.type1, pokemon.type2)
-    if (mult === 0) {
-      // immune to Rock — no damage
-    } else {
+    if (mult > 0) {
       const srDmg = mult >= 2 ? 1 : mult <= 0.5 ? 0.25 : 0.5
       hazardDamage += srDmg
       messages.push(`🪨 Stealth Rock! ${pokemon.name} sofreu ${srDmg} dano ao entrar!`)
@@ -917,31 +833,22 @@ export function applyEntryEffects(
   // Toxic Spikes: apply poison on entry (Poison types absorb and remove)
   if (hazards.toxicSpikes) {
     if (pokemon.type1 === 'Poison' || pokemon.type2 === 'Poison') {
-      // Poison type absorbs — remove the hazard
-      if (side === 'player') {
-        eff.playerHazards = { ...eff.playerHazards, toxicSpikes: false }
-      } else {
-        eff.enemyHazards = { ...eff.enemyHazards, toxicSpikes: false }
-      }
+      eff.sides[enteringSide].hazards = { ...eff.sides[enteringSide].hazards, toxicSpikes: false }
       messages.push(`☠️ ${pokemon.name} (Venenoso) absorveu as Toxic Spikes!`)
-    } else if (side === 'player' && !eff.playerStatus &&
-               !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
-      eff.playerStatus = { condition: 'poison', turnsLeft: -1 }
-      messages.push(`☠️ Toxic Spikes! ${pokemon.name} foi envenenado ao entrar!`)
-    } else if (side === 'enemy' && !eff.enemyStatus &&
-               !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
-      eff.enemyStatus = { condition: 'poison', turnsLeft: -1 }
+    } else if (!slot.status && !isImmuneToStatus('poison', pokemon.type1, pokemon.type2)) {
+      slot.status = { condition: 'poison', turnsLeft: -1 }
       messages.push(`☠️ Toxic Spikes! ${pokemon.name} foi envenenado ao entrar!`)
     }
   }
 
-  // Reset item ticks when new pokemon enters (sash NOT reset — it's one use per battle)
-  if (side === 'player') {
-    eff.playerLeftoversTick = 0
-    eff.playerSitrusUsed = false
-    eff.playerOranUsed = false
-    eff.playerLumUsed = false
-    eff.playerWhiteHerbUsed = false
+  // Reset per-pokemon item ticks when new pokemon enters (sash NOT reset — one use per battle)
+  if (enteringSide === 0) {
+    const p = eff.slots[0]
+    p.leftoversTick = 0
+    p.sitrusUsed = false
+    p.oranUsed = false
+    p.lumUsed = false
+    p.whiteHerbUsed = false
   }
 
   return {
@@ -1000,4 +907,3 @@ export function checkQuickClaw(pokemon: PokemonCard): boolean {
 export function getShellBellHeal(attackerPokemon: PokemonCard, damageDealt: number): number {
   return attackerPokemon.heldItem?.id === 'shell-bell' && damageDealt > 0 ? 0.5 : 0
 }
-

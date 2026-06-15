@@ -14,7 +14,20 @@ import {
   applyFocusSash, getRockyHelmetRecoil, checkQuickClaw,
   StatusState,
 } from '@/lib/battleEngine'
-import type { PokemonCard, Move, RPS, AILevel, StatusCondition } from '@/types'
+import type { PokemonCard, Move, RPS, AILevel, StatusCondition, HazardState, SlotState, SideState } from '@/types'
+
+// ─── BattleEffects patch helpers ─────────────────────────────────────────────
+
+function patchSlot(e: BattleEffects, idx: 0 | 1, p: Partial<SlotState>): BattleEffects {
+  const s: [SlotState, SlotState] = [{ ...e.slots[0] }, { ...e.slots[1] }]
+  s[idx] = { ...s[idx], ...p }
+  return { ...e, slots: s }
+}
+function patchSide(e: BattleEffects, idx: 0 | 1, p: Partial<SideState>): BattleEffects {
+  const s: [SideState, SideState] = [{ ...e.sides[0] }, { ...e.sides[1] }]
+  s[idx] = { ...s[idx], ...p }
+  return { ...e, sides: s }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -305,7 +318,7 @@ function MoveGrid({
         const move        = pokemon.moves[rps]
         const tc          = getTypeColor(move.type)
         const isProtect   = move.special === 'protect'
-        const onCooldown  = isProtect && effects.playerProtectCooldown
+        const onCooldown  = isProtect && effects.sides[0].protectCooldown
         const effect      = getMoveEffectLabel(move)
         const isFlipped   = flipped === rps
 
@@ -373,7 +386,7 @@ function MoveGrid({
       {/* Slot único */}
       {(() => {
         const unique  = pokemon.unique
-        const disabled = uniqueUsed || effects.uniqueCooldown
+        const disabled = uniqueUsed || effects.slots[0].uniqueCooldown
         const isFlipped = flipped === 'unique'
 
         if (!unique) {
@@ -418,7 +431,7 @@ function MoveGrid({
                           style={{ backgroundColor: tc, color: getTypeTextColor(unique.type) }}>{unique.type}</span>
                       )}
                       <span className="font-game text-[8px] text-ink/45 leading-none">
-                        {uniqueUsed ? '✓ Usado' : effects.uniqueCooldown ? '⟳ Recarg.' : '⚡ 1× bat.'}
+                        {uniqueUsed ? '✓ Usado' : effects.slots[0].uniqueCooldown ? '⟳ Recarg.' : '⚡ 1× bat.'}
                       </span>
                     </div>
                   </div>
@@ -531,19 +544,19 @@ function EffectBadges({ effects, side }: { effects: BattleEffects; side: 'player
   type Badge = { label: string; bg: string; fg?: string }
   const badges: Badge[] = []
   if (side === 'player') {
-    if (effects.flashFireActive)   badges.push({ label: '🔥 +1',  bg: '#E06020', fg: 'white' })
-    if (effects.playerAttackMod > 0)  badges.push({ label: `ATK↑${effects.playerAttackMod}`, bg: '#38C838', fg: 'white' })
-    if (effects.playerAttackMod < 0)  badges.push({ label: `ATK↓${Math.abs(effects.playerAttackMod)}`, bg: '#CC2200', fg: 'white' })
-    if (effects.playerDefenseMod > 0) badges.push({ label: `DEF↑${effects.playerDefenseMod}`, bg: '#6890F0', fg: 'white' })
-    if (effects.playerDefenseMod < 0) badges.push({ label: `DEF↓${Math.abs(effects.playerDefenseMod)}`, bg: '#CC2200', fg: 'white' })
-    if (effects.playerProtectCooldown) badges.push({ label: '🛡️ CD', bg: '#8050B8', fg: 'white' })
-    if (effects.uniqueCooldown)        badges.push({ label: '⚡ CD', bg: '#A8A878', fg: '#2C1810' })
+    if (effects.slots[0].flashFireActive)   badges.push({ label: '🔥 +1',  bg: '#E06020', fg: 'white' })
+    if (effects.slots[0].attackMod > 0)  badges.push({ label: `ATK↑${effects.slots[0].attackMod}`, bg: '#38C838', fg: 'white' })
+    if (effects.slots[0].attackMod < 0)  badges.push({ label: `ATK↓${Math.abs(effects.slots[0].attackMod)}`, bg: '#CC2200', fg: 'white' })
+    if (effects.slots[0].defenseMod > 0) badges.push({ label: `DEF↑${effects.slots[0].defenseMod}`, bg: '#6890F0', fg: 'white' })
+    if (effects.slots[0].defenseMod < 0) badges.push({ label: `DEF↓${Math.abs(effects.slots[0].defenseMod)}`, bg: '#CC2200', fg: 'white' })
+    if (effects.sides[0].protectCooldown) badges.push({ label: '🛡️ CD', bg: '#8050B8', fg: 'white' })
+    if (effects.slots[0].uniqueCooldown)        badges.push({ label: '⚡ CD', bg: '#A8A878', fg: '#2C1810' })
   } else {
-    if (effects.enemyAttackMod < 0)     badges.push({ label: 'ATK↓', bg: '#38C838', fg: 'white' })
-    if (effects.enemyAttackMod > 0)     badges.push({ label: 'ATK↑', bg: '#CC2200', fg: 'white' })
-    if (effects.enemyDefenseMod < 0)    badges.push({ label: 'DEF↓', bg: '#38C838', fg: 'white' })
-    if (effects.enemyForcedMove)        badges.push({ label: 'TRAV', bg: '#4868D0', fg: 'white' })
-    if (effects.enemyProtectCooldown)   badges.push({ label: '🛡️ CD', bg: '#8050B8', fg: 'white' })
+    if (effects.slots[1].attackMod < 0)     badges.push({ label: 'ATK↓', bg: '#38C838', fg: 'white' })
+    if (effects.slots[1].attackMod > 0)     badges.push({ label: 'ATK↑', bg: '#CC2200', fg: 'white' })
+    if (effects.slots[1].defenseMod < 0)    badges.push({ label: 'DEF↓', bg: '#38C838', fg: 'white' })
+    if (effects.slots[1].forcedMove)        badges.push({ label: 'TRAV', bg: '#4868D0', fg: 'white' })
+    if (effects.sides[1].protectCooldown)   badges.push({ label: '🛡️ CD', bg: '#8050B8', fg: 'white' })
   }
   if (badges.length === 0) return null
   return (
@@ -571,7 +584,7 @@ interface ArenaProps {
   precomputedEnemyRPS?: RPS | null
 }
 
-function HazardChips({ hazards }: { hazards: BattleEffects['playerHazards'] }) {
+function HazardChips({ hazards }: { hazards: HazardState }) {
   const chips = [
     hazards.stealthRock && { label: '🪨', title: 'Stealth Rock' },
     hazards.toxicSpikes && { label: '☠️', title: 'Toxic Spikes' },
@@ -603,15 +616,15 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
   const prevPH = useRef(pf.hearts)
   const prevEH = useRef(ef.hearts)
   useEffect(() => {
-    if (pf.hearts < prevPH.current && effects.playerStatus) {
-      setPlayerFlash(STATUS_BG[effects.playerStatus.condition])
+    if (pf.hearts < prevPH.current && effects.slots[0].status) {
+      setPlayerFlash(STATUS_BG[effects.slots[0].status.condition])
     }
     prevPH.current = pf.hearts
     // effects é lido na mesma fase de render que pf.hearts — não precisa ser dep
   }, [pf.hearts]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (ef.hearts < prevEH.current && effects.enemyStatus) {
-      setEnemyFlash(STATUS_BG[effects.enemyStatus.condition])
+    if (ef.hearts < prevEH.current && effects.slots[1].status) {
+      setEnemyFlash(STATUS_BG[effects.slots[1].status.condition])
     }
     prevEH.current = ef.hearts
     // effects é lido na mesma fase de render que ef.hearts — não precisa ser dep
@@ -651,7 +664,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
               <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-none truncate flex-1 min-w-0">
                 {ef.pokemon.name}
               </p>
-              <StatusPill status={effects.enemyStatus} />
+              <StatusPill status={effects.slots[1].status} />
             </div>
             <div style={{ width: 124 }}>
               <HPBar current={ef.hearts} max={5} flashColor={enemyFlash} />
@@ -724,12 +737,12 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
 
       {/* ── Hazard chips — enemy side (player set hazards on enemy) ── */}
       <div className="absolute z-20 flex gap-1" style={{ right: 14, top: 120 }}>
-        <HazardChips hazards={effects.enemyHazards} />
+        <HazardChips hazards={effects.sides[1].hazards} />
       </div>
 
       {/* ── Hazard chips — player side (enemy set hazards on player) ── */}
       <div className="absolute z-20 flex gap-1" style={{ left: 10, bottom: 38 }}>
-        <HazardChips hazards={effects.playerHazards} />
+        <HazardChips hazards={effects.sides[0].hazards} />
       </div>
 
       {/* ── Player info box — bottom-right ── */}
@@ -741,7 +754,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
               <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-none truncate flex-1 min-w-0">
                 {pf.pokemon.name}
               </p>
-              <StatusPill status={effects.playerStatus} />
+              <StatusPill status={effects.slots[0].status} />
             </div>
             <div style={{ width: 124 }}>
               <HPBar current={pf.hearts} max={5} flashColor={playerFlash} />
@@ -767,17 +780,16 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
 
 // ─── Switch reset helper — shared by handleSwitchTurn and confirmSwitch ──────
 function applyPlayerSwitchReset(eff: BattleEffects): BattleEffects {
-  return {
-    ...eff,
-    playerStatus: null,
-    playerTiredTurns: 0,
-    playerSturdyUsed: false,
-    playerDestinyBond: false,
-    playerAquaRingActive: false,
-    playerAquaRingHealIn: 2,
-    playerShellSmashTurns: 0,
+  return patchSlot(eff, 0, {
+    status: null,
+    tiredTurns: 0,
+    sturdyUsed: false,
+    destinyBond: false,
+    aquaRingActive: false,
+    aquaRingHealIn: 2,
+    shellSmashTurns: 0,
     uniqueCooldown: false,
-  }
+  })
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -817,7 +829,7 @@ export default function BatalhaPage() {
     if (!battle) { router.replace('/torre'); return }
     const pf = battle.playerSelected.map(p => ({ pokemon: p, hearts: p.hearts }))
     const ef = battle.enemyDeck.map(p => ({ pokemon: p, hearts: p.hearts }))
-    const { newEffects, message, hazardDamage, forcedFirstMove } = applyEntryEffects(battle.playerSelected[0], 'player', DEFAULT_EFFECTS)
+    const { newEffects, message, hazardDamage, forcedFirstMove } = applyEntryEffects(battle.playerSelected[0], 0, DEFAULT_EFFECTS)
     if (hazardDamage > 0) pf[0] = { ...pf[0], hearts: Math.max(0, pf[0].hearts - hazardDamage) }
     setPlayerFighters(pf)
     setEnemyFighters(ef)
@@ -845,8 +857,8 @@ export default function BatalhaPage() {
     if (phase !== 'selecting' || !battle) return
     const effectiveAI = specialBattle?.aiLevel ?? GYM_LEADERS[currentFloor]?.aiLevel
     if (!effectiveAI) return
-    const forced = effects.enemyTiredTurns > 0 ? 'rock' as RPS
-      : (effects.enemyForcedMove && effects.enemyForcedTurnsLeft > 0 ? effects.enemyForcedMove : null)
+    const forced = effects.slots[1].tiredTurns > 0 ? 'rock' as RPS
+      : (effects.slots[1].forcedMove && effects.slots[1].forcedTurnsLeft > 0 ? effects.slots[1].forcedMove : null)
     const rps = forced ?? generateAIMove(effectiveAI, moveHistory, null)
     setPrecomputedEnemyRPS(rps)
     const currentPf = playerFighters[playerIdx]
@@ -895,10 +907,10 @@ export default function BatalhaPage() {
     router.push('/game-over')
   }
 
-  const ps = effects.playerStatus
+  const ps = effects.slots[0].status
   const playerIsSleeping = ps?.condition === 'sleep'
   const playerIsForcedByStatus = ps?.condition === 'freeze'
-  const playerIsForced = playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerIsSleeping || !!stickyWebForcedMove
+  const playerIsForced = playerIsForcedByStatus || effects.slots[0].tiredTurns > 0 || playerIsSleeping || !!stickyWebForcedMove
 
   // ── Core battle logic ────────────────────────────────────────────────────────
 
@@ -941,13 +953,13 @@ export default function BatalhaPage() {
     }
 
     const chosenMove = (!playerForcedThisTurn && !isUnique && !turnStart.playerSkipsTurn) ? pf.pokemon.moves[playerRPS] : null
-    const isProtect = chosenMove?.special === 'protect' && !eff.playerProtectCooldown
-    if (!isProtect) eff = { ...eff, playerProtectCooldown: false }
+    const isProtect = chosenMove?.special === 'protect' && !eff.sides[0].protectCooldown
+    if (!isProtect) eff = patchSide(eff, 0, { protectCooldown: false })
 
     const aiMove = turnStart.enemyForcedRps ?? precomputedEnemyRPS ?? generateAIMove(gym.aiLevel, moveHistory, null)
-    const enemyIsProtect = ef.pokemon.moves[aiMove].special === 'protect' && !eff.enemyProtectCooldown
-    if (!enemyIsProtect) eff = { ...eff, enemyProtectCooldown: false }
-    if (enemyIsProtect) eff = { ...eff, enemyProtectCooldown: true }
+    const enemyIsProtect = ef.pokemon.moves[aiMove].special === 'protect' && !eff.sides[1].protectCooldown
+    if (!enemyIsProtect) eff = patchSide(eff, 1, { protectCooldown: false })
+    if (enemyIsProtect) eff = patchSide(eff, 1, { protectCooldown: true })
 
     let outcome: 'player_wins' | 'enemy_wins' | 'tie'
     if (isUnique && !playerForcedThisTurn && !turnStart.playerSkipsTurn) {
@@ -964,8 +976,8 @@ export default function BatalhaPage() {
 
     // Player freeze/tired → enemy wins automatically
     if (playerForcedThisTurn) {
-      const forcedByFreeze = eff.playerStatus?.condition === 'freeze'
-      const forcedByTired = effects.playerTiredTurns > 0
+      const forcedByFreeze = eff.slots[0].status?.condition === 'freeze'
+      const forcedByTired = effects.slots[0].tiredTurns > 0
       if (forcedByFreeze || forcedByTired) outcome = 'enemy_wins'
     }
 
@@ -974,7 +986,7 @@ export default function BatalhaPage() {
     let multiplier = 1
 
     if (isProtect) {
-      eff = { ...eff, playerProtectCooldown: true }
+      eff = patchSide(eff, 0, { protectCooldown: true })
       activations.push(`🛡️ Protect! Dano bloqueado este turno!`)
     }
     if (enemyIsProtect) {
@@ -995,21 +1007,20 @@ export default function BatalhaPage() {
         multiplier = uRes.damage
         activations.push(...uRes.messages)
 
-        if (uRes.enemyStatus && !eff.enemyStatus) eff = { ...eff, enemyStatus: uRes.enemyStatus }
-        if (uRes.playerStatus) eff = { ...eff, playerStatus: uRes.playerStatus }
-        if (uRes.playerTiredTurns > 0) eff = { ...eff, playerTiredTurns: Math.max(eff.playerTiredTurns, uRes.playerTiredTurns) }
-        if (uRes.cooldown) eff = { ...eff, uniqueCooldown: true }
-        if (uRes.enemyForcedMove) eff = { ...eff, enemyForcedMove: uRes.enemyForcedMove, enemyForcedTurnsLeft: uRes.forceTurns }
+        if (uRes.enemyStatus && !eff.slots[1].status) eff = patchSlot(eff, 1, { status: uRes.enemyStatus })
+        if (uRes.playerStatus) eff = patchSlot(eff, 0, { status: uRes.playerStatus })
+        if (uRes.playerTiredTurns > 0) eff = patchSlot(eff, 0, { tiredTurns: Math.max(eff.slots[0].tiredTurns, uRes.playerTiredTurns) })
+        if (uRes.cooldown) eff = patchSlot(eff, 0, { uniqueCooldown: true })
+        if (uRes.enemyForcedMove) eff = patchSlot(eff, 1, { forcedMove: uRes.enemyForcedMove, forcedTurnsLeft: uRes.forceTurns })
         if (uRes.recoil > 0) { newPHearts = Math.max(0, newPHearts - uRes.recoil); activations.push(`💢 Recuo! −${uRes.recoil} ♥`) }
         if (uRes.healPlayer > 0) { newPHearts = Math.min(pf.pokemon.hearts, newPHearts + uRes.healPlayer); activations.push(`💚 Curou ${uRes.healPlayer} ♥!`) }
         if (uRes.drainHearts > 0) { newPHearts = Math.min(pf.pokemon.hearts, newPHearts + uRes.drainHearts); activations.push(`🍃 Absorção +${uRes.drainHearts} ♥!`) }
         if (uRes.userFaints) newPHearts = 0
-        // Novos flags
-        if (uRes.activateShellSmash) eff = { ...eff, playerShellSmashTurns: 3 }
-        if (uRes.activateAquaRing) eff = { ...eff, playerAquaRingActive: true, playerAquaRingHealIn: 2 }
-        if (uRes.activateDestinyBond) eff = { ...eff, playerDestinyBond: true }
-        if (uRes.playerAttackBuff > 0) eff = { ...eff, playerAttackMod: Math.min(1, eff.playerAttackMod + uRes.playerAttackBuff) }
-        if (uRes.playerDefenseBuff > 0) eff = { ...eff, playerDefenseMod: Math.min(1, eff.playerDefenseMod + uRes.playerDefenseBuff) }
+        if (uRes.activateShellSmash) eff = patchSlot(eff, 0, { shellSmashTurns: 3 })
+        if (uRes.activateAquaRing) eff = patchSlot(eff, 0, { aquaRingActive: true, aquaRingHealIn: 2 })
+        if (uRes.activateDestinyBond) eff = patchSlot(eff, 0, { destinyBond: true })
+        if (uRes.playerAttackBuff > 0) eff = patchSlot(eff, 0, { attackMod: Math.min(1, eff.slots[0].attackMod + uRes.playerAttackBuff) })
+        if (uRes.playerDefenseBuff > 0) eff = patchSlot(eff, 0, { defenseMod: Math.min(1, eff.slots[0].defenseMod + uRes.playerDefenseBuff) })
 
         if (uRes.benchDamage > 0) {
           setEnemyFighters(prev => prev.map((f, i) =>
@@ -1020,10 +1031,10 @@ export default function BatalhaPage() {
 
         if (enemyDmg > 0) {
           const { damage: finalDmg, sturdyTriggered } = applySturdy(
-            enemyDmg, newEHearts, eff.enemySturdyUsed, ef.pokemon.ability.name === 'Sturdy',
+            enemyDmg, newEHearts, eff.slots[1].sturdyUsed, ef.pokemon.ability.name === 'Sturdy',
           )
           if (sturdyTriggered) {
-            eff = { ...eff, enemySturdyUsed: true }
+            eff = patchSlot(eff, 1, { sturdyUsed: true })
             activations.push(`🛡️ Sturdy! ${ef.pokemon.name} sobreviveu com 1 ♥!`)
           }
           enemyDmg = finalDmg
@@ -1054,13 +1065,13 @@ export default function BatalhaPage() {
         if (!immune) {
           if (chosenMove.kind === 'offensive') {
             const slotRes = calcSlotDamage(
-              attackType, pf.pokemon, newPHearts, ef.pokemon, eff.flashFireActive,
-              eff.playerAttackMod, eff.enemyDefenseMod,
+              attackType, pf.pokemon, newPHearts, ef.pokemon, eff.slots[0].flashFireActive,
+              eff.slots[0].attackMod, eff.slots[1].defenseMod,
             )
             enemyDmg = slotRes.damage
             multiplier = slotRes.multiplier
             activations.push(...slotRes.messages)
-            eff = { ...eff, playerAttackMod: 0, enemyDefenseMod: 0 }
+            eff = patchSlot(patchSlot(eff, 0, { attackMod: 0 }), 1, { defenseMod: 0 })
 
             if (chosenMove.drain && enemyDmg > 0) {
               const heal = Math.floor(enemyDmg / 2)
@@ -1069,28 +1080,28 @@ export default function BatalhaPage() {
             }
 
             if (attackType === 'Fire') {
-              const { effects: newEff, thawed } = applyThaw(eff, 'enemy', attackType)
+              const { effects: newEff, thawed } = applyThaw(eff, 1, attackType)
               eff = newEff
               if (thawed) activations.push(`🔥 ${ef.pokemon.name} descongelou!`)
             }
 
             if (chosenMove.special === 'rapid-spin') {
-              const spinResult = applySlotMoveEffect(chosenMove, 'player', eff, ef.pokemon)
+              const spinResult = applySlotMoveEffect(chosenMove, 0, eff, ef.pokemon)
               eff = spinResult.effects
               if (spinResult.message) activations.push(spinResult.message)
             }
           } else {
-            const sideEff = applySlotMoveEffect(chosenMove, 'player', eff, ef.pokemon)
+            const sideEff = applySlotMoveEffect(chosenMove, 0, eff, ef.pokemon)
             eff = sideEff.effects
             if (sideEff.message) activations.push(sideEff.message)
           }
 
           if (enemyDmg > 0) {
             const { damage: finalDmg, sturdyTriggered } = applySturdy(
-              enemyDmg, newEHearts, eff.enemySturdyUsed, ef.pokemon.ability.name === 'Sturdy',
+              enemyDmg, newEHearts, eff.slots[1].sturdyUsed, ef.pokemon.ability.name === 'Sturdy',
             )
             if (sturdyTriggered) {
-              eff = { ...eff, enemySturdyUsed: true }
+              eff = patchSlot(eff, 1, { sturdyUsed: true })
               activations.push(`🛡️ Sturdy! ${ef.pokemon.name} sobreviveu com 1 ♥!`)
             }
             enemyDmg = finalDmg
@@ -1106,7 +1117,7 @@ export default function BatalhaPage() {
 
       if (enemyChosenMove.kind !== 'offensive') {
         // Non-offensive enemy move (hazard, status, buff, protect)
-        const sideEff = applySlotMoveEffect(enemyChosenMove, 'enemy', eff, pf.pokemon, ef.pokemon)
+        const sideEff = applySlotMoveEffect(enemyChosenMove, 1, eff, pf.pokemon, ef.pokemon)
         eff = sideEff.effects
         if (sideEff.message) activations.push(sideEff.message)
       } else {
@@ -1123,7 +1134,7 @@ export default function BatalhaPage() {
           newPHearts = Math.min(pf.pokemon.hearts, newPHearts + 1)
           activations.push(`💧 WaterAbsorb! ${pf.pokemon.name} absorveu e recuperou 1 ♥!`)
         } else if (pAbility === 'FlashFire' && attackType === 'Fire') {
-          immune = true; multiplier = 0; eff = { ...eff, flashFireActive: true }
+          immune = true; multiplier = 0; eff = patchSlot(eff, 0, { flashFireActive: true })
           activations.push(`🔥 FlashFire! ${pf.pokemon.name} é imune! Fogo potencializado!`)
         } else if (pAbility === 'Levitate' && attackType === 'Ground') {
           immune = true; multiplier = 0
@@ -1136,31 +1147,31 @@ export default function BatalhaPage() {
         if (!immune && !isProtect) {
           const slotRes = calcSlotDamage(
             attackType, ef.pokemon, newEHearts, pf.pokemon, false,
-            eff.enemyAttackMod, eff.playerDefenseMod,
+            eff.slots[1].attackMod, eff.slots[0].defenseMod,
           )
           playerDmg = slotRes.damage
           multiplier = slotRes.multiplier
           activations.push(...slotRes.messages)
-          eff = { ...eff, enemyAttackMod: 0, playerDefenseMod: 0 }
+          eff = patchSlot(patchSlot(eff, 1, { attackMod: 0 }), 0, { defenseMod: 0 })
 
           if (attackType === 'Fire') {
-            const { effects: newEff, thawed } = applyThaw(eff, 'player', attackType)
+            const { effects: newEff, thawed } = applyThaw(eff, 0, attackType)
             eff = newEff
             if (thawed) activations.push(`🔥 ${pf.pokemon.name} descongelou!`)
           }
 
           const { damage: finalDmg, sturdyTriggered } = applySturdy(
-            playerDmg, newPHearts, eff.playerSturdyUsed, pAbility === 'Sturdy',
+            playerDmg, newPHearts, eff.slots[0].sturdyUsed, pAbility === 'Sturdy',
           )
           if (sturdyTriggered) {
-            eff = { ...eff, playerSturdyUsed: true }
+            eff = patchSlot(eff, 0, { sturdyUsed: true })
             activations.push(`🛡️ Sturdy! ${pf.pokemon.name} sobreviveu com 1 ♥!`)
           }
           playerDmg = finalDmg
           // Focus Sash: survive a KO hit at full HP (once per battle)
-          const { damage: sashFinalDmg, sashTriggered } = applyFocusSash(playerDmg, newPHearts, pf.pokemon, eff.playerSashUsed)
+          const { damage: sashFinalDmg, sashTriggered } = applyFocusSash(playerDmg, newPHearts, pf.pokemon, eff.slots[0].sashUsed)
           if (sashTriggered) {
-            eff = { ...eff, playerSashUsed: true }
+            eff = patchSlot(eff, 0, { sashUsed: true })
             activations.push(`🎽 Faixa Foco! ${pf.pokemon.name} sobreviveu com 0.5 ♥!`)
           }
           playerDmg = sashFinalDmg
@@ -1190,22 +1201,22 @@ export default function BatalhaPage() {
         activations.push(`🔔 Shell Bell! +${shellBellHeal} ♥`)
       }
       if (checkKingsRock(pf.pokemon)) {
-        eff = { ...eff, enemyForcedMove: 'rock', enemyForcedTurnsLeft: 1 }
+        eff = patchSlot(eff, 1, { forcedMove: 'rock', forcedTurnsLeft: 1 })
         activations.push(`🪨 King's Rock! Inimigo atordoado — forçado ✊ no próximo turno!`)
       }
     }
 
     // Destiny Bond: se o jogador cair, o inimigo também cai
-    if (newPHearts <= 0 && eff.playerDestinyBond) {
+    if (newPHearts <= 0 && eff.slots[0].destinyBond) {
       newEHearts = 0
-      eff = { ...eff, playerDestinyBond: false }
+      eff = patchSlot(eff, 0, { destinyBond: false })
       activations.push(`💀 Destiny Bond! ${ef.pokemon.name} também é derrotado!`)
     }
 
     const playerSkippedTurn = turnStart.playerSkipsTurn
     const lostTurn = playerForcedThisTurn && outcome === 'enemy_wins' && (
-      eff.playerStatus?.condition === 'freeze' ||
-      effects.playerTiredTurns > 0
+      eff.slots[0].status?.condition === 'freeze' ||
+      effects.slots[0].tiredTurns > 0
     )
     const enemyLostTurn = turnStart.enemyAutoLose && outcome === 'player_wins'
 
@@ -1225,8 +1236,8 @@ export default function BatalhaPage() {
       const next = enemyIdx + 1
       if (next >= enemyFighters.length) { setPhase('victory'); return }
       setEnemyIdx(next)
-      const { newEffects, message, hazardDamage } = applyEntryEffects(enemyFighters[next].pokemon, 'enemy', effects)
-      setEffects({ ...newEffects, enemyStatus: null, enemyTiredTurns: 0, enemySturdyUsed: false })
+      const { newEffects, message, hazardDamage } = applyEntryEffects(enemyFighters[next].pokemon, 1, effects)
+      setEffects(patchSlot(newEffects, 1, { status: null, tiredTurns: 0, sturdyUsed: false }))
       if (message) setEntryMsg(message)
       if (hazardDamage > 0) setEnemyFighters(fs => fs.map((f, i) => i === next ? { ...f, hearts: Math.max(0, f.hearts - hazardDamage) } : f))
     }
@@ -1259,7 +1270,7 @@ export default function BatalhaPage() {
     const incoming = playerFighters[targetIdx]
     const activations: string[] = [`🔄 ${incoming.pokemon.name} entrou em campo!`]
 
-    const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg, forcedFirstMove: switchStickyForced } = applyEntryEffects(incoming.pokemon, 'player', effects)
+    const { newEffects: entryEffects, message: entryMessage, hazardDamage: entryHazardDmg, forcedFirstMove: switchStickyForced } = applyEntryEffects(incoming.pokemon, 0, effects)
     let eff: BattleEffects = applyPlayerSwitchReset(entryEffects)
     if (entryMessage) activations.push(entryMessage)
     if (switchStickyForced) setStickyWebForcedMove(switchStickyForced)
@@ -1283,7 +1294,7 @@ export default function BatalhaPage() {
       newPHearts = Math.min(incoming.pokemon.hearts, newPHearts + 1)
       activations.push(`💧 WaterAbsorb! ${incoming.pokemon.name} absorveu e recuperou 1 ♥!`)
     } else if (pAbility === 'FlashFire' && attackType === 'Fire') {
-      immune = true; multiplier = 0; eff = { ...eff, flashFireActive: true }
+      immune = true; multiplier = 0; eff = patchSlot(eff, 0, { flashFireActive: true })
       activations.push(`🔥 FlashFire! ${incoming.pokemon.name} é imune! Fogo potencializado!`)
     } else if (pAbility === 'Levitate' && attackType === 'Ground') {
       immune = true; multiplier = 0
@@ -1296,24 +1307,24 @@ export default function BatalhaPage() {
     if (!immune) {
       const slotRes = calcSlotDamage(
         attackType, ef.pokemon, ef.hearts, incoming.pokemon, false,
-        eff.enemyAttackMod, eff.playerDefenseMod,
+        eff.slots[1].attackMod, eff.slots[0].defenseMod,
       )
       playerDmg = slotRes.damage
       multiplier = slotRes.multiplier
       activations.push(...slotRes.messages)
-      eff = { ...eff, enemyAttackMod: 0, playerDefenseMod: 0 }
+      eff = patchSlot(patchSlot(eff, 1, { attackMod: 0 }), 0, { defenseMod: 0 })
 
       if (attackType === 'Fire') {
-        const { effects: newEff, thawed } = applyThaw(eff, 'player', attackType)
+        const { effects: newEff, thawed } = applyThaw(eff, 0, attackType)
         eff = newEff
         if (thawed) activations.push(`🔥 ${incoming.pokemon.name} descongelou!`)
       }
 
       const { damage: finalDmg, sturdyTriggered } = applySturdy(
-        playerDmg, newPHearts, eff.playerSturdyUsed, pAbility === 'Sturdy',
+        playerDmg, newPHearts, eff.slots[0].sturdyUsed, pAbility === 'Sturdy',
       )
       if (sturdyTriggered) {
-        eff = { ...eff, playerSturdyUsed: true }
+        eff = patchSlot(eff, 0, { sturdyUsed: true })
         activations.push(`🛡️ Sturdy! ${incoming.pokemon.name} sobreviveu com 1 ♥!`)
       }
       playerDmg = finalDmg
@@ -1346,7 +1357,7 @@ export default function BatalhaPage() {
     setShowSwitchPicker(false)
     setSwitchRequired(false)
     setPlayerIdx(targetIdx)
-    const { newEffects, message, hazardDamage, forcedFirstMove: faintStickyForced } = applyEntryEffects(playerFighters[targetIdx].pokemon, 'player', effects)
+    const { newEffects, message, hazardDamage, forcedFirstMove: faintStickyForced } = applyEntryEffects(playerFighters[targetIdx].pokemon, 0, effects)
     setEffects(applyPlayerSwitchReset(newEffects))
     if (message) setEntryMsg(message)
     const newHearts = hazardDamage > 0 ? Math.max(0, playerFighters[targetIdx].hearts - hazardDamage) : playerFighters[targetIdx].hearts
@@ -1373,7 +1384,7 @@ export default function BatalhaPage() {
     if (stickyWebForcedMove)           return `🕸️ ${pf.pokemon.name} está preso na Sticky Web — ✊ forçado!`
     if (ps?.condition === 'sleep')     return `😴 ${pf.pokemon.name} está dormindo — turno nulo`
     if (ps?.condition === 'freeze')    return `🧊 ${pf.pokemon.name} está congelado — turno perdido!`
-    if (effects.playerTiredTurns > 0)  return `💤 ${pf.pokemon.name} está exausto — turno perdido!`
+    if (effects.slots[0].tiredTurns > 0)  return `💤 ${pf.pokemon.name} está exausto — turno perdido!`
     return null
   })()
 
@@ -1592,7 +1603,7 @@ export default function BatalhaPage() {
                       O que <span style={{ color: typeColor }}>{pf.pokemon.name}</span> vai fazer?
                     </p>
                   )}
-                  {effects.playerStatus?.condition === 'paralysis' && !playerIsForced && (
+                  {effects.slots[0].status?.condition === 'paralysis' && !playerIsForced && (
                     <p className="font-game text-[8px] uppercase tracking-widest leading-none"
                       style={{ color: STATUS_BG['paralysis'] }}>
                       ⚡ {pf.pokemon.name} está paralisado — 30% de travar
@@ -1673,9 +1684,9 @@ export default function BatalhaPage() {
                   <div className="flex gap-2 mt-1">
                     <button
                       onClick={handleSwitch}
-                      disabled={playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1}
+                      disabled={playerIsForcedByStatus || effects.slots[0].tiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1}
                       className="flex-1 py-3 font-black text-sm uppercase border-2 rounded-2xl transition-all duration-75 cursor-pointer disabled:cursor-not-allowed"
-                      style={(playerIsForcedByStatus || effects.playerTiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1)
+                      style={(playerIsForcedByStatus || effects.slots[0].tiredTurns > 0 || playerFighters.filter(f => f.hearts > 0).length <= 1)
                         ? { borderColor: 'rgba(44,24,16,0.15)', backgroundColor: '#F5EDD8', color: 'rgba(44,24,16,0.3)' }
                         : { borderColor: '#2C1810', backgroundColor: '#FBF5E6', color: '#2C1810', boxShadow: '3px 3px 0 #2C1810' }}>
                       🔄 Trocar Pokémon
@@ -1686,7 +1697,7 @@ export default function BatalhaPage() {
                       🏳️ Fugir
                     </button>
                   </div>
-                  {playerFighters.filter(f => f.hearts > 0).length > 1 && !playerIsForcedByStatus && !effects.playerTiredTurns && (
+                  {playerFighters.filter(f => f.hearts > 0).length > 1 && !playerIsForcedByStatus && !effects.slots[0].tiredTurns && (
                     <p className="font-game text-[7px] text-ink/40 text-center uppercase tracking-widest leading-none">
                       ⚠️ Trocar gasta o turno — inimigo ataca de graça
                     </p>

@@ -52,6 +52,51 @@ export type MoveKind = 'offensive' | 'status' | 'buff'
 
 export type StatusCondition = 'poison' | 'paralysis' | 'sleep' | 'freeze' | 'burn'
 
+export type SideIndex = 0 | 1
+
+export interface HazardState {
+  stealthRock: boolean
+  toxicSpikes: boolean
+  stickyWeb: boolean
+}
+
+export interface StatusState {
+  condition: StatusCondition
+  turnsLeft: number  // -1 = indefinite (poison/burn); ≥0 = turns remaining
+}
+
+export interface SideState {
+  hazards: HazardState
+  protectCooldown: boolean
+}
+
+export interface SlotState {
+  status: StatusState | null
+  tiredTurns: number
+  attackMod: number
+  defenseMod: number
+  sturdyUsed: boolean
+  flashFireActive: boolean
+  shellSmashTurns: number
+  aquaRingActive: boolean
+  aquaRingHealIn: number
+  destinyBond: boolean
+  forcedMove: RPS | null
+  forcedTurnsLeft: number
+  sitrusUsed: boolean
+  oranUsed: boolean
+  lumUsed: boolean
+  sashUsed: boolean
+  whiteHerbUsed: boolean
+  leftoversTick: number
+  uniqueCooldown: boolean
+}
+
+export interface BattleEffects {
+  sides: [SideState, SideState]
+  slots: [SlotState, SlotState]
+}
+
 export type UniqueCategory = 'super' | 'heal' | 'ohko' | 'aoe'
 
 export interface BuffEffect {
