@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.9.9] - 2026-06-17
+
+### Corrigido
+
+- **HP na conclusão** (`app/conclusao/page.tsx`) — exibia `p.hearts/p.hearts` (sempre max/max) em vez de `Math.ceil(p.hearts)/5`
+- **FlashFire do inimigo** (`app/batalha/page.tsx`, `lib/battleEngine.ts`) — habilidade só dava imunidade; agora seta `slots[1].flashFireActive = true` ao absorver e o boost (+1 dano) é lido corretamente em `calcSlotDamage` nos paths `enemy_wins` e `handleSwitchTurn`
+- **Orbs (toxic/flame) do inimigo** (`lib/battleEngine.ts`) — `applyEntryEffects` estava hardcoded para `enteringSide === 0`; inimigos com Toxic Orb / Flame Orb agora recebem o status ao entrar em campo
+- **Switch reset incompleto** (`app/batalha/page.tsx`) — `applyPlayerSwitchReset` não limpava `flashFireActive`, `attackMod` e `defenseMod`; buffs/FlashFire podiam vazar entre Pokémon após troca voluntária
+- **Aliasing de hazards em `patchSide`** (`app/batalha/page.tsx`) — spread `{ ...s[idx], ...p }` mantinha referência compartilhada do objeto `hazards`; corrigido com deep-clone: `{ ...s[idx], hazards: { ...s[idx].hazards }, ...p }`
+- **`lostTurn` lendo estado pós-turno** (`app/batalha/page.tsx`) — `eff.slots[0].status?.condition === 'freeze'` era avaliado após o turno ser processado; se Lum Berry ou thaw despacharam o freeze no mesmo turno, `lostTurn` ficava `false` indevidamente. Corrigido capturando `wasFrozenPreTurn = effects.slots[0].status?.condition === 'freeze'` antes de processar
+- **Item ticks simétricos** (`lib/battleEngine.ts`) — reset de `leftoversTick/sitrusUsed/oranUsed/lumUsed/whiteHerbUsed` na entrada agora usa `eff.slots[enteringSide]` em vez de `eff.slots[0]` hardcoded
+- **`min-w-0` faltando em truncate** (`app/batalha/page.tsx`, `components/PokemonCard.tsx`) — nome do move em containers flex sem `min-w-0` poderia não truncar corretamente
+- **Grids sem responsividade mobile** — Pokédex: `grid-cols-4` → `3/4/5` (mobile/sm/md); Torre: `grid-cols-6` → `4/6`; Mochila: `grid-cols-3` → `2/3`
+- **Nome truncado no pós-batalha** (`app/pos-batalha/page.tsx`) — `.slice(0, 6)` substituído por nome completo com `truncate max-w-[48px]`
+- **`break-words` na loja** (`app/loja/page.tsx`) — descrições longas de item podiam overflow em mobile
+- **Draft card width** (`app/draft/page.tsx`) — `w-[82vw]` → `w-[min(82vw,300px)]` para não estourar em telas largas
+- **Ability strip** (`app/batalha/page.tsx`) — descrição colapsada `text-[10px]` → `text-[11px]` para alinhar com a expanded
+
+### Adicionado
+
+- **Bottom sheet de descrição de move (mobile)** (`app/batalha/page.tsx`) — no mobile (< 640px), o botão "?" nos cards de move e unique abre um sheet deslizando de baixo (`translate-y` + `opacity`, 300ms ease-out) com backdrop clicável para fechar. Exibe nome em `text-2xl`, tipo, categoria e descrição em `text-sm`. No desktop (sm+) o flip 3D é mantido. Hook `useIsMobile` via `matchMedia` garante hidratação correta; duplo `requestAnimationFrame` sincroniza mount/animação
+
+### UI
+
+- **Verso do card flip** (`app/batalha/page.tsx`) — `minHeight` 76→96px; descrição `text-[9px]`→`text-[10px]`; opacidade do texto 0.6→0.75; `overflow-y-auto` para descrições longas
+
+---
+
+## [0.9.8] - 2026-06-17
+
+### Refactor
+
+- **`BattleEffects` reestruturado para `sides[]/slots[]`** (`types/index.ts`, `lib/battleEngine.ts`, `app/batalha/page.tsx`) — struct flat com campos `player*/enemy*` substituída por estrutura indexada:
+  ```ts
+  interface BattleEffects {
+    sides: [SideState, SideState]   // sides[0] = player, sides[1] = enemy
+    slots: [SlotState, SlotState]   // slots[0] = player, slots[1] = enemy
+  }
+  ```
+  `SideIndex = 0 | 1`; lógica de moves agora é simétrica via `defenderSide = (1 - attackerSide) as SideIndex` — eliminadas todas as branches `if (side === 'player') ... else ...`
+- Novos tipos: `SideIndex`, `HazardState`, `StatusState`, `SideState`, `SlotState`
+- `DEFAULT_SLOT`, `DEFAULT_SIDE`, `DEFAULT_EFFECTS` substituem constante flat anterior
+- `cloneEffects()` no engine faz deep-clone de objetos aninhados antes de mutações
+- `patchSlot(eff, idx, partial)` e `patchSide(eff, idx, partial)` em `page.tsx` para writes imutáveis
+- Escalabilidade para double battles: `slots` expande por lado; moves ganham `target` enum
+
+### Corrigido
+
+- **Rapid Spin do inimigo** — `applySlotMoveEffect` não tinha branch para `attackerSide === 1`; refactor eliminou o problema ao tornar a função simétrica por design
+
+---
+
 ## [0.9.7] - 2026-06-14
 
 ### Corrigido
