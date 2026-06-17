@@ -14,7 +14,7 @@ import {
   applyFocusSash, getRockyHelmetRecoil, checkQuickClaw,
   StatusState,
 } from '@/lib/battleEngine'
-import type { PokemonCard, Move, RPS, AILevel, StatusCondition, HazardState, SlotState, SideState } from '@/types'
+import type { PokemonCard, Move, UniqueMove, RPS, AILevel, StatusCondition, HazardState, SlotState, SideState } from '@/types'
 
 // ─── BattleEffects patch helpers ─────────────────────────────────────────────
 
@@ -287,10 +287,103 @@ function getCategoryLabel(move: Move): string {
   return '⚔️ Ofensivo'
 }
 
+// ─── Bottom sheet para descrição de move (mobile) ────────────────────────────
+
+type SheetInfo =
+  | { kind: 'move';   move: Move;       typeColor: string }
+  | { kind: 'unique'; unique: UniqueMove; typeColor: string }
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return isMobile
+}
+
+function MoveBottomSheet({ info, onClose }: { info: SheetInfo | null; onClose: () => void }) {
+  const [rendered, setRendered] = useState<SheetInfo | null>(null)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (info) {
+      setRendered(info)
+      // double-rAF garante que o elemento já está no DOM antes de animar
+      requestAnimationFrame(() => requestAnimationFrame(() => setOpen(true)))
+    } else {
+      setOpen(false)
+      const t = setTimeout(() => setRendered(null), 320)
+      return () => clearTimeout(t)
+    }
+  }, [info])
+
+  if (!rendered) return null
+
+  const tc = rendered.typeColor
+  const name = rendered.kind === 'move' ? rendered.move.name : rendered.unique.name
+  const type = rendered.kind === 'move' ? rendered.move.type : rendered.unique.type
+  const category = rendered.kind === 'move' ? getCategoryLabel(rendered.move) : '⚡ 1× por batalha'
+  const description = rendered.kind === 'move'
+    ? getMoveDescription(rendered.move)
+    : rendered.unique.description
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 flex flex-col justify-end transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* Sheet */}
+      <div
+        className={`relative rounded-t-3xl px-5 pt-4 pb-10 flex flex-col gap-3 transition-transform duration-300 ease-out ${open ? 'translate-y-0' : 'translate-y-full'}`}
+        style={{ backgroundColor: '#2C1810' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Handle */}
+        <div className="w-10 h-1 rounded-full mx-auto mb-1" style={{ backgroundColor: 'rgba(251,245,230,0.2)' }} />
+
+        {/* Badges */}
+        <div className="flex items-center gap-2">
+          <span
+            className="font-game text-[9px] px-2.5 py-1 rounded-full leading-none"
+            style={{ backgroundColor: `${tc}25`, color: tc }}
+          >{type}</span>
+          <span className="font-game text-[9px] leading-none" style={{ color: 'rgba(251,245,230,0.4)' }}>{category}</span>
+        </div>
+
+        {/* Nome */}
+        <p className="font-black text-2xl uppercase tracking-tight leading-tight" style={{ color: '#FBF5E6' }}>
+          {name}
+        </p>
+
+        {/* Descrição */}
+        <p className="text-sm leading-relaxed" style={{ color: 'rgba(251,245,230,0.72)' }}>
+          {description}
+        </p>
+
+        {/* Fechar */}
+        <button
+          onClick={onClose}
+          className="mt-2 w-full py-3 rounded-2xl font-game text-[10px] uppercase tracking-widest transition-colors"
+          style={{ border: '1px solid rgba(251,245,230,0.15)', color: 'rgba(251,245,230,0.35)' }}
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Move grid 2×2 com flip 3D ───────────────────────────────────────────────
 function MoveGrid({
   pokemon, effects, uniqueUsed, playerIsForced, forcedButtonLabel,
-  onAttack,
+  onAttack, onOpenSheet,
 }: {
   pokemon: PokemonCard
   effects: BattleEffects
@@ -298,8 +391,10 @@ function MoveGrid({
   playerIsForced: boolean
   forcedButtonLabel?: string
   onAttack: (move: PlayerMove) => void
+  onOpenSheet: (info: SheetInfo) => void
 }) {
   const [flipped, setFlipped] = useState<RPS | 'unique' | null>(null)
+  const isMobile = useIsMobile()
   const rpsKeys: RPS[] = ['rock', 'paper', 'scissors']
 
   const borders = [
@@ -352,7 +447,7 @@ function MoveGrid({
                 </button>
                 {/* Botão info — não dispara ataque */}
                 <button
-                  onClick={(e) => { e.stopPropagation(); setFlipped(rps) }}
+                  onClick={(e) => { e.stopPropagation(); isMobile ? onOpenSheet({ kind: 'move', move, typeColor: tc }) : setFlipped(rps) }}
                   className="absolute top-1 right-1 w-[44px] h-[44px] rounded-full border border-ink/20 bg-white/80 flex items-center justify-center cursor-pointer hover:border-ink/50 z-10"
                   style={{ fontSize: 11, color: 'rgba(44,24,16,0.4)', fontWeight: 900, lineHeight: 1 }}
                 >?</button>
@@ -438,7 +533,7 @@ function MoveGrid({
                 </button>
                 {!disabled && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); setFlipped('unique') }}
+                    onClick={(e) => { e.stopPropagation(); isMobile ? onOpenSheet({ kind: 'unique', unique, typeColor: tc }) : setFlipped('unique') }}
                     className="absolute top-1 right-1 w-[44px] h-[44px] rounded-full border flex items-center justify-center cursor-pointer hover:border-opacity-70 z-10"
                     style={{ borderColor: tc, backgroundColor: `${tc}18`, fontSize: 11, color: tc, fontWeight: 900, lineHeight: 1 }}
                   >?</button>
@@ -825,6 +920,8 @@ export default function BatalhaPage() {
   const [stickyWebForcedMove, setStickyWebForcedMove] = useState<RPS | null>(null)
   // Quick Claw: reveals enemy move name when triggered (25% per turn)
   const [quickClawRevealed, setQuickClawRevealed] = useState(false)
+  // Bottom sheet (mobile): descrição do move/unique selecionado
+  const [sheetInfo, setSheetInfo] = useState<SheetInfo | null>(null)
   // Visual tell: move do inimigo pré-computado (tipo exibido como "aura" durante seleção)
   const [precomputedEnemyRPS, setPrecomputedEnemyRPS] = useState<RPS | null>(null)
 
@@ -1682,6 +1779,7 @@ export default function BatalhaPage() {
                     undefined
                   }
                   onAttack={handleAttack}
+                  onOpenSheet={setSheetInfo}
                 />
 
                 <div className="flex flex-col gap-1">
@@ -1921,6 +2019,9 @@ export default function BatalhaPage() {
           onCancel={() => setShowAbandon(false)}
         />
       )}
+
+      {/* Bottom sheet — descrição de move (mobile only, sm+ usa flip do card) */}
+      <MoveBottomSheet info={sheetInfo} onClose={() => setSheetInfo(null)} />
 
     </main>
   )
