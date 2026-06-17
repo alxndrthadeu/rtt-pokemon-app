@@ -135,7 +135,7 @@ export function PokemonCard({ pokemon, selectable, selected, hideHp, onClick }: 
             return (
               <div key={rps} className="flex items-center gap-1.5">
                 <span className="text-[11px] shrink-0 w-5 text-center leading-none">{RPS_ICON[rps]}</span>
-                <span className="text-[10px] text-ink-soft flex-1 truncate">{move.name}</span>
+                <span className="text-[10px] text-ink-soft flex-1 truncate min-w-0">{move.name}</span>
                 <span
                   className="font-game text-[8px] px-1.5 py-0.5 rounded-full border border-ink/20 shrink-0"
                   style={{ backgroundColor: moveTypeColor, color: moveTextColor }}

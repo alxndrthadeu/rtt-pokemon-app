@@ -223,7 +223,7 @@ export default function PosBatalhaPage() {
                     <div className="border-2 border-ink rounded-xl overflow-hidden bg-white" style={{ width: 48, height: 48, boxShadow: '2px 2px 0 #2C1810' }}>
                       <img src={getSpriteUrl(p.id)} alt={p.name} className="w-full h-full object-contain" />
                     </div>
-                    <span className="font-game text-[8px] text-ink-soft opacity-50 uppercase">{p.name.slice(0, 6)}</span>
+                    <span className="font-game text-[8px] text-ink-soft opacity-50 uppercase truncate max-w-[48px] block text-center">{p.name}</span>
                   </div>
                 ))}
               </div>

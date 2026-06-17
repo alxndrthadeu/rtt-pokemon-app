@@ -157,7 +157,7 @@ export default function ConclusaoPage() {
                       <span className="font-game text-[8px] text-ink/50 tracking-widest">HP</span>
                       <span className="font-game text-[7px] font-black"
                         style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
-                        {p.hearts}/{p.hearts}
+                        {Math.ceil(p.hearts)}/5
                       </span>
                     </div>
                   </div>

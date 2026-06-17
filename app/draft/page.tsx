@@ -215,7 +215,7 @@ export default function DraftPage() {
             <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0"
               style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
               {pool.map((pokemon) => (
-                <div key={pokemon.id} className="shrink-0 w-[82vw] sm:w-auto" style={{ scrollSnapAlign: 'start' }}>
+                <div key={pokemon.id} className="shrink-0 w-[min(82vw,300px)] sm:w-auto" style={{ scrollSnapAlign: 'start' }}>
                   <PokemonCard
                     pokemon={pokemon}
                     selectable

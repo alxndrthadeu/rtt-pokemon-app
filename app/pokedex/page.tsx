@@ -85,7 +85,7 @@ export default function PokedexPage() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
           {ordered.map(template => {
             const isSeen = seen.has(template.id)
             const tc = getTypeColor(template.type1)

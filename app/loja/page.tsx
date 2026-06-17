@@ -170,7 +170,7 @@ export default function LojaPage() {
                   <ItemSprite id={entry.id} size={40} />
                   <div className="flex-1 min-w-0">
                     <p className="font-black text-[11px] text-ink uppercase tracking-tight">{entry.def.name}</p>
-                    <p className="text-[10px] text-ink/50 leading-tight">{entry.def.description}</p>
+                    <p className="text-[10px] text-ink/50 leading-tight break-words">{entry.def.description}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <span className="font-black text-base text-ink">{price}₽</span>
@@ -219,7 +219,7 @@ export default function LojaPage() {
                         <span className="font-game text-[7px] text-ink/40">×{entry.qty}</span>
                       )}
                     </div>
-                    <p className="text-[10px] text-ink/50 leading-tight">{entry.def.description}</p>
+                    <p className="text-[10px] text-ink/50 leading-tight break-words">{entry.def.description}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <span className="font-black text-base text-ink">{price}₽</span>

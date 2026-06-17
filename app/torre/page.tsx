@@ -292,7 +292,7 @@ export default function TorrePage() {
             </span>
             <div className="h-px flex-1 bg-ink opacity-10" />
           </div>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
             {GYM_LEADERS.map((g, i) => {
               const tc = getTypeColor(g.specialtyType)
               const done   = i < currentFloor

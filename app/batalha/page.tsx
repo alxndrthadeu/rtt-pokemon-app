@@ -239,7 +239,7 @@ function AbilityStrip({ pokemon, typeColor }: { pokemon: PokemonCard; typeColor:
           style={{ borderColor: typeColor, color: typeColor, backgroundColor: `${typeColor}18` }}
         >HAB.</span>
         <span className="font-bold text-[11px] text-ink shrink-0 leading-none">{pokemon.ability.name}</span>
-        <span className="text-[10px] text-ink-soft opacity-55 leading-tight truncate min-w-0 flex-1">
+        <span className="text-[11px] text-ink-soft opacity-55 leading-tight truncate min-w-0 flex-1">
           — {pokemon.ability.description}
         </span>
         <span className="font-game text-[8px] text-ink/30 shrink-0 ml-1">{expanded ? '▲' : '▼'}</span>
@@ -323,8 +323,8 @@ function MoveGrid({
         const isFlipped   = flipped === rps
 
         return (
-          <div key={rps} className={`move-cell-flip ${borders[idx]}`} style={{ minHeight: 76 }}>
-            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 76 }}>
+          <div key={rps} className={`move-cell-flip ${borders[idx]}`} style={{ minHeight: 96 }}>
+            <div className={`move-cell-inner ${isFlipped ? 'is-flipped' : ''}`} style={{ minHeight: 96 }}>
 
               {/* ── FRENTE ── */}
               <div
@@ -341,7 +341,7 @@ function MoveGrid({
                   <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: tc }} />
                   <div className="pl-2.5 flex flex-col gap-1">
                     <span className="text-[24px] leading-none">{RPS_ICON[rps]}</span>
-                    <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate">{move.name}</p>
+                    <p className="font-black text-[11px] text-ink uppercase tracking-tight leading-tight truncate min-w-0">{move.name}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-game text-[8px] px-1.5 py-[3px] rounded-full leading-none"
                         style={{ backgroundColor: tc, color: getTypeTextColor(move.type) }}>{move.type}</span>
@@ -369,7 +369,7 @@ function MoveGrid({
                   <span className="font-game text-[8px] text-white/45 leading-none">{getCategoryLabel(move)}</span>
                 </div>
                 <p className="font-black text-[10px] leading-tight" style={{ color: '#FBF5E6' }}>{move.name}</p>
-                <p className="text-[9px] leading-relaxed flex-1" style={{ color: 'rgba(251,245,230,0.6)' }}>
+                <p className="text-[10px] leading-snug flex-1 overflow-y-auto" style={{ color: 'rgba(251,245,230,0.75)' }}>
                   {getMoveDescription(move)}
                 </p>
                 <button
