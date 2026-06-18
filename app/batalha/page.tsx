@@ -262,7 +262,7 @@ function getMoveDescription(move: Move): string {
   if (move.kind === 'offensive') return `Golpe ${move.type}. Causa dano com base na efetividade de tipos.`
   if (move.kind === 'status' && move.statusEffect) {
     const label: Record<string, string> = {
-      poison: 'veneno (−0.5 HP/turno)', paralysis: 'paralisia (30% de perder o turno)',
+      poison: 'veneno (−0.5 HP/turno)', paralysis: 'paralisia (40% de perder o turno)',
       sleep: 'sono (perde turnos até acordar)', freeze: 'congelamento (perde turnos até descongelar)',
       burn: 'queimadura (−0.5 HP/turno)',
     }
@@ -294,7 +294,9 @@ type SheetInfo =
   | { kind: 'unique'; unique: UniqueMove; typeColor: string }
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches
+  )
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 639px)')
     setIsMobile(mq.matches)
@@ -469,7 +471,7 @@ function MoveGrid({
                 </p>
                 <button
                   onClick={() => setFlipped(null)}
-                  className="font-game text-[7px] text-white/30 cursor-pointer text-right hover:text-white/60 transition-colors"
+                  className="font-game text-[8px] text-white/30 cursor-pointer text-right hover:text-white/60 transition-colors"
                 >↩ voltar</button>
               </div>
 
@@ -490,7 +492,7 @@ function MoveGrid({
               <div className="flex flex-col gap-1 p-3 opacity-20 select-none h-full" style={{ backgroundColor: '#F5EDD8' }}>
                 <div className="pl-2.5 flex flex-col gap-1">
                   <span className="text-[24px] leading-none">⚡</span>
-                  <p className="font-game text-[7px] text-ink/50 uppercase">Sem único</p>
+                  <p className="font-game text-[8px] text-ink/50 uppercase">Sem único</p>
                 </div>
               </div>
             </div>
@@ -556,7 +558,7 @@ function MoveGrid({
                 </p>
                 <button
                   onClick={() => setFlipped(null)}
-                  className="font-game text-[7px] text-white/30 cursor-pointer text-right hover:text-white/60 transition-colors"
+                  className="font-game text-[8px] text-white/30 cursor-pointer text-right hover:text-white/60 transition-colors"
                 >↩ voltar</button>
               </div>
 
@@ -587,7 +589,7 @@ function MoveGrid({
 
 const STATUS_DESC: Record<StatusCondition, string> = {
   poison:    '−0.5♥ no início de cada turno. Pokémon Venenoso/Aço são imunes.',
-  paralysis: '30% de chance de perder o turno. Pokémon Elétrico é imune.',
+  paralysis: '40% de chance de perder o turno. Pokémon Elétrico é imune.',
   sleep:     'Perde o turno por até 2 turnos. 45% de chance de acordar cedo no 2º turno.',
   freeze:    'Perde o turno até descongelar. Ataques de Fogo descongelam.',
   burn:      '−0.5♥ no início de cada turno. Pokémon Fogo é imune.',
@@ -623,7 +625,7 @@ function StatusPill({ status }: { status: StatusState | null }) {
           style={{ backgroundColor: '#2C1810' }}
           onClick={(e) => e.stopPropagation()}
         >
-          <p className="font-game text-[7px] uppercase tracking-widest mb-1" style={{ color: bg }}>
+          <p className="font-game text-[8px] uppercase tracking-widest mb-1" style={{ color: bg }}>
             {STATUS_NAME[status.condition]}
           </p>
           <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(251,245,230,0.75)' }}>
@@ -657,7 +659,7 @@ function EffectBadges({ effects, side }: { effects: BattleEffects; side: 'player
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {badges.map((b, i) => (
-        <span key={i} className="font-game text-[7px] px-1.5 py-[2px] rounded-full leading-none"
+        <span key={i} className="font-game text-[8px] px-1.5 py-[2px] rounded-full leading-none"
           style={{ backgroundColor: b.bg, color: b.fg ?? 'white' }}>
           {b.label}
         </span>
@@ -1500,7 +1502,7 @@ export default function BatalhaPage() {
         style={{ backgroundColor: typeColor }}>
         <div className="max-w-[640px] mx-auto flex items-center justify-between gap-3">
           <button onClick={() => setShowAbandon(true)}
-            className="border-2 border-white/30 rounded-full px-3 py-1.5 font-game text-[7px] text-white bg-white/15 hover:bg-white/25 transition-all shrink-0 cursor-pointer">
+            className="border-2 border-white/30 rounded-full px-3 py-1.5 font-game text-[8px] text-white bg-white/15 hover:bg-white/25 transition-all shrink-0 cursor-pointer">
             ← Fugir
           </button>
           <div className="flex-1 text-center min-w-0">
@@ -1643,7 +1645,7 @@ export default function BatalhaPage() {
                         <p className="font-game text-[8px] text-white/80 uppercase">{p.name}</p>
                         <div className="flex items-center gap-1">
                           <span className="font-game text-[8px] text-white/50 tracking-widest">HP</span>
-                          <span className="font-game text-[7px] font-black text-white/90">{Math.ceil(p.hearts)}/5</span>
+                          <span className="font-game text-[8px] font-black text-white/90">{Math.ceil(p.hearts)}/5</span>
                         </div>
                       </div>
                     ))}
@@ -1707,7 +1709,7 @@ export default function BatalhaPage() {
                   {effects.slots[0].status?.condition === 'paralysis' && !playerIsForced && (
                     <p className="font-game text-[8px] uppercase tracking-widest leading-none"
                       style={{ color: STATUS_BG['paralysis'] }}>
-                      ⚡ {pf.pokemon.name} está paralisado — 30% de travar
+                      ⚡ {pf.pokemon.name} está paralisado — 40% de travar
                     </p>
                   )}
                   {quickClawRevealed && precomputedEnemyRPS && (
@@ -1800,7 +1802,7 @@ export default function BatalhaPage() {
                     </button>
                   </div>
                   {playerFighters.filter(f => f.hearts > 0).length > 1 && !playerIsForcedByStatus && !effects.slots[0].tiredTurns && (
-                    <p className="font-game text-[7px] text-ink/40 text-center uppercase tracking-widest leading-none">
+                    <p className="font-game text-[8px] text-ink/40 text-center uppercase tracking-widest leading-none">
                       ⚠️ Trocar gasta o turno — inimigo ataca de graça
                     </p>
                   )}
@@ -1838,7 +1840,7 @@ export default function BatalhaPage() {
                         style={{ boxShadow: '3px 3px 0 rgba(44,24,16,0.12)' }}>
                         <span className="text-3xl leading-none">🔄</span>
                         <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{lastResult.switchedIn}</p>
-                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none bg-ink/10 text-ink/50">TROCA</span>
+                        <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none bg-ink/10 text-ink/50">TROCA</span>
                         <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
                     ) : lastResult.playerSkippedTurn ? (
@@ -1846,7 +1848,7 @@ export default function BatalhaPage() {
                         style={{ boxShadow: '3px 3px 0 rgba(44,24,16,0.12)', opacity: 0.7 }}>
                         <span className="text-3xl leading-none">😴</span>
                         <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{pf.pokemon.name}</p>
-                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
+                        <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#8060A8' }}>DORMINDO</span>
                         <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
@@ -1855,7 +1857,7 @@ export default function BatalhaPage() {
                         style={{ borderColor: '#2C7BB5', boxShadow: '3px 3px 0 #2C7BB5' }}>
                         <span className="text-3xl leading-none">🛡️</span>
                         <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{playerMoveName}</p>
-                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
+                        <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#2C7BB5' }}>BLOQUEOU!</span>
                         <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
@@ -1865,7 +1867,7 @@ export default function BatalhaPage() {
                       <span className="text-3xl leading-none">{playerIcon}</span>
                       <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{playerMoveName}</p>
                       {playerMoveType && (
-                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none"
+                        <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none"
                           style={{ backgroundColor: getTypeColor(playerMoveType), color: getTypeTextColor(playerMoveType) }}>
                           {playerMoveType}
                         </span>
@@ -1888,10 +1890,10 @@ export default function BatalhaPage() {
                       <span className="text-3xl leading-none">{RPS_ICON[lastResult.enemyMove]}</span>
                       <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{enemyMoveName}</p>
                       {lastResult.enemyProtected ? (
-                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none text-white"
+                        <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#2C7BB5' }}>BLOQUEOU!</span>
                       ) : enemyMoveType ? (
-                        <span className="font-game text-[7px] px-2 py-[3px] rounded-full leading-none"
+                        <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none"
                           style={{ backgroundColor: getTypeColor(enemyMoveType), color: getTypeTextColor(enemyMoveType) }}>
                           {enemyMoveType}
                         </span>
@@ -1907,7 +1909,7 @@ export default function BatalhaPage() {
 
                   {/* Effectiveness + activations */}
                   {(effLabel || lastResult.activations.length > 0) && (
-                    <div className="rounded-2xl border border-ink/12 bg-white px-4 py-3 flex flex-col gap-1.5">
+                    <div className="rounded-2xl border border-ink/12 bg-white px-4 py-3 flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto">
                       {effLabel && (
                         <p className="font-black text-sm text-center"
                           style={{ color: lastResult.multiplier >= 2 ? '#D4A000' : '#888870' }}>
@@ -1953,7 +1955,7 @@ export default function BatalhaPage() {
             <p className="font-black text-lg text-ink uppercase tracking-tight text-center mb-1">
               {switchRequired ? 'Próximo Pokémon!' : 'Trocar Pokémon'}
             </p>
-            <p className="font-game text-[7px] text-ink-soft opacity-50 uppercase tracking-widest text-center mb-5">
+            <p className="font-game text-[8px] text-ink-soft opacity-50 uppercase tracking-widest text-center mb-5">
               {switchRequired
                 ? 'Seu Pokémon caiu — escolha o próximo'
                 : 'Escolha quem entra · Inimigo atacará de graça'}
@@ -1984,7 +1986,7 @@ export default function BatalhaPage() {
                       </p>
                       <div className="flex justify-center items-center gap-1 mt-1">
                         <span className="font-game text-[8px] text-ink/50 tracking-widest">HP</span>
-                        <span className="font-game text-[7px] font-black"
+                        <span className="font-game text-[8px] font-black"
                           style={{ color: fighter.hearts <= 0 ? '#E82020' : fighter.hearts <= 1 ? '#F0C000' : '#2C1810' }}>
                           {Math.ceil(fighter.hearts)}/{fighter.pokemon.hearts}
                         </span>

@@ -48,7 +48,7 @@ export default function PokedexPage() {
               ←
             </button>
             <div>
-              <p className="font-game text-[7px] text-ink-soft opacity-50 uppercase tracking-wide">
+              <p className="font-game text-[8px] text-ink-soft opacity-50 uppercase tracking-wide">
                 {seenCount}/{total} capturados
               </p>
               <p className="font-black text-sm text-ink uppercase">Pokédex</p>
@@ -73,7 +73,7 @@ export default function PokedexPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className="flex-1 py-2.5 font-game text-[7px] uppercase tracking-widest border-2 rounded-2xl transition-all cursor-pointer"
+              className="flex-1 py-2.5 font-game text-[8px] uppercase tracking-widest border-2 rounded-2xl transition-all cursor-pointer"
               style={filter === f
                 ? { borderColor: '#2C1810', backgroundColor: '#2C1810', color: '#FBF5E6', boxShadow: '3px 3px 0 rgba(44,24,16,0.2)' }
                 : { borderColor: '#2C181025', backgroundColor: 'transparent', color: '#2C181060' }
@@ -125,7 +125,7 @@ export default function PokedexPage() {
                           width: 40,
                           height: 40,
                           objectFit: 'contain',
-                          filter: 'brightness(0) opacity(0.15)',
+                          filter: 'brightness(0) opacity(0.35)',
                         }}
                       />
                     </div>

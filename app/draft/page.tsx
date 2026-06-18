@@ -122,7 +122,7 @@ export default function DraftPage() {
               ←
             </button>
             <div>
-              <p className="font-game text-[7px] text-ink-soft opacity-50 uppercase tracking-wide">
+              <p className="font-game text-[8px] text-ink-soft opacity-50 uppercase tracking-wide">
                 {playerName} · {mode === 'normal' ? 'Normal' : 'Hard'}
               </p>
               <p className="font-black text-sm text-ink uppercase">
@@ -180,7 +180,7 @@ export default function DraftPage() {
                 <>
                   <div className="flex items-center justify-center gap-3 mb-2">
                     <div className="h-px w-8 bg-ink opacity-15" />
-                    <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
+                    <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
                       Rodada 1 · Sempre
                     </span>
                     <div className="h-px w-8 bg-ink opacity-15" />
@@ -196,7 +196,7 @@ export default function DraftPage() {
                 <>
                   <div className="flex items-center justify-center gap-3 mb-2">
                     <div className="h-px w-8 bg-ink opacity-15" />
-                    <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
+                    <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
                       Rodada {deck.length + 1} de {hasSkipped ? DECK_SIZE - 1 : DECK_SIZE}
                     </span>
                     <div className="h-px w-8 bg-ink opacity-15" />
@@ -226,6 +226,10 @@ export default function DraftPage() {
                 </div>
               ))}
             </div>
+            {/* Swipe hint — visible only on mobile */}
+            <p className="text-center font-game text-[8px] text-ink/30 uppercase tracking-widest sm:hidden">
+              ← Deslize para ver opções →
+            </p>
 
             {/* Ações */}
             <div className="flex flex-col gap-3">
@@ -282,7 +286,7 @@ export default function DraftPage() {
             <div className="text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <div className="h-px w-8 bg-ink opacity-15" />
-                <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
+                <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
                   Draft completo
                 </span>
                 <div className="h-px w-8 bg-ink opacity-15" />

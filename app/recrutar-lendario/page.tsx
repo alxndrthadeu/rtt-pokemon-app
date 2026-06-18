@@ -79,7 +79,7 @@ export default function RecrutarLendarioPage() {
                   <div key={i} className="w-4 h-4 rounded-full border-2"
                     style={{ backgroundColor: lColor, borderColor: `${lColor}80` }} />
                 ))}
-                <span className="font-game text-[7px] text-ink/50 ml-1">5♥</span>
+                <span className="font-game text-[8px] text-ink/50 ml-1">5♥</span>
               </div>
               <p className="text-[10px] text-ink/50 leading-tight">{pendingLegendaryCard.ability.name} — {pendingLegendaryCard.ability.description}</p>
             </div>
@@ -132,7 +132,7 @@ export default function RecrutarLendarioPage() {
                     <p className="font-black text-[10px] text-ink uppercase tracking-tight truncate">{p.name}</p>
                     <div className="flex items-center gap-1 mt-0.5">
                       <span className="font-game text-[8px] text-ink/50">HP</span>
-                      <span className="font-game text-[7px] font-black"
+                      <span className="font-game text-[8px] font-black"
                         style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
                         {p.hearts}/5
                       </span>

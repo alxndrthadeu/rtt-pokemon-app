@@ -77,7 +77,7 @@ const STATUS_EFFECTS = [
   },
   {
     icon: '⚡', name: 'Paralisado', color: '#F8D030',
-    desc: '25% de chance de travar e não atacar no turno.',
+    desc: '40% de chance de travar e não atacar no turno.',
   },
   {
     icon: '💤', name: 'Dormindo', color: '#6890F0',
@@ -172,7 +172,7 @@ export default function ComoJogarPage() {
                 <div key={m.mult} className="rounded-xl border-2 border-ink p-2 shadow-neo-sm"
                   style={{ backgroundColor: m.color }}>
                   <p className="font-game text-[13px] leading-none" style={{ color: m.text }}>{m.mult}</p>
-                  <p className="font-game text-[7px] mt-1 leading-none" style={{ color: m.text + 'CC' }}>{m.label}</p>
+                  <p className="font-game text-[8px] mt-1 leading-none" style={{ color: m.text + 'CC' }}>{m.label}</p>
                 </div>
               ))}
             </div>

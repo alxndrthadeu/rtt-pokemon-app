@@ -65,7 +65,7 @@ function PokemonSelector({
                 <div className="px-1 pb-2 text-center">
                   <p className="font-black text-[8px] text-ink uppercase truncate w-full">{p.name}</p>
                   {p.isFainted
-                    ? <p className="font-game text-[7px] text-red-600">KO</p>
+                    ? <p className="font-game text-[8px] text-red-600">KO</p>
                     : (
                       <div className="flex justify-center gap-0.5 mt-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
@@ -155,7 +155,7 @@ export default function MochilaPage() {
             </div>
             <button
               onClick={() => router.back()}
-              className="border-2 border-white/20 rounded-full px-4 py-1.5 font-game text-[7px] text-white/70 hover:text-white hover:border-white/50 transition-all cursor-pointer"
+              className="border-2 border-white/20 rounded-full px-4 py-1.5 font-game text-[8px] text-white/70 hover:text-white hover:border-white/50 transition-all cursor-pointer"
             >
               ← Voltar
             </button>
@@ -194,7 +194,7 @@ export default function MochilaPage() {
         {/* ── Tab: Uso ───────────────────────────────────────────────────────── */}
         {tab === 'uso' && (
           <>
-            <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest">
+            <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">
               Itens de cura podem ser usados fora de batalha
             </p>
             {inventory.length === 0 ? (
@@ -222,7 +222,7 @@ export default function MochilaPage() {
                     </div>
                     <button
                       onClick={() => setUsingItem(usingItem === itemId ? null : itemId)}
-                      className="shrink-0 px-3 py-2 font-game text-[7px] uppercase tracking-widest border-2 border-ink rounded-xl text-ink hover:bg-ink hover:text-parchment-light transition-all cursor-pointer"
+                      className="shrink-0 px-3 py-2 font-game text-[8px] uppercase tracking-widest border-2 border-ink rounded-xl text-ink hover:bg-ink hover:text-parchment-light transition-all cursor-pointer"
                       style={{ boxShadow: '2px 2px 0 #2C1810' }}
                     >
                       Usar
@@ -241,7 +241,7 @@ export default function MochilaPage() {
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-px flex-1 bg-ink opacity-10" />
-                <span className="font-game text-[7px] text-ink/40 uppercase tracking-widest">
+                <span className="font-game text-[8px] text-ink/40 uppercase tracking-widest">
                   Seu time ({playerDeck.length})
                 </span>
                 <div className="h-px flex-1 bg-ink opacity-10" />
@@ -274,7 +274,7 @@ export default function MochilaPage() {
                         {equipped ? (
                           <button
                             onClick={() => handleUnequip(p.id)}
-                            className="flex-1 py-1.5 font-game text-[8px] uppercase tracking-widest text-red-600/60 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                            className="flex-1 py-3 font-game text-[8px] uppercase tracking-widest text-red-600/60 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
                           >
                             Retirar item
                           </button>
@@ -286,7 +286,7 @@ export default function MochilaPage() {
                               // Pre-select this Pokémon: set equipping to first item, will show overlay
                               setEquippingItem('__CHOOSE_FOR__' + p.id as HeldItemId)
                             }}
-                            className="flex-1 py-1.5 font-game text-[8px] uppercase tracking-widest text-ink/40 hover:text-ink/70 hover:bg-parchment-light transition-colors cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed"
+                            className="flex-1 py-3 font-game text-[8px] uppercase tracking-widest text-ink/40 hover:text-ink/70 hover:bg-parchment-light transition-colors cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed"
                           >
                             + Equipar item
                           </button>
@@ -302,14 +302,14 @@ export default function MochilaPage() {
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-px flex-1 bg-ink opacity-10" />
-                <span className="font-game text-[7px] text-ink/40 uppercase tracking-widest">
+                <span className="font-game text-[8px] text-ink/40 uppercase tracking-widest">
                   Itens na mochila ({heldItemBag.length})
                 </span>
                 <div className="h-px flex-1 bg-ink opacity-10" />
               </div>
               {heldItemBag.length === 0 ? (
                 <div className="text-center py-8 border-2 border-dashed border-ink/15 rounded-2xl">
-                  <p className="font-game text-[7px] text-ink/25 uppercase tracking-widest">Nenhum item de batalha</p>
+                  <p className="font-game text-[8px] text-ink/25 uppercase tracking-widest">Nenhum item de batalha</p>
                   <p className="text-xs text-ink/30 mt-1">Ganhe após derrotar ginásios ou compre na loja</p>
                 </div>
               ) : (

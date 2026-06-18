@@ -126,35 +126,35 @@ export default function HomePage() {
           <div className="w-9 h-9 flex items-center justify-center border-2 border-ink rounded-full shadow-neo-sm bg-parchment-light">
             <Pokeball size={26} />
           </div>
-          <span className="font-game text-[7px] text-ink-soft tracking-widest uppercase">
+          <span className="font-game text-[8px] text-ink-soft tracking-widest uppercase">
             Reach the Top
           </span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => router.push('/como-jogar')}
-            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[8px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
             <span className="sm:hidden">❓</span>
             <span className="hidden sm:inline">❓ Como Jogar</span>
           </button>
           <button
             onClick={() => router.push('/pokedex')}
-            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[8px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
             <span className="sm:hidden">📖</span>
             <span className="hidden sm:inline">📖 Pokédex</span>
           </button>
           <button
             onClick={() => router.push('/historico')}
-            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[8px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
             <span className="sm:hidden">📜</span>
             <span className="hidden sm:inline">Histórico</span>
           </button>
           <button
             onClick={() => router.push('/patch-notes')}
-            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            className="border-2 border-ink rounded-full px-2 sm:px-4 py-1.5 font-game text-[8px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
           >
             <span className="sm:hidden">📋</span>
             <span className="hidden sm:inline">📋 Novidades</span>
@@ -188,7 +188,7 @@ export default function HomePage() {
           <div>
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="h-px w-10 bg-ink opacity-20" />
-              <span className="font-game text-[7px] text-ink-soft tracking-[0.5em] uppercase opacity-60">Kanto · Gen I</span>
+              <span className="font-game text-[8px] text-ink-soft tracking-[0.5em] uppercase opacity-60">Kanto · Gen I</span>
               <div className="h-px w-10 bg-ink opacity-20" />
             </div>
             <h1 className="text-[3rem] font-black tracking-tight leading-none uppercase text-ink">
@@ -348,7 +348,7 @@ export default function HomePage() {
             {selected ? 'Escolher Personagem →' : 'Selecione a dificuldade'}
           </button>
           {selected && (
-            <p className="font-game text-[7px] text-ink-soft opacity-40 tracking-widest uppercase text-center">
+            <p className="font-game text-[8px] text-ink-soft opacity-40 tracking-widest uppercase text-center">
               Modo {selected === 'normal' ? 'Normal' : 'Hard'} selecionado
             </p>
           )}

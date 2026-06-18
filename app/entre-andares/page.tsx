@@ -154,16 +154,30 @@ function PokemonSlot({
 function BottomSheet({
   open, onClose, title, children,
 }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
-  if (!open) return null
+  const [mounted, setMounted] = useState(false)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true)
+      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+    } else {
+      setVisible(false)
+      const t = setTimeout(() => setMounted(false), 320)
+      return () => clearTimeout(t)
+    }
+  }, [open])
+
+  if (!mounted) return null
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      style={{ backgroundColor: 'rgba(44,24,16,0.6)', backdropFilter: 'blur(3px)' }}
+      className="fixed inset-0 z-50 flex items-end justify-center transition-opacity duration-300"
+      style={{ backgroundColor: 'rgba(44,24,16,0.6)', backdropFilter: 'blur(3px)', opacity: visible ? 1 : 0 }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[640px] rounded-t-3xl border-t-4 border-x-4 border-ink bg-parchment-light overflow-y-auto"
-        style={{ maxHeight: '85vh' }}
+        className="w-full max-w-[640px] rounded-t-3xl border-t-4 border-x-4 border-ink bg-parchment-light overflow-y-auto transition-transform duration-300"
+        style={{ maxHeight: '85vh', transform: visible ? 'translateY(0)' : 'translateY(100%)' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="w-10 h-1 rounded-full bg-ink/20 mx-auto mt-4 mb-1" />
@@ -179,7 +193,7 @@ function BottomSheet({
 function BadgesSheetContent({ badgesEarned }: { badgesEarned: number[] }) {
   return (
     <div className="flex flex-col gap-5">
-      <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest">
+      <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">
         {badgesEarned.length}/8 insígnias conquistadas
       </p>
       <div className="grid grid-cols-4 gap-4">
@@ -501,7 +515,7 @@ export default function EntreAndaresPage() {
                   {isGameComplete ? 'Kanto conquistada!' : `${prevGym?.name} derrotado!`}
                 </p>
                 {prevGym?.badge && (
-                  <p className="font-game text-[7px] text-white/70 mt-0.5">{prevGym.badge} conquistada!</p>
+                  <p className="font-game text-[8px] text-white/70 mt-0.5">{prevGym.badge} conquistada!</p>
                 )}
               </div>
             </div>

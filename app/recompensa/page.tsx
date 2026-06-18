@@ -97,7 +97,7 @@ function RewardCard({
           <div key={id} className="flex flex-col items-center gap-1">
             <ItemSprite id={id} size={36} />
             {qty > 1 && (
-              <span className="font-game text-[7px] text-ink/60">×{qty}</span>
+              <span className="font-game text-[8px] text-ink/60">×{qty}</span>
             )}
           </div>
         ))}
@@ -148,7 +148,7 @@ function RewardCard({
     >
       <div className="flex items-center justify-between">
         <span
-          className="font-game text-[7px] px-2 py-1 rounded-full border uppercase tracking-widest"
+          className="font-game text-[8px] px-2 py-1 rounded-full border uppercase tracking-widest"
           style={selected
             ? { borderColor: gymColor, color: gymColor, backgroundColor: `${gymColor}18` }
             : { borderColor: '#2C181030', color: '#2C181060', backgroundColor: '#F5EDD820' }

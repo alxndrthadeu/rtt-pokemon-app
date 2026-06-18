@@ -127,7 +127,7 @@ export default function LojaPage() {
               </div>
               <button
                 onClick={() => router.push('/entre-andares')}
-                className="border-2 border-white/20 rounded-full px-4 py-1.5 font-game text-[7px] text-white/70 hover:text-white hover:border-white/50 transition-all cursor-pointer"
+                className="border-2 border-white/20 rounded-full px-4 py-1.5 font-game text-[8px] text-white/70 hover:text-white hover:border-white/50 transition-all cursor-pointer"
               >
                 Sair →
               </button>
@@ -145,7 +145,7 @@ export default function LojaPage() {
 
       <div className="max-w-[640px] mx-auto px-5 py-6 flex flex-col gap-4 pb-32">
 
-        <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest">
+        <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest">
           Itens disponíveis — Andar {currentFloor}
         </p>
 
@@ -153,7 +153,7 @@ export default function LojaPage() {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-ink opacity-10" />
-            <span className="font-game text-[7px] text-ink/40 uppercase tracking-widest">Itens de batalha</span>
+            <span className="font-game text-[8px] text-ink/40 uppercase tracking-widest">Itens de batalha</span>
             <div className="h-px flex-1 bg-ink opacity-10" />
           </div>
           <div className="flex flex-col gap-3">
@@ -197,7 +197,7 @@ export default function LojaPage() {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-ink opacity-10" />
-            <span className="font-game text-[7px] text-ink/40 uppercase tracking-widest">Suprimentos</span>
+            <span className="font-game text-[8px] text-ink/40 uppercase tracking-widest">Suprimentos</span>
             <div className="h-px flex-1 bg-ink opacity-10" />
           </div>
           <div className="flex flex-col gap-3">
@@ -216,7 +216,7 @@ export default function LojaPage() {
                     <div className="flex items-center gap-1.5">
                       <p className="font-black text-[11px] text-ink uppercase tracking-tight">{entry.def.name}</p>
                       {entry.qty > 1 && (
-                        <span className="font-game text-[7px] text-ink/40">×{entry.qty}</span>
+                        <span className="font-game text-[8px] text-ink/40">×{entry.qty}</span>
                       )}
                     </div>
                     <p className="text-[10px] text-ink/50 leading-tight break-words">{entry.def.description}</p>

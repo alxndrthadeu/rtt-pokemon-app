@@ -76,11 +76,11 @@ export default function PersonagemPage() {
       <header className="relative z-10 px-6 py-5 flex items-center justify-between max-w-[620px] mx-auto w-full">
         <button
           onClick={() => router.push('/')}
-          className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+          className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[8px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
         >
           ← Voltar
         </button>
-        <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-widest uppercase">
+        <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-widest uppercase">
           Reach the Top
         </span>
       </header>
@@ -92,7 +92,7 @@ export default function PersonagemPage() {
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-2">
             <div className="h-px w-8 bg-ink opacity-15" />
-            <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
+            <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
               Passo 1 de 2
             </span>
             <div className="h-px w-8 bg-ink opacity-15" />
@@ -242,7 +242,7 @@ export default function PersonagemPage() {
           </button>
 
           {canContinue && (
-            <p className="font-game text-[7px] text-ink-soft opacity-40 tracking-widest uppercase text-center">
+            <p className="font-game text-[8px] text-ink-soft opacity-40 tracking-widest uppercase text-center">
               {name.trim()} ·{' '}
               {selectedGender === 'boy' ? 'Red' : 'Leaf'} ·{' '}
               Modo {mode === 'normal' ? 'Normal' : 'Hard'}

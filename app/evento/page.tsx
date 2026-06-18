@@ -102,7 +102,7 @@ export default function EventoPage() {
             <div className="px-6 py-4 border-t-2 border-ink/10">
               <p className="text-sm text-ink-soft leading-relaxed mb-4">{specialBattle.lore}</p>
               <div className="flex items-center justify-between">
-                <span className="font-game text-[7px] uppercase tracking-widest text-ink/50">Poder</span>
+                <span className="font-game text-[8px] uppercase tracking-widest text-ink/50">Poder</span>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 10 }).map((_, i) => (
                     <div key={i} className="w-3 h-3 rounded-full border-2 border-ink/20"
@@ -117,7 +117,7 @@ export default function EventoPage() {
           {/* Aviso especial */}
           <div className="border-2 rounded-2xl px-4 py-3 text-center"
             style={{ borderColor: `${typeColor}50`, backgroundColor: `${typeColor}08` }}>
-            <p className="font-game text-[7px] uppercase tracking-widest" style={{ color: typeColor }}>
+            <p className="font-game text-[8px] uppercase tracking-widest" style={{ color: typeColor }}>
               ⚠️ Apenas 1 lendário por run — batalha arriscada
             </p>
           </div>
@@ -137,7 +137,7 @@ export default function EventoPage() {
           </button>
 
           {!hasHealthyPokemon && (
-            <p className="font-game text-[7px] text-center uppercase tracking-widest" style={{ color: '#CC2200' }}>
+            <p className="font-game text-[8px] text-center uppercase tracking-widest" style={{ color: '#CC2200' }}>
               ⚠️ Todos os seus Pokémon estão desmaiados
             </p>
           )}
@@ -185,7 +185,7 @@ export default function EventoPage() {
 
           {/* Time do grunt */}
           <div className="border-t border-white/10 px-5 py-4">
-            <p className="font-game text-[7px] text-white/40 uppercase tracking-widest mb-3 text-center">
+            <p className="font-game text-[8px] text-white/40 uppercase tracking-widest mb-3 text-center">
               Time do Grunt
             </p>
             <div className="flex justify-center gap-4">
@@ -218,7 +218,7 @@ export default function EventoPage() {
         </div>
 
         {/* Saldo atual */}
-        <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest text-center">
+        <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest text-center">
           Seu saldo atual: ₽{coins}
         </p>
 
@@ -242,12 +242,12 @@ export default function EventoPage() {
         </div>
 
         {!hasHealthyPokemon && (
-          <p className="font-game text-[7px] text-center uppercase tracking-widest" style={{ color: rocketRed }}>
+          <p className="font-game text-[8px] text-center uppercase tracking-widest" style={{ color: rocketRed }}>
             ⚠️ Todos os seus Pokémon estão desmaiados
           </p>
         )}
         {hasHealthyPokemon && coins < 2 && (
-          <p className="font-game text-[7px] text-center uppercase tracking-widest" style={{ color: rocketRed }}>
+          <p className="font-game text-[8px] text-center uppercase tracking-widest" style={{ color: rocketRed }}>
             ⚠️ Sem moedas para pagar pedágio — encare o Grunt ou perca a chance
           </p>
         )}

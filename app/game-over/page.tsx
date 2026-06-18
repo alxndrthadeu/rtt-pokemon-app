@@ -57,7 +57,7 @@ export default function GameOverPage() {
 
       {/* Header */}
       <header className="border-b-4 border-ink px-4 py-5 text-center" style={{ backgroundColor: resultMeta.color }}>
-        <p className="font-game text-[7px] text-white/60 uppercase tracking-widest mb-1">Reach the Top</p>
+        <p className="font-game text-[8px] text-white/60 uppercase tracking-widest mb-1">Reach the Top</p>
         <p className="font-black text-2xl text-white uppercase tracking-tight">
           {resultMeta.icon} {resultMeta.label}
         </p>
@@ -76,7 +76,7 @@ export default function GameOverPage() {
               <div>
                 <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mb-0.5">Treinador</p>
                 <p className="font-black text-lg text-ink leading-tight">{playerName || 'Sem nome'}</p>
-                <p className="font-game text-[7px] text-ink/40 uppercase tracking-wide mt-0.5">
+                <p className="font-game text-[8px] text-ink/40 uppercase tracking-wide mt-0.5">
                   Modo {mode === 'normal' ? 'Normal' : 'Hard'}
                 </p>
               </div>
@@ -123,7 +123,7 @@ export default function GameOverPage() {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-ink opacity-10" />
-            <span className="font-game text-[7px] text-ink/40 uppercase tracking-widest">
+            <span className="font-game text-[8px] text-ink/40 uppercase tracking-widest">
               Insígnias Conquistadas ({totalBadges})
             </span>
             <div className="h-px flex-1 bg-ink opacity-10" />
@@ -169,7 +169,7 @@ export default function GameOverPage() {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-ink opacity-10" />
-            <span className="font-game text-[7px] text-ink/40 uppercase tracking-widest">
+            <span className="font-game text-[8px] text-ink/40 uppercase tracking-widest">
               Pokémon do Time ({playerDeck.length})
             </span>
             <div className="h-px flex-1 bg-ink opacity-10" />
@@ -237,7 +237,7 @@ export default function GameOverPage() {
           </button>
           <button
             onClick={() => { resetRun(); router.push('/') }}
-            className="w-full py-3 font-game text-[7px] uppercase tracking-widest border border-ink/15 rounded-2xl text-ink/40 hover:text-ink/60 transition-all cursor-pointer"
+            className="w-full py-3 font-game text-[8px] uppercase tracking-widest border border-ink/15 rounded-2xl text-ink/40 hover:text-ink/60 transition-all cursor-pointer"
           >
             Voltar à tela inicial
           </button>

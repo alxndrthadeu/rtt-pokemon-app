@@ -95,7 +95,7 @@ export default function ConclusaoPage() {
 
       {/* Header */}
       <header className="w-full border-b-4 border-ink px-5 py-5 text-center" style={{ backgroundColor: rank.color }}>
-        <p className="font-game text-[7px] text-white/70 uppercase tracking-widest mb-1">Torre de Kanto</p>
+        <p className="font-game text-[8px] text-white/70 uppercase tracking-widest mb-1">Torre de Kanto</p>
         <p className="font-black text-2xl text-white uppercase tracking-tight">Concluída!</p>
       </header>
 
@@ -135,7 +135,7 @@ export default function ConclusaoPage() {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-ink opacity-10" />
-            <span className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest">Time Final</span>
+            <span className="font-game text-[8px] text-ink-soft opacity-40 uppercase tracking-widest">Time Final</span>
             <div className="h-px flex-1 bg-ink opacity-10" />
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -155,7 +155,7 @@ export default function ConclusaoPage() {
                     </span>
                     <div className="flex items-center gap-1">
                       <span className="font-game text-[8px] text-ink/50 tracking-widest">HP</span>
-                      <span className="font-game text-[7px] font-black"
+                      <span className="font-game text-[8px] font-black"
                         style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
                         {Math.ceil(p.hearts)}/5
                       </span>
@@ -171,7 +171,7 @@ export default function ConclusaoPage() {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-ink opacity-10" />
-            <span className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest">Ranking</span>
+            <span className="font-game text-[8px] text-ink-soft opacity-40 uppercase tracking-widest">Ranking</span>
             <div className="h-px flex-1 bg-ink opacity-10" />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -197,7 +197,7 @@ export default function ConclusaoPage() {
                   </p>
                 </div>
                 {r.label === rank.label && (
-                  <span className="font-game text-[7px] px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: r.color }}>
+                  <span className="font-game text-[8px] px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: r.color }}>
                     você
                   </span>
                 )}

@@ -137,7 +137,7 @@ export default function PosBatalhaPage() {
                 ))}
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pb-8">
-                <p className="font-game text-[7px] text-white/60 uppercase tracking-[0.4em]">{GYM_LOCATION[prevFloor] ?? 'ÁREA SELVAGEM'}</p>
+                <p className="font-game text-[8px] text-white/60 uppercase tracking-[0.4em]">{GYM_LOCATION[prevFloor] ?? 'ÁREA SELVAGEM'}</p>
                 <div className="flex gap-2">
                   {['?', '?', '?'].map((_, i) => (
                     <div key={i} className="w-14 h-14 rounded-2xl border-2 border-white/20 bg-white/10 flex items-center justify-center">
@@ -167,7 +167,7 @@ export default function PosBatalhaPage() {
             <div className="text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <div className="h-px w-8 bg-ink opacity-15" />
-                <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">Passo 1 de 2</span>
+                <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">Passo 1 de 2</span>
                 <div className="h-px w-8 bg-ink opacity-15" />
               </div>
               <h1 className="text-2xl font-black uppercase text-ink tracking-tight">
@@ -214,7 +214,7 @@ export default function PosBatalhaPage() {
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-px flex-1 bg-ink opacity-10" />
-                <span className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest">Seu time atual</span>
+                <span className="font-game text-[8px] text-ink-soft opacity-40 uppercase tracking-widest">Seu time atual</span>
                 <div className="h-px flex-1 bg-ink opacity-10" />
               </div>
               <div className="flex gap-2 flex-wrap justify-center">
@@ -237,7 +237,7 @@ export default function PosBatalhaPage() {
             <div className="text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <div className="h-px w-8 bg-ink opacity-15" />
-                <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">Passo 2 de 2</span>
+                <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">Passo 2 de 2</span>
                 <div className="h-px w-8 bg-ink opacity-15" />
               </div>
               <h1 className="text-2xl font-black uppercase text-ink tracking-tight">
@@ -279,7 +279,7 @@ export default function PosBatalhaPage() {
                         <p className="font-black text-[10px] text-ink uppercase tracking-tight truncate">{p.name}</p>
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="font-game text-[8px] text-ink/50 tracking-widest">HP</span>
-                          <span className="font-game text-[7px] font-black"
+                          <span className="font-game text-[8px] font-black"
                             style={{ color: p.hearts <= 1 ? '#E82020' : p.hearts <= 2 ? '#F0C000' : '#2C1810' }}>
                             {p.hearts}/5
                           </span>

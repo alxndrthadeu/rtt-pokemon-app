@@ -177,7 +177,7 @@ export default function TorrePage() {
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-2">
             <div className="h-px w-8 bg-ink opacity-15" />
-            <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
+            <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-[0.5em] uppercase">
               {isElite4 ? 'Elite 4' : `Ginásio ${currentFloor + 1} de 8`}
             </span>
             <div className="h-px w-8 bg-ink opacity-15" />
@@ -227,20 +227,20 @@ export default function TorrePage() {
                     <span className="text-3xl">{ELITE4_BADGE[currentFloor]}</span>
                   ) : null}
                   {gym.badge && (
-                    <span className="font-game text-[7px] text-ink-soft opacity-50">{gym.badge}</span>
+                    <span className="font-game text-[8px] text-ink-soft opacity-50">{gym.badge}</span>
                   )}
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 <span
-                  className="font-game text-[7px] px-3 py-1 rounded-full border-2 border-ink/20"
+                  className="font-game text-[8px] px-3 py-1 rounded-full border-2 border-ink/20"
                   style={{ backgroundColor: typeColor, color: getTypeTextColor(gym.specialtyType) }}
                 >
                   {gym.specialtyType}
                 </span>
                 <span
-                  className="font-game text-[7px] px-3 py-1 rounded-full border border-ink/20 bg-parchment-light"
+                  className="font-game text-[8px] px-3 py-1 rounded-full border border-ink/20 bg-parchment-light"
                 >
                   {AI_LABEL[gym.aiLevel]}
                 </span>
@@ -250,7 +250,7 @@ export default function TorrePage() {
 
               {/* Equipe do ginásio (mini sprites) */}
               <div>
-                <p className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest mb-2">Equipe</p>
+                <p className="font-game text-[8px] text-ink-soft opacity-40 uppercase tracking-widest mb-2">Equipe</p>
                 <div className="flex gap-2">
                   {buildGymDeck(currentFloor).slice(0, 3).map((p) => (
                     <div
@@ -287,7 +287,7 @@ export default function TorrePage() {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px flex-1 bg-ink opacity-10" />
-            <span className="font-game text-[7px] text-ink-soft opacity-40 uppercase tracking-widest">
+            <span className="font-game text-[8px] text-ink-soft opacity-40 uppercase tracking-widest">
               Progresso — {currentFloor}/12
             </span>
             <div className="h-px flex-1 bg-ink opacity-10" />
@@ -312,11 +312,11 @@ export default function TorrePage() {
                   ) : (
                     <span className={`text-base ${locked ? 'grayscale' : ''}`}>{ELITE4_BADGE[i]}</span>
                   )}
-                  <p className="font-game text-[7px] text-ink/60 text-center leading-tight w-full truncate px-0.5">
+                  <p className="font-game text-[8px] text-ink/60 text-center leading-tight w-full truncate px-0.5">
                     {g.name.split(' ')[0]}
                   </p>
-                  {done   && <span className="font-game text-[7px]" style={{ color: '#78C850' }}>✓</span>}
-                  {active && <span className="font-game text-[7px] font-black uppercase" style={{ color: tc }}>NOW</span>}
+                  {done   && <span className="font-game text-[8px]" style={{ color: '#78C850' }}>✓</span>}
+                  {active && <span className="font-game text-[8px] font-black uppercase" style={{ color: tc }}>NOW</span>}
                   {locked && <span className="text-[8px] opacity-25">🔒</span>}
                 </div>
               )
@@ -349,7 +349,7 @@ export default function TorrePage() {
 
               {/* Slots de ordem */}
               <div className="flex gap-3 items-center">
-                <p className="font-game text-[7px] text-ink-soft opacity-50 uppercase tracking-widest shrink-0">Ordem:</p>
+                <p className="font-game text-[8px] text-ink-soft opacity-50 uppercase tracking-widest shrink-0">Ordem:</p>
                 <div className="flex gap-2">
                   {[0, 1, 2].map(i => {
                     const p = selected[i]
@@ -461,26 +461,28 @@ export default function TorrePage() {
                 })}
               </div>
 
-              {/* Confirmar */}
-              <button
-                onClick={handleStartBattle}
-                disabled={selected.length < 3}
-                className={`w-full py-4 font-black text-base tracking-[0.15em] uppercase border-2 border-ink rounded-2xl transition-all ${
-                  selected.length >= 3
-                    ? 'text-parchment-light shadow-neo-red hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none cursor-pointer'
-                    : 'text-ink opacity-25 cursor-not-allowed'
-                }`}
-                style={{ backgroundColor: selected.length >= 3 ? '#CC2200' : '#E8E0CC' }}
-              >
-                {selected.length >= 3 ? `Batalhar! ⚔️` : `Selecione ${3 - selected.length} Pokémon`}
-              </button>
+              {/* Confirmar — sticky ao fundo do sheet */}
+              <div className="sticky bottom-0 bg-parchment pt-3 pb-safe flex flex-col gap-3">
+                <button
+                  onClick={handleStartBattle}
+                  disabled={selected.length < 3}
+                  className={`w-full py-4 font-black text-base tracking-[0.15em] uppercase border-2 border-ink rounded-2xl transition-all ${
+                    selected.length >= 3
+                      ? 'text-parchment-light shadow-neo-red hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none cursor-pointer'
+                      : 'text-ink opacity-25 cursor-not-allowed'
+                  }`}
+                  style={{ backgroundColor: selected.length >= 3 ? '#CC2200' : '#E8E0CC' }}
+                >
+                  {selected.length >= 3 ? `Batalhar! ⚔️` : `Selecione ${3 - selected.length} Pokémon`}
+                </button>
 
-              <button
-                onClick={() => { setShowSetup(false); setShowAbandon(true) }}
-                className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/30 rounded-2xl text-ink/55 hover:text-ink/90 hover:border-ink/50 hover:bg-white transition-all cursor-pointer"
-              >
-                🏳️ Abandonar run
-              </button>
+                <button
+                  onClick={() => { setShowSetup(false); setShowAbandon(true) }}
+                  className="w-full py-3 font-game text-[8px] uppercase tracking-widest border-2 border-ink/30 rounded-2xl text-ink/55 hover:text-ink/90 hover:border-ink/50 hover:bg-white transition-all cursor-pointer"
+                >
+                  🏳️ Abandonar run
+                </button>
+              </div>
             </div>
           </div>
         </div>

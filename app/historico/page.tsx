@@ -177,11 +177,11 @@ export default function HistoricoPage() {
       <header className="relative z-10 px-5 py-5 flex items-center justify-between max-w-[620px] mx-auto w-full">
         <button
           onClick={() => router.push('/')}
-          className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[7px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+          className="border-2 border-ink rounded-full px-4 py-1.5 font-game text-[8px] tracking-wide uppercase text-ink-soft bg-parchment-light shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
         >
           ← Voltar
         </button>
-        <span className="font-game text-[7px] text-ink-soft opacity-50 tracking-widest uppercase">
+        <span className="font-game text-[8px] text-ink-soft opacity-50 tracking-widest uppercase">
           Reach the Top
         </span>
       </header>
@@ -192,7 +192,7 @@ export default function HistoricoPage() {
           <h1 className="text-2xl font-black uppercase text-ink tracking-tight">
             Histórico de <span style={{ color: '#CC2200' }}>Runs</span>
           </h1>
-          <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest mt-1">
+          <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest mt-1">
             {runHistory.length} {runHistory.length === 1 ? 'run registrada' : 'runs registradas'}
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function HistoricoPage() {
           >
             <p className="text-4xl mb-3">📋</p>
             <p className="font-black text-sm text-ink uppercase tracking-tight">Nenhuma run ainda</p>
-            <p className="font-game text-[7px] text-ink/35 uppercase tracking-widest mt-2">
+            <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest mt-2">
               Conclua ou abandone uma run para ver aqui
             </p>
             <button

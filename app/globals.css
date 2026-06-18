@@ -66,6 +66,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .pokeball-float  { animation: none; }
   .blink-cursor    { animation: none; }
+  .animate-ping, .animate-pulse, .animate-bounce, .animate-spin { animation: none; }
 }
 
 /* Scanlines na arena de batalha */

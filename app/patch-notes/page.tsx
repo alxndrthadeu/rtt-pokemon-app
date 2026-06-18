@@ -898,7 +898,7 @@ function VersionBlock({ patch }: { patch: PatchVersion }) {
           <div className="flex items-center gap-2 flex-wrap mb-0.5">
             <p className="font-black text-base text-ink uppercase tracking-tight">{patch.label}</p>
           </div>
-          <p className="font-game text-[7px] text-ink/40 uppercase tracking-widest leading-none">{patch.date}</p>
+          <p className="font-game text-[8px] text-ink/40 uppercase tracking-widest leading-none">{patch.date}</p>
           <p className="text-[11px] text-ink/55 leading-relaxed mt-1.5">{patch.description}</p>
         </div>
       </div>
@@ -926,7 +926,7 @@ export default function PatchNotesPage() {
         <div className="max-w-[640px] mx-auto flex items-center gap-3">
           <button
             onClick={() => router.push('/')}
-            className="border-2 border-ink/25 rounded-full px-3 py-1.5 font-game text-[7px] text-ink/60 bg-white/60 hover:bg-white transition-all shrink-0 cursor-pointer"
+            className="border-2 border-ink/25 rounded-full px-3 py-1.5 font-game text-[8px] text-ink/60 bg-white/60 hover:bg-white transition-all shrink-0 cursor-pointer"
           >
             ← Voltar
           </button>
@@ -966,7 +966,7 @@ export default function PatchNotesPage() {
           </p>
           <button
             onClick={() => router.push('/')}
-            className="mt-2 self-center border-2 border-ink rounded-full px-5 py-2 font-game text-[7px] uppercase tracking-wide bg-white shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer text-ink"
+            className="mt-2 self-center border-2 border-ink rounded-full px-5 py-2 font-game text-[8px] uppercase tracking-wide bg-white shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer text-ink"
           >
             Jogar agora →
           </button>
