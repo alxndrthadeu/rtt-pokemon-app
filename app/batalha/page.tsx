@@ -677,6 +677,7 @@ interface ArenaProps {
   playerFighters: Fighter[]; enemyFighters: Fighter[]
   playerIdx: number; enemyIdx: number
   phase: LocalPhase
+  lastResult: TurnResult | null
   enemyTellType?: string | null
   precomputedEnemyRPS?: RPS | null
 }
@@ -700,7 +701,7 @@ function HazardChips({ hazards }: { hazards: HazardState }) {
   )
 }
 
-function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters, playerIdx, enemyIdx, phase, enemyTellType, precomputedEnemyRPS }: ArenaProps) {
+function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters, playerIdx, enemyIdx, phase, lastResult, enemyTellType }: ArenaProps) {
   const pKO = pf.hearts <= 0
   const eKO = ef.hearts <= 0
 
@@ -710,6 +711,11 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
   // Stores the Pokémon ID that failed to load animated GIF — falls back to static sprite
   const [enemyAnimErrId, setEnemyAnimErrId] = useState<number | null>(null)
   const [playerAnimErrId, setPlayerAnimErrId] = useState<number | null>(null)
+
+  // Animações de ataque: lunge do atacante + shake+flash do defensor
+  const [attackAnim, setAttackAnim] = useState<'player' | 'enemy' | null>(null)
+  const [hitAnim,    setHitAnim]    = useState<'player' | 'enemy' | null>(null)
+
   const prevPH = useRef(pf.hearts)
   const prevEH = useRef(ef.hearts)
   useEffect(() => {
@@ -726,6 +732,33 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
     prevEH.current = ef.hearts
     // effects é lido na mesma fase de render que ef.hearts — não precisa ser dep
   }, [ef.hearts]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!lastResult) return
+    const { outcome, enemyDmg, playerDmg, enemyProtected, playerProtected } = lastResult
+    if (outcome === 'player_wins' && enemyDmg > 0 && !enemyProtected) {
+      setAttackAnim('player'); setHitAnim('enemy')
+      const t1 = setTimeout(() => setAttackAnim(null), 270)
+      const t2 = setTimeout(() => setHitAnim(null),    480)
+      return () => { clearTimeout(t1); clearTimeout(t2) }
+    }
+    if (outcome === 'enemy_wins' && playerDmg > 0 && !playerProtected) {
+      setAttackAnim('enemy'); setHitAnim('player')
+      const t1 = setTimeout(() => setAttackAnim(null), 270)
+      const t2 = setTimeout(() => setHitAnim(null),    480)
+      return () => { clearTimeout(t1); clearTimeout(t2) }
+    }
+  }, [lastResult])
+
+  // Cor da aura = tipo do golpe usado pelo atacante
+  const playerAuraColor = lastResult
+    ? lastResult.playerMove === 'unique'
+      ? getTypeColor(pf.pokemon.unique?.type ?? 'Normal')
+      : getTypeColor(pf.pokemon.moves[lastResult.playerMove].type)
+    : null
+  const enemyAuraColor = lastResult
+    ? getTypeColor(ef.pokemon.moves[lastResult.enemyMove].type)
+    : null
 
   return (
     <div className="relative overflow-hidden rounded-3xl border-2 border-ink select-none"
@@ -782,8 +815,15 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
       </div>
 
       {/* ── Enemy sprite — top-right ── */}
-      <div className="absolute z-[5] transition-opacity duration-300"
-        style={{ right: 18, top: 22, opacity: eKO ? 0.22 : 1 }}>
+      <div
+        className={`absolute z-[5] transition-opacity duration-300 ${attackAnim === 'enemy' ? 'sprite-lunge-left' : ''} ${hitAnim === 'enemy' ? 'sprite-shake' : ''}`}
+        style={{ right: 18, top: 22, opacity: eKO ? 0.22 : 1 }}
+      >
+        {/* Hit flash — aparece quando o inimigo leva dano */}
+        {hitAnim === 'enemy' && !eKO && (
+          <div className="absolute inset-0 z-20 pointer-events-none rounded-lg"
+            style={{ backgroundColor: 'rgba(204,34,0,0.45)' }} />
+        )}
         {/* Visual tell: aura do tipo do próximo move do inimigo durante seleção */}
         {phase === 'selecting' && !eKO && enemyTellType && (
           <div className="absolute inset-0 pointer-events-none rounded-xl z-10 transition-all duration-500"
@@ -797,7 +837,11 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             width: 92, height: 92,
             imageRendering: 'pixelated',
             objectFit: 'contain',
-            filter: eKO ? 'grayscale(1)' : undefined,
+            filter: eKO
+              ? 'grayscale(1)'
+              : attackAnim === 'enemy' && enemyAuraColor
+              ? `drop-shadow(0 0 7px ${enemyAuraColor}) drop-shadow(0 0 14px ${enemyAuraColor}90)`
+              : undefined,
           }}
           onError={() => setEnemyAnimErrId(ef.pokemon.id)}
         />
@@ -810,8 +854,15 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
       </div>
 
       {/* ── Player sprite — bottom-left (back) ── */}
-      <div className="absolute z-[5] transition-opacity duration-300"
-        style={{ left: 6, bottom: 24, opacity: pKO ? 0.22 : 1 }}>
+      <div
+        className={`absolute z-[5] transition-opacity duration-300 ${attackAnim === 'player' ? 'sprite-lunge-right' : ''} ${hitAnim === 'player' ? 'sprite-shake' : ''}`}
+        style={{ left: 6, bottom: 24, opacity: pKO ? 0.22 : 1 }}
+      >
+        {/* Hit flash — aparece quando o player leva dano */}
+        {hitAnim === 'player' && !pKO && (
+          <div className="absolute inset-0 z-20 pointer-events-none rounded-lg"
+            style={{ backgroundColor: 'rgba(204,34,0,0.45)' }} />
+        )}
         <img
           key={pf.pokemon.id}
           src={playerAnimErrId === pf.pokemon.id ? getBackSpriteUrl(pf.pokemon.id) : getAnimatedBackUrl(pf.pokemon.id)}
@@ -820,7 +871,11 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             width: 120, height: 120,
             imageRendering: 'pixelated',
             objectFit: 'contain',
-            filter: pKO ? 'grayscale(1)' : undefined,
+            filter: pKO
+              ? 'grayscale(1)'
+              : attackAnim === 'player' && playerAuraColor
+              ? `drop-shadow(0 0 7px ${playerAuraColor}) drop-shadow(0 0 14px ${playerAuraColor}90)`
+              : undefined,
           }}
           onError={() => setPlayerAnimErrId(pf.pokemon.id)}
         />
@@ -1543,6 +1598,7 @@ export default function BatalhaPage() {
           playerIdx={playerIdx}
           enemyIdx={enemyIdx}
           phase={phase}
+          lastResult={lastResult}
           enemyTellType={enemyTellColor}
           precomputedEnemyRPS={precomputedEnemyRPS}
         />

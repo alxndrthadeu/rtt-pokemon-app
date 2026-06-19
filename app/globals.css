@@ -69,6 +69,31 @@ body {
   .animate-ping, .animate-pulse, .animate-bounce, .animate-spin { animation: none; }
 }
 
+/* ── Sprite battle animations ─────────────────────────────────────────────── */
+@keyframes sprite-lunge-right {
+  0%   { transform: translateX(0)    scale(1);    }
+  35%  { transform: translateX(14px) scale(1.09); }
+  100% { transform: translateX(0)    scale(1);    }
+}
+@keyframes sprite-lunge-left {
+  0%   { transform: translateX(0)     scale(1);    }
+  35%  { transform: translateX(-14px) scale(1.09); }
+  100% { transform: translateX(0)     scale(1);    }
+}
+@keyframes sprite-shake {
+  0%, 100% { transform: translateX(0);    }
+  20%       { transform: translateX(-7px); }
+  40%       { transform: translateX(7px);  }
+  60%       { transform: translateX(-5px); }
+  80%       { transform: translateX(5px);  }
+}
+.sprite-lunge-right { animation: sprite-lunge-right 270ms ease-out; }
+.sprite-lunge-left  { animation: sprite-lunge-left  270ms ease-out; }
+.sprite-shake       { animation: sprite-shake        380ms ease-in-out; }
+@media (prefers-reduced-motion: reduce) {
+  .sprite-lunge-right, .sprite-lunge-left, .sprite-shake { animation: none; }
+}
+
 /* Scanlines na arena de batalha */
 .arena-scanlines {
   background: repeating-linear-gradient(

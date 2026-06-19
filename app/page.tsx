@@ -85,14 +85,14 @@ const MODES: { id: GameMode; title: string; desc: string; typeColor: string; typ
   {
     id: 'normal',
     title: 'Normal',
-    desc: 'Pokémon curam entre ginásios. Bom para aprender a mecânica.',
+    desc: 'Centro Pokémon restaura o time entre cada ginásio. IA começa fácil e fica preditiva no andar 9.',
     typeColor: '#78C850',
     typeLabel: 'Grass',
   },
   {
     id: 'hard',
     title: 'Hard',
-    desc: 'Sem cura entre andares. Cada derrota é permanente.',
+    desc: 'HP perdido nunca volta. A IA entra em modo preditivo no andar 5. Para veteranos.',
     typeColor: '#C03028',
     typeLabel: 'Fighting',
   },
