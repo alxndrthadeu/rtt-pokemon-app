@@ -50,7 +50,7 @@ export type AILevel = 'random' | 'weighted' | 'adaptive' | 'predictive'
 
 export type MoveKind = 'offensive' | 'status' | 'buff'
 
-export type StatusCondition = 'poison' | 'paralysis' | 'sleep' | 'freeze' | 'burn'
+export type StatusCondition = 'poison' | 'paralysis' | 'sleep' | 'freeze' | 'burn' | 'confusion'
 
 export type SideIndex = 0 | 1
 

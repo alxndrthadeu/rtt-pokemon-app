@@ -91,13 +91,13 @@ function effectivenessLabel(mult: number): string | null {
 }
 
 const STATUS_LABEL: Record<StatusCondition, string> = {
-  poison: 'VEN', paralysis: 'PAR', sleep: 'SON', freeze: 'GEL', burn: 'QUE',
+  poison: 'VEN', paralysis: 'PAR', sleep: 'SON', freeze: 'GEL', burn: 'QUE', confusion: 'CON',
 }
 const STATUS_BG: Record<StatusCondition, string> = {
-  poison: '#9040B0', paralysis: '#D4B000', sleep: '#4868D0', freeze: '#50B8B8', burn: '#E06020',
+  poison: '#9040B0', paralysis: '#D4B000', sleep: '#4868D0', freeze: '#50B8B8', burn: '#E06020', confusion: '#F85888',
 }
 const STATUS_FG: Record<StatusCondition, string> = {
-  poison: 'white', paralysis: '#2C1810', sleep: 'white', freeze: '#2C1810', burn: 'white',
+  poison: 'white', paralysis: '#2C1810', sleep: 'white', freeze: '#2C1810', burn: 'white', confusion: 'white',
 }
 
 function getBackSpriteUrl(id: number): string {
@@ -132,6 +132,8 @@ interface TurnResult {
   lostTurn: boolean          // player congelou/exausto — forçado a jogar pedra, perdeu
   playerSkippedTurn: boolean // player dormindo — turno nulo, tomou o ataque
   enemyLostTurn: boolean     // inimigo dormiu/congelou — player vence automaticamente
+  playerSelfHurt: boolean    // player confuso — se machucou no lugar de atacar
+  enemySelfHurt: boolean     // inimigo confuso — se machucou no lugar de atacar
   switchedIn?: string        // nome do pokemon que entrou via troca voluntária
   playerProtected: boolean   // player usou Protect com sucesso neste turno
   enemyProtected: boolean    // inimigo usou Protect com sucesso neste turno
@@ -593,9 +595,10 @@ const STATUS_DESC: Record<StatusCondition, string> = {
   sleep:     'Perde o turno por até 2 turnos. 45% de chance de acordar cedo no 2º turno.',
   freeze:    'Perde o turno até descongelar. Ataques de Fogo descongelam.',
   burn:      '−0.5♥ no início de cada turno. Pokémon Fogo é imune.',
+  confusion: '50% de chance de se machucar (−0.5♥) no lugar de atacar. Dura 2 turnos.',
 }
 const STATUS_NAME: Record<StatusCondition, string> = {
-  poison: 'Envenenado', paralysis: 'Paralisado', sleep: 'Dormindo', freeze: 'Congelado', burn: 'Queimado',
+  poison: 'Envenenado', paralysis: 'Paralisado', sleep: 'Dormindo', freeze: 'Congelado', burn: 'Queimado', confusion: 'Confuso',
 }
 
 function StatusPill({ status }: { status: StatusState | null }) {
@@ -1385,6 +1388,8 @@ export default function BatalhaPage() {
     }
 
     const playerSkippedTurn = turnStart.playerSkipsTurn
+    const playerSelfHurt = turnStart.playerSelfHurt
+    const enemySelfHurt = turnStart.enemySelfHurt
     const wasFrozenPreTurn = effects.slots[0].status?.condition === 'freeze'
     const lostTurn = playerForcedThisTurn && outcome === 'enemy_wins' && (
       wasFrozenPreTurn ||
@@ -1392,11 +1397,15 @@ export default function BatalhaPage() {
     )
     const enemyLostTurn = turnStart.enemyAutoLose && outcome === 'player_wins'
 
+    // Confusion self-hurt: neither side attacks the other
+    if (playerSelfHurt) outcome = 'tie'
+    if (enemySelfHurt) outcome = 'tie'
+
     setPlayerFighters(prev => prev.map((f, i) => i === playerIdx ? { ...f, hearts: newPHearts } : f))
     setEnemyFighters(prev => prev.map((f, i) => i === enemyIdx ? { ...f, hearts: newEHearts } : f))
     setEffects(eff)
-    if (!lostTurn && !playerSkippedTurn) setMoveHistory(h => [...h, playerRPS])
-    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations, lostTurn, playerSkippedTurn, enemyLostTurn, playerProtected: isProtect, enemyProtected: enemyIsProtect })
+    if (!lostTurn && !playerSkippedTurn && !playerSelfHurt) setMoveHistory(h => [...h, playerRPS])
+    setLastResult({ playerMove: move, enemyMove: aiMove, outcome, playerDmg, enemyDmg, multiplier, activations, lostTurn, playerSkippedTurn, enemyLostTurn, playerSelfHurt, enemySelfHurt, playerProtected: isProtect, enemyProtected: enemyIsProtect })
     setPhase('result')
   }
 
@@ -1517,6 +1526,8 @@ export default function BatalhaPage() {
       lostTurn: false,
       playerSkippedTurn: false,
       enemyLostTurn: false,
+      playerSelfHurt: false,
+      enemySelfHurt: false,
       switchedIn: incoming.pokemon.name,
       playerProtected: false,
       enemyProtected: false,
@@ -1782,6 +1793,12 @@ export default function BatalhaPage() {
                       ⚡ {pf.pokemon.name} está paralisado — 40% de travar
                     </p>
                   )}
+                  {effects.slots[0].status?.condition === 'confusion' && (
+                    <p className="font-game text-[8px] uppercase tracking-widest leading-none"
+                      style={{ color: STATUS_BG['confusion'] }}>
+                      🌀 {pf.pokemon.name} está confuso — 50% de se machucar
+                    </p>
+                  )}
                   {quickClawRevealed && precomputedEnemyRPS && (
                     <p className="font-game text-[8px] uppercase tracking-widest leading-none"
                       style={{ color: '#D4A000' }}>
@@ -1810,11 +1827,11 @@ export default function BatalhaPage() {
                 const cfg = {
                   player_wins: { color: '#2AAA2A', label: lastResult.enemyLostTurn ? '😴 Inimigo perdeu o turno!' : lastResult.enemyProtected ? '🛡️ Inimigo bloqueou seu ataque!' : '🏆 Você venceu este turno!' },
                   enemy_wins:  { color: '#CC2200', label: enemyWinsLabel },
-                  tie:         { color: '#888870', label: '🤝 Empate — ninguém atacou' },
+                  tie:         { color: '#888870', label: lastResult.playerSelfHurt ? '🌀 Confuso! Se machucou no lugar de atacar!' : lastResult.enemySelfHurt ? '🌀 Inimigo confuso! Se machucou!' : '🤝 Empate — ninguém atacou' },
                 }[lastResult.outcome]
                 const wasUnique = lastResult.playerMove === 'unique'
                 const playerRpsKey = wasUnique ? null : lastResult.playerMove as RPS
-                const skipBeatLabel = lastResult.lostTurn || lastResult.playerSkippedTurn || lastResult.enemyLostTurn || lastResult.switchedIn || lastResult.playerProtected || lastResult.enemyProtected
+                const skipBeatLabel = lastResult.lostTurn || lastResult.playerSkippedTurn || lastResult.enemyLostTurn || lastResult.playerSelfHurt || lastResult.enemySelfHurt || lastResult.switchedIn || lastResult.playerProtected || lastResult.enemyProtected
                 return (
                   <div className="flex flex-col gap-1">
                     <p className="font-black text-base text-ink leading-tight">{cfg.label}</p>
@@ -1920,6 +1937,15 @@ export default function BatalhaPage() {
                         <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{pf.pokemon.name}</p>
                         <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none text-white"
                           style={{ backgroundColor: '#8060A8' }}>DORMINDO</span>
+                        <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
+                      </div>
+                    ) : lastResult.playerSelfHurt ? (
+                      <div className="rounded-2xl border-2 border-ink px-3 py-3 flex flex-col items-center gap-1.5 bg-white"
+                        style={{ boxShadow: '3px 3px 0 rgba(44,24,16,0.12)', opacity: 0.7 }}>
+                        <span className="text-3xl leading-none">🌀</span>
+                        <p className="font-black text-[11px] text-ink text-center leading-tight truncate w-full">{pf.pokemon.name}</p>
+                        <span className="font-game text-[8px] px-2 py-[3px] rounded-full leading-none text-white"
+                          style={{ backgroundColor: '#F85888' }}>CONFUSO!</span>
                         <p className="font-game text-[8px] text-ink/35 uppercase tracking-widest leading-none">Você</p>
                       </div>
                     ) : lastResult.playerProtected ? (

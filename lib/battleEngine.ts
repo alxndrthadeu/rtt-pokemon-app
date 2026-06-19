@@ -80,12 +80,14 @@ export interface TurnStartResult {
   effects: BattleEffects
   playerForcedRps: RPS | null   // non-null → player must use this RPS
   enemyForcedRps: RPS | null    // non-null → enemy must use this RPS
-  playerHeartsLost: number      // poison/burn damage (always ≥ 0)
+  playerHeartsLost: number      // poison/burn/confusion self-hurt damage (always ≥ 0)
   enemyHeartsLost: number
   playerHeartsGained: number    // Aqua Ring passive heal
   messages: string[]
   enemyAutoLose: boolean        // enemy sleeping/frozen, player wins automatically
   playerSkipsTurn: boolean      // sleeping → true; can still switch but cannot act
+  playerSelfHurt: boolean       // confusion: player hurt itself this turn
+  enemySelfHurt: boolean        // confusion: enemy hurt itself this turn
 }
 
 export function processTurnStart(
@@ -99,6 +101,8 @@ export function processTurnStart(
   let enemyForcedRps: RPS | null = null
   let enemyAutoLose = false
   let playerSkipsTurn = false
+  let playerSelfHurt = false
+  let enemySelfHurt = false
   let playerHeartsLost = 0
   let enemyHeartsLost = 0
   let playerHeartsGained = 0
@@ -165,6 +169,17 @@ export function processTurnStart(
         playerForcedRps = 'rock'
         messages.push(`⚡ ${pf.pokemon.name} ficou paralisado — ✊ automático`)
       }
+    } else if (condition === 'confusion') {
+      const newTurns = turnsLeft - 1
+      p.status = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
+      if (Math.random() < 0.50) {
+        playerHeartsLost += 0.5
+        playerSelfHurt = true
+        messages.push(`🌀 ${pf.pokemon.name} ficou confuso e se machucou! −0.5 ♥`)
+      }
+      if (p.status === null) {
+        messages.push(`🌀 ${pf.pokemon.name} voltou ao normal!`)
+      }
     }
   }
 
@@ -206,6 +221,16 @@ export function processTurnStart(
       }
     } else if (condition === 'paralysis') {
       if (Math.random() < 0.40) enemyForcedRps = 'rock'
+    } else if (condition === 'confusion') {
+      const newTurns = turnsLeft - 1
+      e.status = newTurns > 0 ? { condition, turnsLeft: newTurns } : null
+      if (Math.random() < 0.50) {
+        enemyHeartsLost += 0.5
+        enemySelfHurt = true
+      }
+      if (e.status === null) {
+        messages.push(`🌀 ${ef.pokemon.name} voltou ao normal!`)
+      }
     }
   }
 
@@ -263,7 +288,7 @@ export function processTurnStart(
     void def
   }
 
-  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, playerHeartsGained, enemyHeartsLost, messages, enemyAutoLose, playerSkipsTurn }
+  return { effects: eff, playerForcedRps, enemyForcedRps, playerHeartsLost, playerHeartsGained, enemyHeartsLost, messages, enemyAutoLose, playerSkipsTurn, playerSelfHurt, enemySelfHurt }
 }
 
 // ─── Slot move side-effects (buff / status) ───────────────────────────────────
@@ -338,16 +363,16 @@ export function applySlotMoveEffect(
 
   // ── Status moves ──────────────────────────────────────────────────────────────
   if (move.kind === 'status' && move.statusEffect) {
-    const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
+    const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥', confusion: '🌀' }
     const defSlot = eff.slots[defenderSide]
     if (isImmuneToStatus(move.statusEffect, defenderPokemon.type1, defenderPokemon.type2)) {
       message = `${move.name}: ${attackerSide === 0 ? 'inimigo é imune' : 'seu Pokémon é imune'} a ${move.statusEffect}!`
     } else if (defSlot.status) {
       message = `${move.name}: ${attackerSide === 0 ? 'inimigo' : 'seu Pokémon'} já tem um status!`
     } else {
-      const turns = move.statusEffect === 'sleep' ? 2 : -1
+      const turns = move.statusEffect === 'sleep' ? 2 : move.statusEffect === 'confusion' ? 2 : -1
       defSlot.status = { condition: move.statusEffect, turnsLeft: turns }
-      message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect} aplicado ${attackerSide === 0 ? 'ao inimigo' : 'ao seu Pokémon'}!`
+      message = `${icons[move.statusEffect]} ${move.name}: ${move.statusEffect === 'confusion' ? 'confusão aplicada' : move.statusEffect + ' aplicado'} ${attackerSide === 0 ? 'ao inimigo' : 'ao seu Pokémon'}!`
     }
     return { effects: eff, message, isProtect }
   }
@@ -384,8 +409,8 @@ export function applySlotMoveEffect(
       Math.random() < sec.chance &&
       !isImmuneToStatus(condition, defenderPokemon.type1, defenderPokemon.type2)
     ) {
-      const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
-      defSlot.status = { condition, turnsLeft: condition === 'sleep' ? 2 : -1 }
+      const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥', confusion: '🌀' }
+      defSlot.status = { condition, turnsLeft: condition === 'sleep' || condition === 'confusion' ? 2 : -1 }
       message = `${icons[condition]} ${move.name}: ${condition} aplicado ${attackerSide === 0 ? 'ao inimigo' : 'ao seu Pokémon'}!`
     }
   }

@@ -172,8 +172,8 @@ export const MOVES: Record<string, MoveDefinition> = {
   // Ghost/Normal – status
   'will-o-wisp':     { name: 'Will-O-Wisp',       type: 'Ghost',    kind: 'status',
                        statusEffect: 'burn' },
-  'confuse-ray':     { name: 'Confuse Ray',       type: 'Ghost',    kind: 'buff',
-                       buffEffect: { stat: 'attack', delta: -1, target: 'opponent' } },
+  'confuse-ray':     { name: 'Confuse Ray',       type: 'Ghost',    kind: 'status',
+                       statusEffect: 'confusion' },
   // Grass – status
   'sleep-powder':    { name: 'Sleep Powder',      type: 'Grass',    kind: 'status',
                        statusEffect: 'sleep' },
@@ -182,8 +182,8 @@ export const MOVES: Record<string, MoveDefinition> = {
   // Normal – status
   'sing':            { name: 'Sing',              type: 'Normal',   kind: 'status',
                        statusEffect: 'sleep' },
-  'supersonic':      { name: 'Supersonic',        type: 'Normal',   kind: 'buff',
-                       buffEffect: { stat: 'attack', delta: -1, target: 'opponent' } },
+  'supersonic':      { name: 'Supersonic',        type: 'Normal',   kind: 'status',
+                       statusEffect: 'confusion' },
   'disable':         { name: 'Disable',           type: 'Normal',   kind: 'offensive' },
   'smokescreen':     { name: 'Smokescreen',       type: 'Normal',   kind: 'buff',
                        buffEffect: { stat: 'attack', delta: -1, target: 'opponent' } },
