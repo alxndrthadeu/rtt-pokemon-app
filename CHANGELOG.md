@@ -1,5 +1,58 @@
 # Changelog
 
+## [0.10.0] - 2026-06-19
+
+### Adicionado
+
+- **Status de Confusão** (`types/index.ts`, `lib/battleEngine.ts`, `app/batalha/page.tsx`) — sexto status condition implementado seguindo as regras dos jogos originais
+  - `processTurnStart`: 50% de chance por turno de se machucar (−0.5 ♥) no lugar de atacar; dura 2 turnos e então é limpo automaticamente
+  - Outcome do turno sobrescrito para `'tie'` quando ocorre self-hurt — nenhum dos lados ataca o outro
+  - Pílula **CON** (rosa #F85888) com tooltip descritivo na batalha
+  - Aviso em tempo real na fase de seleção: "🌀 X está confuso — 50% de se machucar"
+  - Card dedicado "🌀 CONFUSO!" no painel de resultado; label do empate contextualizado
+  - `confuse-ray` (Ghost) e `supersonic` (Normal) convertidos para `kind: 'status'` com `statusEffect: 'confusion'` — sem tipo com imunidade
+  - `TurnStartResult` ganhou `playerSelfHurt` e `enemySelfHurt`
+
+- **Efeitos secundários em golpes ofensivos** (`types/index.ts`, `lib/data/moves.ts`, `lib/battleEngine.ts`, `app/batalha/page.tsx`) — campo `secondaryEffect?: { condition: StatusCondition; chance: number }` em `MoveDefinition` e `Move`; processado em `applySlotMoveEffect` após dano confirmado
+  - **Fogo** — ember/fire-fang/fire-punch/flamethrower: 10% queimadura; fire-blast/scald: 30% queimadura
+  - **Elétrico** — thunder-shock/thunderbolt/thunder-punch: 10% paralisia; spark: 30% paralisia
+  - **Gelo** — ice-beam/ice-fang/ice-punch: 10% congelamento; blizzard: 30% congelamento (sem imunidade Ice aos próprios ataques de Gelo)
+  - **Normal** — body-slam: 30% paralisia
+  - **Fantasma** — lick: 30% paralisia
+  - **Bug** — twineedle: 20% veneno
+  - **Veneno (ofensivos)** — sludge/sludge-bomb/sludge-wave/poison-jab/gunk-shot: 30% veneno; smog: 40% veneno
+  - **Veneno (contato)** — poison-sting: 30% veneno (convertido de status 100% para ofensivo); poison-fang: 50% veneno (convertido de status 100% para ofensivo)
+
+- **Animações de ataque** (`app/globals.css`, `app/batalha/page.tsx`)
+  - Keyframes `sprite-lunge-right` e `sprite-lunge-left` (270ms ease-out): atacante avança 14px e cresce 9% ao acertar
+  - Keyframe `sprite-shake` (380ms ease-in-out): defensor treme horizontalmente ao ser atingido
+  - Aura de tipo: `drop-shadow` na cor do tipo do golpe usada enquanto o atacante age
+  - Flash branco semitransparente no sprite do defensor ao tomar dano
+  - Todas as animações desabilitadas com `prefers-reduced-motion`
+
+### Corrigido
+
+- **Golpes desalinhados com o jogo original** (`lib/data/moves.ts`, `lib/data/pokemon.ts`) — auditoria completa dos 150+ golpes
+  - `detect`: corrigido para `kind: 'buff'` com `special: 'protect'` (era `kind: 'offensive'`)
+  - `confuse-ray` / `supersonic`: saíram de debuff de ataque (−1 ATK) e agora aplicam confusão corretamente
+  - `splash`: removido do catálogo; Magikarp substituído para `water-gun`
+  - `resolveMove` em `pokemon.ts` agora copia o campo `secondaryEffect` ao construir o `Move` runtime
+
+- **Textos de paralisia inconsistentes** — `STATUS_DESC`, warning inline na batalha e `/como-jogar` todos corrigidos para 40% (eram 25–30%)
+- **SSR mismatch em `useIsMobile`** — `useState(false)` substituído por `useState(typeof window !== 'undefined' && window.matchMedia(...).matches)` para evitar hidratação incorreta
+- **Activations dialog sem scroll** — `max-h-[40vh] overflow-y-auto` adicionado ao painel de ativações no resultado do turno
+
+### UI
+
+- **Dificuldade na home** (`app/page.tsx`) — textos revisados: Normal destaca o Centro Pokémon e quando a IA fica preditiva (andar 9); Hard ressalta que HP nunca recupera e IA preditiva no andar 5
+- **Swipe hint no draft** (`app/draft/page.tsx`) — dica "← Deslize para ver opções →" adicionada abaixo do carrossel (hidden em sm+)
+- **Botão "Batalhar!" fixo na Torre** (`app/torre/page.tsx`) — wrapped em `sticky bottom-0 bg-parchment` para não sumir em telas pequenas
+- **Botões de equip/unequip na Mochila** (`app/mochila/page.tsx`) — `py-1.5` → `py-3` para área de toque confortável
+- **Silhueta da Pokédex** (`app/pokedex/page.tsx`) — opacidade 0.15 → 0.35; sprites ocultos mais fáceis de reconhecer
+- **Bottom sheet em Entre-Andares** (`app/entre-andares/page.tsx`) — animação slide-up via `translateY` + `transition-transform duration-300`; estados `mounted`/`visible` sincronizam mount e animação corretamente
+
+---
+
 ## [0.9.9] - 2026-06-17
 
 ### Corrigido
