@@ -820,7 +820,12 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
       {/* ── Enemy sprite — top-right ── */}
       <div
         className={`absolute z-[5] transition-opacity duration-300 ${attackAnim === 'enemy' ? 'sprite-lunge-left' : ''} ${hitAnim === 'enemy' ? 'sprite-shake' : ''}`}
-        style={{ right: 18, top: 22, opacity: eKO ? 0.22 : 1 }}
+        style={{
+          right: 18, top: 22, opacity: eKO ? 0.22 : 1,
+          filter: !eKO && attackAnim === 'enemy' && enemyAuraColor
+            ? `drop-shadow(0 0 7px ${enemyAuraColor}) drop-shadow(0 0 14px ${enemyAuraColor}90)`
+            : undefined,
+        }}
       >
         {/* Hit flash — aparece quando o inimigo leva dano */}
         {hitAnim === 'enemy' && !eKO && (
@@ -840,11 +845,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             width: 92, height: 92,
             imageRendering: 'pixelated',
             objectFit: 'contain',
-            filter: eKO
-              ? 'grayscale(1)'
-              : attackAnim === 'enemy' && enemyAuraColor
-              ? `drop-shadow(0 0 7px ${enemyAuraColor}) drop-shadow(0 0 14px ${enemyAuraColor}90)`
-              : undefined,
+            filter: eKO ? 'grayscale(1)' : undefined,
           }}
           onError={() => setEnemyAnimErrId(ef.pokemon.id)}
         />
@@ -859,7 +860,12 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
       {/* ── Player sprite — bottom-left (back) ── */}
       <div
         className={`absolute z-[5] transition-opacity duration-300 ${attackAnim === 'player' ? 'sprite-lunge-right' : ''} ${hitAnim === 'player' ? 'sprite-shake' : ''}`}
-        style={{ left: 6, bottom: 24, opacity: pKO ? 0.22 : 1 }}
+        style={{
+          left: 6, bottom: 24, opacity: pKO ? 0.22 : 1,
+          filter: !pKO && attackAnim === 'player' && playerAuraColor
+            ? `drop-shadow(0 0 7px ${playerAuraColor}) drop-shadow(0 0 14px ${playerAuraColor}90)`
+            : undefined,
+        }}
       >
         {/* Hit flash — aparece quando o player leva dano */}
         {hitAnim === 'player' && !pKO && (
@@ -874,11 +880,7 @@ function BattleArena({ pf, ef, effects, typeColor, playerFighters, enemyFighters
             width: 120, height: 120,
             imageRendering: 'pixelated',
             objectFit: 'contain',
-            filter: pKO
-              ? 'grayscale(1)'
-              : attackAnim === 'player' && playerAuraColor
-              ? `drop-shadow(0 0 7px ${playerAuraColor}) drop-shadow(0 0 14px ${playerAuraColor}90)`
-              : undefined,
+            filter: pKO ? 'grayscale(1)' : undefined,
           }}
           onError={() => setPlayerAnimErrId(pf.pokemon.id)}
         />
