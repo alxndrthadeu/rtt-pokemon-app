@@ -112,7 +112,8 @@ export interface MoveDefinition {
   type: PokemonType
   kind: MoveKind
   drain?: boolean              // offensive: heals user for half damage dealt
-  statusEffect?: StatusCondition   // status: applies this condition to opponent
+  statusEffect?: StatusCondition   // status: applies this condition to opponent (100%)
+  secondaryEffect?: { condition: StatusCondition; chance: number } // offensive: chance to apply on hit
   buffEffect?: BuffEffect      // buff: applies this modifier
   special?: string             // documented exceptions (e.g. 'protect')
 }
@@ -170,6 +171,7 @@ export interface Move {
   kind: MoveKind
   drain?: boolean
   statusEffect?: StatusCondition
+  secondaryEffect?: { condition: StatusCondition; chance: number }
   buffEffect?: BuffEffect
   special?: string
 }

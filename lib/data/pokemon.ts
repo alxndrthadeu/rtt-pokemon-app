@@ -659,7 +659,7 @@ const TEMPLATES: NormalizedTemplate[] = [
   // ─── #129 MAGIKARP ───
   { id: 129, name: 'Magikarp',   type1: 'Water',    type2: null,      rarity: 'comum',
     abilityId: 'inner-focus',
-    moves: { rock: 'splash',      paper: 'tackle',       scissors: 'flail' },
+    moves: { rock: 'water-gun',   paper: 'tackle',       scissors: 'flail' },
     uniqueId: null },
   // ─── #130 GYARADOS ───
   { id: 130, name: 'Gyarados',   type1: 'Water',    type2: 'Flying',  rarity: 'ultra-rara',
@@ -790,10 +790,11 @@ function resolveMove(moveId: string, slot: RPS): Move {
     type: def.type,
     category: slot,
     kind: def.kind,
-    ...(def.drain         !== undefined && { drain:        def.drain }),
-    ...(def.statusEffect  !== undefined && { statusEffect: def.statusEffect }),
-    ...(def.buffEffect    !== undefined && { buffEffect:   def.buffEffect }),
-    ...(def.special       !== undefined && { special:      def.special }),
+    ...(def.drain           !== undefined && { drain:           def.drain }),
+    ...(def.statusEffect    !== undefined && { statusEffect:    def.statusEffect }),
+    ...(def.secondaryEffect !== undefined && { secondaryEffect: def.secondaryEffect }),
+    ...(def.buffEffect      !== undefined && { buffEffect:      def.buffEffect }),
+    ...(def.special         !== undefined && { special:         def.special }),
   }
 }
 

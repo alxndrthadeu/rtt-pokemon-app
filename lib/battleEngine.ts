@@ -374,7 +374,23 @@ export function applySlotMoveEffect(
     return { effects: eff, message, isProtect }
   }
 
-  return { effects: eff, message: null, isProtect }
+  // ── Secondary effect on offensive moves (e.g. 30% paralysis from Body Slam) ──
+  if (move.kind === 'offensive' && move.secondaryEffect) {
+    const sec = move.secondaryEffect
+    const condition: StatusCondition = sec.condition
+    const defSlot = eff.slots[defenderSide]
+    if (
+      !defSlot.status &&
+      Math.random() < sec.chance &&
+      !isImmuneToStatus(condition, defenderPokemon.type1, defenderPokemon.type2)
+    ) {
+      const icons: Record<StatusCondition, string> = { poison: '☠️', paralysis: '⚡', sleep: '😴', freeze: '🧊', burn: '🔥' }
+      defSlot.status = { condition, turnsLeft: condition === 'sleep' ? 2 : -1 }
+      message = `${icons[condition]} ${move.name}: ${condition} aplicado ${attackerSide === 0 ? 'ao inimigo' : 'ao seu Pokémon'}!`
+    }
+  }
+
+  return { effects: eff, message, isProtect }
 }
 
 function clampMod(v: number): number { return Math.max(-1, Math.min(1, v)) }

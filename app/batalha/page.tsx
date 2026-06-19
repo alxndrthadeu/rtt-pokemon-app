@@ -1247,6 +1247,13 @@ export default function BatalhaPage() {
               eff = spinResult.effects
               if (spinResult.message) activations.push(spinResult.message)
             }
+
+            // Secondary effect (e.g. 30% paralysis from Body Slam)
+            if (chosenMove.secondaryEffect && enemyDmg > 0) {
+              const secResult = applySlotMoveEffect(chosenMove, 0, eff, ef.pokemon)
+              eff = secResult.effects
+              if (secResult.message) activations.push(secResult.message)
+            }
           } else {
             const sideEff = applySlotMoveEffect(chosenMove, 0, eff, ef.pokemon)
             eff = sideEff.effects
@@ -1338,6 +1345,13 @@ export default function BatalhaPage() {
           if (rockyHelmetRecoil > 0 && playerDmg > 0) {
             newEHearts = Math.max(0, newEHearts - rockyHelmetRecoil)
             activations.push(`⛑️ Capacete Rochoso! ${ef.pokemon.name} tomou ${rockyHelmetRecoil} ♥ de ricochete!`)
+          }
+
+          // Secondary effect from enemy offensive move (e.g. 10% burn from Flamethrower)
+          if (enemyChosenMove.secondaryEffect && playerDmg > 0) {
+            const secResult = applySlotMoveEffect(enemyChosenMove, 1, eff, pf.pokemon)
+            eff = secResult.effects
+            if (secResult.message) activations.push(secResult.message)
           }
         } else if (!immune && isProtect) {
           activations.push(`🛡️ Protect absorveu o ataque!`)
